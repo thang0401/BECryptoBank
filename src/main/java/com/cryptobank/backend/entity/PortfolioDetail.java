@@ -1,5 +1,6 @@
 package com.cryptobank.backend.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -14,12 +15,13 @@ public class PortfolioDetail {
 
     @Id
     private String id;
-    private float amount;
+    private double amount;
 
     @ManyToOne
     @JoinColumn(name = "asset_type_id")
     private AssetType assetType;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "portfolio_id")
     private Portfolio portfolio;
