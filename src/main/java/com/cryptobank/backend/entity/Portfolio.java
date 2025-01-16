@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Set;
+
 @Entity
 @Data
 @NoArgsConstructor
@@ -30,5 +32,8 @@ public class Portfolio {
     @ManyToOne
     @JoinColumn(name = "portfolio_id")
     private PortfolioCategory category;
+
+    @OneToMany(mappedBy = "portfolio")
+    private Set<PortfolioDetail> portfolioDetail;
 
 }

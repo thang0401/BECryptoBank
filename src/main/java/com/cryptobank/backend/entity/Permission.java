@@ -34,7 +34,7 @@ public class Permission {
     private boolean update;
 
     @Column(name = "delete_yn")
-    private boolean delete;
+    private boolean deleted;
 
     @Column(name = "view_yn")
     private boolean view;
