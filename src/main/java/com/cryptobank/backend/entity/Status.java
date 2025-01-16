@@ -28,7 +28,7 @@ public class Status {
     private String note;
 
     @Column(name = "delete_yn")
-    private boolean delete;
+    private boolean deleted;
 
     @Column(name = "created_date")
     private LocalDateTime createdDate;

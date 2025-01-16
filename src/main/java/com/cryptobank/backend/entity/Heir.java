@@ -35,7 +35,7 @@ public class Heir {
 	private LocalDateTime dateOfBirth;
 
 	@Column(name = "delete_yn")
-	private boolean delete;
+	private boolean deleted;
 
 	@Column(name = "created_date")
 	private LocalDateTime createdDate;

@@ -1,17 +1,18 @@
 package com.cryptobank.backend.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Entity
+import java.time.LocalDateTime;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "portfolio_detail")
-public class PortfolioDetail {
+@Entity
+@Table(name = "debit_detail")
+public class DebitDetail {
 
     @Id
     private String id;
@@ -21,9 +22,17 @@ public class PortfolioDetail {
     @JoinColumn(name = "asset_type_id")
     private AssetType assetType;
 
-    @JsonIgnore
+    @Column(name = "delete_yn")
+    private boolean deleted;
+
+    @Column(name = "created_at")
+    private LocalDateTime createdDate;
+
+    @Column(name = "created_by")
+    private String createdBy;
+
     @ManyToOne
-    @JoinColumn(name = "portfolio_id")
-    private Portfolio portfolio;
+    @JoinColumn(name = "debit_id")
+    private Debit debit;
 
 }
