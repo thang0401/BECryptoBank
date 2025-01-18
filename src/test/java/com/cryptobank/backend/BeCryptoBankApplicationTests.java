@@ -1,4 +1,4 @@
-package com.example.BE_Crypto_Bank;
+package com.cryptobank.backend;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

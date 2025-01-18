@@ -1,4 +1,4 @@
-package com.example.BE_Crypto_Bank;
+package com.cryptobank.backend;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
