@@ -8,8 +8,8 @@
 		<version>3.4.2-SNAPSHOT</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.example</groupId>
-	<artifactId>BE-Crypto-Bank</artifactId>
+	<groupId>com.crytobank</groupId>
+	<artifactId>backend</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>BE-Crypto-Bank</name>
 	<description>Demo project for Spring Boot</description>
