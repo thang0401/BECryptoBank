@@ -22,7 +22,7 @@ public class WithdrawPortfolioHistory {
 
     @ManyToOne
     @JoinColumn(name = "from_portfolio_id")
-    private Portfolio fromPortfolio;
+    private Portfolio sentPortfolio;
 
     @Column(name = "delete_yn")
     private boolean deleted;

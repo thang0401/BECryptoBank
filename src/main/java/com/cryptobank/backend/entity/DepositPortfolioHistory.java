@@ -20,10 +20,10 @@ public class DepositPortfolioHistory {
 
     @ManyToOne
     @JoinColumn(name = "portfolio_id")
-    private Portfolio portfolio;
+    private Portfolio receivedPortfolio;
 
     @Column(name = "from_pubkey")
-    private String fromPublicKey;
+    private String sentPublicKey;
 
     @Column(name = "delete_yn")
     private boolean deleted;
