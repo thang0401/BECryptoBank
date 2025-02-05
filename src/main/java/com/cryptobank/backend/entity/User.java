@@ -2,20 +2,24 @@ package com.cryptobank.backend.entity;
 
 
 import jakarta.persistence.*;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
+
+@SuppressWarnings("serial")
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @Table(name = "users")
-public class User {
+public class User implements Serializable {
 
     @Id
     @Column(name = "id")
@@ -91,8 +95,12 @@ public class User {
     @JoinColumn(name = "role_id")
     private Role role;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "address_id", referencedColumnName = "id")
+//    @OneToOne(cascade = CascadeType.ALL)
+//    @JoinColumn(name = "address_id", referencedColumnName = "id")
+//    private Address address;
+    
+    @ManyToOne
+    @JoinColumn(name="address_id")
     private Address address;
 
     @ManyToOne
