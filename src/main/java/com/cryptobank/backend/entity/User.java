@@ -9,6 +9,8 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
+
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -91,8 +93,8 @@ public class User {
     @JoinColumn(name = "role_id")
     private Role role;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "address_id", referencedColumnName = "id")
+    @ManyToOne
+    @JoinColumn(name="address_id")
     private Address address;
 
     @ManyToOne

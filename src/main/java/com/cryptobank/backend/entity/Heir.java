@@ -1,11 +1,14 @@
 package com.cryptobank.backend.entity;
 
 import jakarta.persistence.*;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+
+
 
 @Data
 @NoArgsConstructor
@@ -15,38 +18,40 @@ import java.time.LocalDateTime;
 public class Heir {
 
 	@Id
-	@Column(name = "id")
+	@Column(name="id")
 	private String id;
-
-	@Column(name = "name")
+	
+	@Column(name="name")
 	private String name;
+	
+	@Column(name="id_card")
+	private String id_card;
+	
+	@Column(name="last_words")
+	private String last_words;
+	
+	@Column(name="date_of_birth")
+	private String date_of_birth;
+	
+	@Column(name="delete_yn")
+	private String delete_yn;
+	
+	@Column(name="created_date")
+	private LocalDateTime created_date;
 
+	@Column(name="modified_date")
+	private LocalDateTime modified_date;
+	
+	@Column(name="modified_by")
+	private String modified_by;
+	
 	@ManyToOne
-	@JoinColumn(name = "portfolio_id")
-	private Portfolio portfolio;
+    @JoinColumn(name = "created_by")
+    private User createdByUser;
 
-	@Column(name = "id_card")
-	private String idCard;
+    @ManyToOne
+    @JoinColumn(name = "portfolio_id")
+    private PortfolioCategory portfolioCategory;
 
-	@Column(name = "last_words")
-	private String lastWords;
-
-	@Column(name = "date_of_birth")
-	private LocalDateTime dateOfBirth;
-
-	@Column(name = "delete_yn")
-	private boolean deleted;
-
-	@Column(name = "created_date")
-	private LocalDateTime createdDate;
-
-	@Column(name = "created_by")
-	private String createdBy;
-
-	@Column(name = "modified_date")
-	private LocalDateTime modifiedDate;
-
-	@Column(name = "modified_by")
-	private String modifiedBy;
 
 }

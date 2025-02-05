@@ -8,6 +8,9 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.List;
 
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -39,5 +42,14 @@ public class PortfolioCategory {
 
     @OneToMany(mappedBy = "category")
     private List<Portfolio> portfolios;
+    
+    // map to table status
+ 	@ManyToOne
+ 	@JoinColumn(name = "status_id")
+ 	private Status portfolio_category_status;
+
+ 	@JsonIgnore
+ 	@OneToMany(mappedBy = "portfolioCategory", cascade = CascadeType.ALL)
+ 	private List<UserPortfolio> userPortfolios;
 
 }
