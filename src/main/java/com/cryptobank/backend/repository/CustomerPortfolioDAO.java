@@ -27,7 +27,7 @@ public interface CustomerPortfolioDAO extends JpaRepository<UserPortfolio, Strin
 	List<UserPortfolio> findByRankingId(@Param("rankingId") String rankingId);
 
 	// Truy vấn User_portfolio theo số điện thoại
-	@Query("SELECT up FROM UserPortfolio up WHERE up.userId.phoneNum = :phoneNum")
+	@Query("SELECT up FROM UserPortfolio up WHERE up.userId.phone = :phoneNum")
 	List<UserPortfolio> findByPhoneNumber(@Param("phoneNum") String phoneNum);
 
 	// Truy vấn User_portfolio theo tên User (first name hoặc last name)
