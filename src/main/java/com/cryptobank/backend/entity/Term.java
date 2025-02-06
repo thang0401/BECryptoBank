@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -38,6 +40,7 @@ public class Term {
     @Column(name = "modified_by")
     private String modifiedBy;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "term")
-    private List<Portfolio> portfolios;
+    private List<UserPortfolio> listPortfolio;
 }

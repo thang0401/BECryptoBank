@@ -1,18 +1,23 @@
 package com.cryptobank.backend.entity;
 
 import jakarta.persistence.*;
+
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
+
+@SuppressWarnings("serial")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @Table(name = "heir")
-public class Heir {
+public class Heir implements Serializable{
 
 	@Id
 	@Column(name = "id")
@@ -40,13 +45,19 @@ public class Heir {
 	@Column(name = "created_date")
 	private LocalDateTime createdDate;
 
-	@Column(name = "created_by")
-	private String createdBy;
 
 	@Column(name = "modified_date")
 	private LocalDateTime modifiedDate;
 
 	@Column(name = "modified_by")
 	private String modifiedBy;
+	
+	@ManyToOne
+    @JoinColumn(name = "created_by")
+    private User createdByUser;
+
+//    @ManyToOne
+//    @JoinColumn(name = "portfolio_id", insertable = false, updatable = false)
+//    private PortfolioCategory portfolioCategory;
 
 }
