@@ -9,9 +9,9 @@ import lombok.Data;
 public class RolePermissionKey {
 
     @Column(name = "role_id")
-    private String role_id;
+    private String roleId;
 
     @Column(name = "permission_id")
-    private String permission_id;
+    private String permissionId;
 
 }
