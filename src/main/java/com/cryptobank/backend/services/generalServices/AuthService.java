@@ -19,7 +19,7 @@ import jakarta.servlet.http.HttpSession;
 
 @Service
 public class AuthService {
-	 @Autowired
+	 	@Autowired
 	    private UserDAO userRepository;
 	    
 	    @Autowired
@@ -28,8 +28,8 @@ public class AuthService {
 	    @Autowired
 	    private PasswordEncoder passwordEncoder;
 	    
-	    @Autowired
-	    private AuthenticationManager authenticationManager;
+//	    @Autowired
+//	    private AuthenticationManager authenticationManager;
 	    
 	    public Boolean login(String email, String password, HttpServletRequest request, HttpSession session) {
 //	        Authentication authentication = authenticationManager.authenticate(
@@ -54,7 +54,6 @@ public class AuthService {
 			} catch (Exception e) {
 				return false;
 			}
-	        
 	    }
 
 	    public void logout(HttpSession session) {
