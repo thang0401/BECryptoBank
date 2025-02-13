@@ -11,6 +11,9 @@ import java.util.Optional;
 public interface UserDAO extends JpaRepository<User, String> {
 
     Optional<User> findByEmail(String email);
+    
+    @Query("SELECT c FROM User c WHERE c.email=:email")
+    User getByEmail(String email);
 
     @Query("SELECT c FROM User c " +
             "WHERE LOWER(CONCAT(c.firstName, ' ', c.lastName)) LIKE LOWER(CONCAT('%', :name, '%'))")
@@ -18,5 +21,10 @@ public interface UserDAO extends JpaRepository<User, String> {
 
     @Query("SELECT new com.cryptobank.backend.model.CustomerUserDetails(c.email, c.password, c.role.id) FROM User c WHERE c.email = :email")
     Optional<CustomerUserDetails> authenticate(String email);
+    
+
+    Optional<User> findByPhone(String phone);
+    
+    Optional<User> findByIdNumber(String idNumber);
 
 }

@@ -5,6 +5,19 @@ spring:
     url: jdbc:postgresql://14.225.206.68:5432/CryptoBank
     username: postgres
     password: 74ZLdPPJab8zNRHh
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: your-email@gmail.com
+    password: your-email-password
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          ssl:
+            trust: smtp.gmail.com
   jpa:
     hibernate:
       ddl-auto: none
@@ -13,3 +26,9 @@ spring:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
+
+banking-api:
+  base-url: https://api.nganhang.com  # URL của API ngân hàng
+  api-key: your-api-key-here         # API Key dùng để xác thực
+  transfer-endpoint: /v1/transfer    # Endpoint chuyển tiền
+  withdraw-endpoint: /v1/withdraw    # Endpoint rút tiền
