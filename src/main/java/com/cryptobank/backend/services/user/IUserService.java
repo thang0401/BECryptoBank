@@ -18,5 +18,10 @@ public interface IUserService {
     User createUser(User User);
     User updateUser(String id, User user);
     void deleteUser(String id);
+    
+    //Use to check register
+    Boolean existsByEmail(String email);
+    Boolean existsByPhoneNumber(String phoneNumber);
+    Boolean existsByIdCardNumber(String cardNumber);
 
 }

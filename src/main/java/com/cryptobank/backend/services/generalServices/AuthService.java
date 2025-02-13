@@ -19,7 +19,7 @@ import jakarta.servlet.http.HttpSession;
 
 @Service
 public class AuthService {
-	 @Autowired
+	 	@Autowired
 	    private UserDAO userRepository;
 	    
 	    @Autowired
@@ -28,28 +28,32 @@ public class AuthService {
 	    @Autowired
 	    private PasswordEncoder passwordEncoder;
 	    
-	    @Autowired
-	    private AuthenticationManager authenticationManager;
+//	    @Autowired
+//	    private AuthenticationManager authenticationManager;
 	    
-	    public String login(String email, String password, HttpServletRequest request, HttpSession session) {
+	    public Boolean login(String email, String password, HttpServletRequest request, HttpSession session) {
 //	        Authentication authentication = authenticationManager.authenticate(
 //	            new UsernamePasswordAuthenticationToken(email, password)
 //	        );
 //	        SecurityContextHolder.getContext().setAuthentication(authentication);
 
-	        User user = userRepository.findByEmail(email).orElseThrow();
+	    	try {
+	    		User user = userRepository.findByEmail(email).orElseThrow();
 
-	        // **Lưu thông tin thiết bị vào database**
-	        DeviceInfo device = new DeviceInfo();
-	        device.setDeviceId(session.getId()); // Lưu sessionId thay vì token
-	        device.setDeviceName(request.getHeader("User-Agent")); // Lấy thông tin thiết bị từ User-Agent
-	        device.setIpAddress(request.getRemoteAddr()); // Lấy địa chỉ IP
-	        device.setLastLogin(LocalDateTime.now());
-	        device.setUser(user);
+		        // **Lưu thông tin thiết bị vào database**
+		        DeviceInfo device = new DeviceInfo();
+		        device.setDeviceId(session.getId()); // Lưu sessionId thay vì token
+		        device.setDeviceName(request.getHeader("User-Agent")); // Lấy thông tin thiết bị từ User-Agent
+		        device.setIpAddress(request.getRemoteAddr()); // Lấy địa chỉ IP
+		        device.setLastLogin(LocalDateTime.now());
+		        device.setUser(user);
 
-	        deviceInfoRepository.save(device);
+		        deviceInfoRepository.save(device);
 
-	        return "Đăng nhập thành công, session ID: " + session.getId();
+		        return true;
+			} catch (Exception e) {
+				return false;
+			}
 	    }
 
 	    public void logout(HttpSession session) {
