@@ -8,7 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 @Data
 @NoArgsConstructor
@@ -21,8 +21,8 @@ public class TransferFee {
     @Column(name = "id")
     private String id;
 
-    @Column(name = "transfer_history_id")
-    private String transferHistoryId;
+    @Column(name="debit_transaction_id")
+    private String debitTransactionId;
 
     @Column(name = "discount_rate")
     private Double discount;
@@ -34,13 +34,13 @@ public class TransferFee {
     private boolean deleted;
 
     @Column(name = "created_date")
-    private LocalDateTime createdDate;
+    private ZonedDateTime createdDate;
 
     @Column(name = "created_by")
     private String createdBy;
 
     @Column(name = "modified_date")
-    private LocalDateTime modifiedDate;
+    private ZonedDateTime modifiedDate;
 
     @Column(name = "modified_by")
     private String modifiedBy;

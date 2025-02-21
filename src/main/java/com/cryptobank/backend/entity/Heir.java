@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 @Data
 @NoArgsConstructor
@@ -21,30 +21,23 @@ public class Heir {
 	@Column(name = "name")
 	private String name;
 
-	@ManyToOne
-	@JoinColumn(name = "portfolio_id")
-	private Portfolio portfolio;
+	@Column(name="saving_account")
+	private String savingAccount;
 
-	@Column(name = "id_card")
-	private String idCard;
+	@Column(name="gg_drive_url")
+	private String GoogleDriveURL;
 
-	@Column(name = "last_words")
-	private String lastWords;
-
-	@Column(name = "date_of_birth")
-	private LocalDateTime dateOfBirth;
-
-	@Column(name = "delete_yn")
-	private boolean deleted;
+	@Column(name="delete_yn")
+	private Boolean isDeleted;
 
 	@Column(name = "created_date")
-	private LocalDateTime createdDate;
+	private ZonedDateTime createdDate;
 
 	@Column(name = "created_by")
 	private String createdBy;
 
 	@Column(name = "modified_date")
-	private LocalDateTime modifiedDate;
+	private ZonedDateTime modifiedDate;
 
 	@Column(name = "modified_by")
 	private String modifiedBy;

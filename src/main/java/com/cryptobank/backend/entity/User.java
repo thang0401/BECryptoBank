@@ -7,7 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 @Data
 @Builder
@@ -24,14 +24,13 @@ public class User {
     @Column(name = "first_name")
     private String firstName;
 
-    @Column(name = "last_name")
-    private String lastName;
-
-    @Column(name = "user_name")
-    private String username;
+    @Column(name="role_id")
+    private String roleId;
 
     @Column(name = "phone_num")
     private String phone;
+
+
 
     @Column(name = "gender")
     private String gender;
@@ -42,20 +41,29 @@ public class User {
     @Column(name = "avatar_url")
     private String avatarURL;
 
+    @Column(name="status_id")
+    private String statusId;
+
+    @Column(name="ranking_id")
+    private String rankingId;
+
     @Column(name = "password")
     private String password;
 
     @Column(name = "smart_otp")
     private String smartOTP;
 
+    @Column(name = "id_number")
+    private String idNumber;
+
     @Column(name = "google_id")
     private String googleId;
 
-    @Column(name = "date_of_birth")
-    private LocalDateTime dateOfBirth;
+    @Column(name="address_id")
+    private String addressId;
 
-    @Column(name = "id_number")
-    private String idNumber;
+    @Column(name = "date_of_birth")
+    private ZonedDateTime dateOfBirth;
 
     @Column(name = "id_card_front_img_url")
     private String idCardFrontImgURL;
@@ -66,17 +74,14 @@ public class User {
     @Column(name = "is_activated")
     private Boolean activated;
 
-    @Column(name = "delete_yn")
-    private Boolean deleted;
-
     @Column(name = "created_date")
-    private LocalDateTime createdDate;
+    private ZonedDateTime createdDate;
 
     @Column(name = "created_by")
     private String createdBy;
 
     @Column(name = "modified_date")
-    private LocalDateTime modifiedDate;
+    private ZonedDateTime modifiedDate;
 
     @Column(name = "modified_by")
     private String modifiedBy;
@@ -84,22 +89,28 @@ public class User {
     @Column(name = "type_sign_in")
     private String type_sign_in;
 
+    @Column(name = "last_name")
+    private String lastName;
+
+    @Column(name = "user_name")
+    private String username;
+
     @Column(name = "kyc_status")
     private Boolean kyc_status;
 
-    @ManyToOne
-    @JoinColumn(name = "role_id")
-    private Role role;
+    @Column(name="delete_yn")
+    private Boolean isDeleted;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "address_id", referencedColumnName = "id")
-    private Address address;
+    @Column(name="ward")
+    private String ward;
 
-    @ManyToOne
-    @JoinColumn(name = "ranking_id")
-    private Ranking ranking;
+    @Column(name="district")
+    private String district;
 
-    @ManyToOne
-    @JoinColumn(name = "status_id")
-    private Status status;
+    @Column(name="province")
+    private String province;
+
+    @Column(name="nation")
+    private String nation;
+
 }
