@@ -108,8 +108,8 @@ public class UserService implements IUserService {
                 .dateOfBirth(newUser.getDateOfBirth())
                 .idCardFrontImgURL(newUser.getIdCardFrontImgURL())
                 .idCardBackImgURL(newUser.getIdCardBackImgURL())
-                .activated(newUser.isActivated())
-                .deleted(newUser.isDeleted())
+                .activated(newUser.getActivated())
+                .deleted(newUser.getDeleted())
                 .modifiedDate(newUser.getModifiedDate())
                 .modifiedBy(newUser.getModifiedBy())
                 .build();

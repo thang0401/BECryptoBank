@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 @Data
 @NoArgsConstructor
@@ -18,23 +18,25 @@ public class DeviceInfo {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "userid")
+    private String userId;
+
     @Column(name = "deviceid")
     private String deviceId;
 
     @Column(name = "devicename")
     private String deviceName;
 
+    @Column(name="os")
     private String os;
+
+    @Column(name="browser")
     private String browser;
 
     @Column(name = "ipaddress")
     private String ipAddress;
 
     @Column(name = "lastlogin")
-    private LocalDateTime lastLogin;
-
-    @ManyToOne
-    @JoinColumn(name = "userid")
-    private User user;
+    private ZonedDateTime lastLogin;
 
 }

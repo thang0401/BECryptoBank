@@ -5,6 +5,7 @@ spring:
     url: jdbc:postgresql://14.225.206.68:5432/CryptoBank
     username: postgres
     password: 74ZLdPPJab8zNRHh
+    driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
       ddl-auto: none

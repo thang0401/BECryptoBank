@@ -64,10 +64,10 @@ public class User {
     private String idCardBackImgURL;
 
     @Column(name = "is_activated")
-    private boolean activated;
+    private Boolean activated;
 
     @Column(name = "delete_yn")
-    private boolean deleted;
+    private Boolean deleted;
 
     @Column(name = "created_date")
     private LocalDateTime createdDate;
