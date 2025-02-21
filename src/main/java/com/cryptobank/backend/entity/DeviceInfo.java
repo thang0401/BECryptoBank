@@ -18,8 +18,9 @@ public class DeviceInfo {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "userid")
-    private String userId;
+    @ManyToOne
+    @JoinColumn(name = "userid")
+    private User user;
 
     @Column(name = "deviceid")
     private String deviceId;

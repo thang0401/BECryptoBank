@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.ZonedDateTime;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -17,8 +18,9 @@ public class DebitDetail {
     @Id
     private String id;
 
-    @Column(name="sender_id")
-    private String sender;
+    @ManyToOne
+    @JoinColumn(name="sender_id")
+    private User sender;
 
     @Column(name="amount")
     private Double amount;
@@ -36,15 +38,20 @@ public class DebitDetail {
     @Column(name = "delete_yn")
     private boolean deleted;
 
-    @Column(name = "debit_id")
-    private String debit;
+    @ManyToOne
+    @JoinColumn(name = "debit_id")
+    private DebitAccount debitAccount;
 
-    @Column(name="receiver_id")
-    private String receiver;
+    @ManyToOne
+    @JoinColumn(name="receiver_id")
+    private User receiver;
 
     @Column(name="transaction_type")
     private String transactionType;
 
     @Column(name="transaction_hash")
     private String transactionHash;
+
+    @OneToMany(mappedBy = "debitTransaction",cascade = CascadeType.ALL)
+    private List<TransferFee> transferFees;
 }

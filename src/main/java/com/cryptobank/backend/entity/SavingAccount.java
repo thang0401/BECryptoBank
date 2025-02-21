@@ -1,10 +1,17 @@
 package com.cryptobank.backend.entity;
 
 import java.time.ZonedDateTime;
+import java.util.List;
 
+import org.hibernate.annotations.ManyToAny;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -19,11 +26,13 @@ public class SavingAccount {
     @Id
     private String id;
 
-    @Column(name="user_id")
-    private String userId;
+    @ManyToOne
+    @JoinColumn(name="user_id")
+    private User user;
     
-    @Column(name="term_id")
-    private String termId;
+    @ManyToOne
+    @JoinColumn(name="term_id")
+    private Term term;
 
     @Column(name="note")
     private String note;
@@ -54,4 +63,10 @@ public class SavingAccount {
 
     @Column(name="maturity_date")
     private ZonedDateTime maturityDate;
+
+    @OneToMany(mappedBy = "savingAccount",cascade = CascadeType.ALL)
+    private List<Heir> heirs;
+
+    @OneToMany(mappedBy = "savingAccount",cascade = CascadeType.ALL)
+    private List<SavingTransaction> transactions; 
 }

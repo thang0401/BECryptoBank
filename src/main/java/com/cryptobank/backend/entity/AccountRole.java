@@ -3,6 +3,8 @@ package com.cryptobank.backend.entity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -22,11 +24,13 @@ public class AccountRole {
     @Column(name = "id")
     private String id;
 
-    @Column(name = "role_id")
-    private String roleId;
+    @ManyToOne
+    @JoinColumn(name ="role_id")
+    private Role role;
 
-    @Column(name = "user_id")
-    private String userId;
+    @ManyToOne
+    @JoinColumn(name ="user_id")
+    private User user;
 
     @Column(name = "is_activated")
     private boolean activated;

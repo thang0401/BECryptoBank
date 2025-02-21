@@ -2,9 +2,13 @@ package com.cryptobank.backend.entity;
 
 import java.time.ZonedDateTime;
 
+import org.hibernate.annotations.ManyToAny;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -19,8 +23,9 @@ public class USDCtoVNDTransaction {
     @Id
     private String id;
 
-    @Column(name="debit_account_id")
-    private String debitAccountId;
+    @ManyToOne
+    @JoinColumn(name="debit_account_id")
+    private DebitAccount debitAccount;
 
     @Column(name="VND_amount")
     private Double VNDamount;

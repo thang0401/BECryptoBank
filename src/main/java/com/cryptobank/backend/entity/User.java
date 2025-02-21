@@ -8,12 +8,13 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.ZonedDateTime;
+import java.util.List;
 
 @Data
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@Builder
 @Table(name = "users")
 public class User {
 
@@ -113,4 +114,24 @@ public class User {
     @Column(name="nation")
     private String nation;
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<AccountRole> roles;
+
+    @OneToMany(mappedBy= "user",cascade = CascadeType.ALL)
+    private List<DebitAccount> debitAccounts;
+
+    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
+    private List<DeviceInfo> devices;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Loan> loans;
+
+    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
+    private List<ReferralBonus> bonuses;
+
+    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
+    private List<SavingAccount> savings;
+
+    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
+    private List<SubWallet> subWallets;
 }

@@ -17,8 +17,9 @@ public class SubWallet {
     @Id
     private String id;
 
-    @Column(name="user_id")
-    private String userId;
+    @ManyToOne
+    @JoinColumn(name="user_id")
+    private User user;
 
     @Column(name="address")
     private String address;

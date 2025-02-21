@@ -2,9 +2,13 @@ package com.cryptobank.backend.entity;
 
 import java.time.ZonedDateTime;
 
+import org.hibernate.annotations.ManyToAny;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -19,8 +23,9 @@ public class ReferralBonus {
     @Id
     private String id;
 
-    @Column(name="user_id")
-    private String userId;
+    @ManyToOne
+    @JoinColumn(name="user_id")
+    private User user;
 
     @Column(name="bonus_amount")
     private Double bonusAmount;

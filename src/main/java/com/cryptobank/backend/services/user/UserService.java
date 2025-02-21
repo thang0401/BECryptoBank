@@ -99,7 +99,7 @@ public class UserService implements IUserService {
                 .gender(newUser.getGender())
 //                .email(newCustomer.getEmail())
                 .avatarURL(newUser.getAvatarURL())
-                .status(newUser.getStatus())
+                .statusId(newUser.getStatusId())
                 .password(passwordEncoder.encode(newUser.getPassword()))
                 .smartOTP(newUser.getSmartOTP())
                 .idNumber(newUser.getIdNumber())
@@ -109,7 +109,7 @@ public class UserService implements IUserService {
                 .idCardFrontImgURL(newUser.getIdCardFrontImgURL())
                 .idCardBackImgURL(newUser.getIdCardBackImgURL())
                 .activated(newUser.getActivated())
-                .deleted(newUser.getDeleted())
+                .isDeleted(newUser.getIsDeleted())
                 .modifiedDate(newUser.getModifiedDate())
                 .modifiedBy(newUser.getModifiedBy())
                 .build();
