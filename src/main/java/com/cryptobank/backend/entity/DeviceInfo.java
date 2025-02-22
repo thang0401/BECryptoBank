@@ -19,13 +19,13 @@ public class DeviceInfo {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "userid")
+    @JoinColumn(name = "user_id")
     private User user;
 
-    @Column(name = "deviceid")
+    @Column(name = "device_id")
     private String deviceId;
 
-    @Column(name = "devicename")
+    @Column(name = "device_name")
     private String deviceName;
 
     @Column(name="os")
@@ -34,10 +34,10 @@ public class DeviceInfo {
     @Column(name="browser")
     private String browser;
 
-    @Column(name = "ipaddress")
+    @Column(name = "ip_address")
     private String ipAddress;
 
-    @Column(name = "lastlogin")
+    @Column(name = "last_login")
     private ZonedDateTime lastLogin;
 
 }
