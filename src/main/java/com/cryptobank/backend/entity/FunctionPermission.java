@@ -10,15 +10,12 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-
-@Entity
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Entity
 @Table(name = "function_permission")
-public class FunctionPermission {
-    @Id
-    private String id;
+public class FunctionPermission extends BaseEntity {
 
     @Column(name= "name")
     private String name;
@@ -32,9 +29,6 @@ public class FunctionPermission {
     @Column(name="update_yn")
     private Boolean updatable;
 
-    @Column(name="delete_yn")
-    private Boolean deletable;
-
     @Column(name="view_yn")
     private Boolean viewalbe;
 
@@ -47,20 +41,7 @@ public class FunctionPermission {
     @Column(name="delete_permission_yn")
     private Boolean deletePermission;
 
-    @Column(name="created_date")
-    private ZonedDateTime createdDate;
-
-    @Column(name="created_by")
-    private String createdBy;
-
-    @Column(name="modified_date")
-    private ZonedDateTime modifiedDate;
-
-    @Column(name="modified_by")
-    private String modifiedBy;
-
     @Column(name="function_id")
     private String functionId;
-
 
 }

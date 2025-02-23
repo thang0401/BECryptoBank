@@ -3,6 +3,7 @@ package com.cryptobank.backend.entity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.time.ZonedDateTime;
@@ -12,11 +13,7 @@ import java.time.ZonedDateTime;
 @AllArgsConstructor
 @Entity
 @Table(name = "device_info")
-public class DeviceInfo {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class DeviceInfo extends BaseEntity {
 
     @ManyToOne
     @JoinColumn(name = "user_id")

@@ -17,11 +17,7 @@ import java.time.ZonedDateTime;
 @AllArgsConstructor
 @Entity
 @Table(name = "transfer_fee")
-public class TransferFee {
-
-    @Id
-    @Column(name = "id")
-    private String id;
+public class TransferFee extends BaseEntity {
 
     @ManyToOne
     @JoinColumn(name="debit_transaction_id")
@@ -33,18 +29,4 @@ public class TransferFee {
     @Column(name = "fee_amount")
     private Double amount;
 
-    @Column(name = "delete_yn")
-    private boolean deleted;
-
-    @Column(name = "created_date")
-    private ZonedDateTime createdDate;
-
-    @Column(name = "created_by")
-    private String createdBy;
-
-    @Column(name = "modified_date")
-    private ZonedDateTime modifiedDate;
-
-    @Column(name = "modified_by")
-    private String modifiedBy;
 }

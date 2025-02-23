@@ -3,6 +3,7 @@ package com.cryptobank.backend.entity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.time.ZonedDateTime;
@@ -13,10 +14,7 @@ import java.util.List;
 @AllArgsConstructor
 @Entity
 @Table(name = "debit_transaction")
-public class DebitDetail {
-
-    @Id
-    private String id;
+public class DebitDetail extends BaseEntity {
 
     @ManyToOne
     @JoinColumn(name="sender_id")
@@ -27,16 +25,6 @@ public class DebitDetail {
 
     @Column(name="status")
     private String status;
-
-    @Column(name = "created_at")
-    private ZonedDateTime createdDate;
-
-    @Column(name = "created_by")
-    private String createdBy;
-
-    
-    @Column(name = "delete_yn")
-    private boolean deleted;
 
     @ManyToOne
     @JoinColumn(name = "debit_id")
@@ -52,6 +40,6 @@ public class DebitDetail {
     @Column(name="transaction_hash")
     private String transactionHash;
 
-    @OneToMany(mappedBy = "debitTransaction",cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "debitTransaction", cascade = CascadeType.ALL)
     private List<TransferFee> transferFees;
 }

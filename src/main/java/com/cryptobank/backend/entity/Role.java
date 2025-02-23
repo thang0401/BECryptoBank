@@ -18,11 +18,7 @@ import java.util.List;
 @AllArgsConstructor
 @Entity
 @Table(name = "role")
-public class Role {
-
-    @Id
-    @Column(name = "id")
-    private String id;
+public class Role extends BaseEntity {
 
     @Column(name = "name")
     private String name;
@@ -31,23 +27,12 @@ public class Role {
     private String statusId;
 
     @Column(name = "is_activated")
-    private Boolean activated;
-
-    @Column(name = "created_date")
-    private ZonedDateTime createdDate;
-
-    @Column(name = "created_by")
-    private String createdBy;
-
-    @Column(name = "modified_date")
-    private ZonedDateTime modifiedDate;
-
-    @Column(name = "modified_by")
-    private String modifiedBy;
+    private boolean activated;
 
     @Column(name = "note")
     private String note;
 
     @OneToMany(mappedBy = "role", cascade = CascadeType.ALL)
     private List<AccountRole> accounts;
+
 }

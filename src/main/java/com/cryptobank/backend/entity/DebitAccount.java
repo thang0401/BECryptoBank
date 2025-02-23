@@ -3,6 +3,7 @@ package com.cryptobank.backend.entity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.time.ZonedDateTime;
@@ -13,10 +14,10 @@ import java.util.List;
 @AllArgsConstructor
 @Entity
 @Table(name = "debit_account")
-public class DebitAccount {
+public class DebitAccount extends BaseEntity {
 
-    @Id
-    private String id;
+    @Column(name = "debit_number")
+    private String debitNumber;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
@@ -24,12 +25,6 @@ public class DebitAccount {
 
     @Column(name = "status")
     private String status;
-
-    @Column(name = "created_date")
-    private ZonedDateTime createdDate;
-
-    @Column(name = "created_by")
-    private String createdBy;
 
     @Column(name="balance")
     private Long balance;

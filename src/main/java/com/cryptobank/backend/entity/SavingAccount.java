@@ -17,14 +17,12 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Entity
 @Data
-@Table(name="saving_account")
-@AllArgsConstructor
 @NoArgsConstructor
-public class SavingAccount {
-    @Id
-    private String id;
+@AllArgsConstructor
+@Entity
+@Table(name="saving_account")
+public class SavingAccount extends BaseEntity {
 
     @ManyToOne
     @JoinColumn(name="user_id")
@@ -39,21 +37,6 @@ public class SavingAccount {
 
     @Column(name="status_id")
     private String statusId;
-
-    @Column(name="delete_yn")
-    private Boolean isDeleted;
-
-    @Column(name="created_date")
-    private ZonedDateTime createdDate;
-
-    @Column(name="created_by")
-    private String createdBy;
-
-    @Column(name = "modified_date")
-    private ZonedDateTime modifiedDate;
-
-    @Column(name = "modified_by")
-    private String modifiedBy;
 
     @Column(name="balance")
     private Double balance;

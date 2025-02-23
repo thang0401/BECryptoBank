@@ -15,14 +15,12 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Entity
 @Data
-@Table(name="loan")
-@AllArgsConstructor
 @NoArgsConstructor
-public class Loan {
-    @Id
-    private String id;
+@AllArgsConstructor
+@Entity
+@Table(name="loan")
+public class Loan extends BaseEntity {
 
     @ManyToOne
     @JoinColumn(name="user_id")
@@ -43,10 +41,6 @@ public class Loan {
     @ManyToOne
     @JoinColumn(name="term_id")
     private Term term;
-
-
-    @Column(name="create_at")
-    private ZonedDateTime createAt;
 
     @OneToMany(mappedBy = "loan",cascade = CascadeType.ALL)
     private List<LoanRepayment> repayments;

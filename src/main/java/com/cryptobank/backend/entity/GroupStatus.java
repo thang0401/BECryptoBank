@@ -15,13 +15,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
+@NoArgsConstructor
+@AllArgsConstructor
 @Data
 @Table(name="group_status")
-@AllArgsConstructor
-@NoArgsConstructor
-public class GroupStatus {
-    @Id
-    private String id;
+public class GroupStatus extends BaseEntity {
 
     @Column(name="group_name")
     private String groupName;
@@ -30,6 +28,4 @@ public class GroupStatus {
     @JoinColumn(name="status_id")
     private Status status;
 
-    @Column(name="create_at")
-    private ZonedDateTime createdAt;
 }
