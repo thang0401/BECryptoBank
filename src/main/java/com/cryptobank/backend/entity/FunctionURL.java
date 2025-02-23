@@ -6,14 +6,16 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@Entity
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Entity
 @Table(name="function_url")
-public class FunctionURL {
-    @Id
-    private String id;
+public class FunctionURL extends BaseEntity {
 
     @Column(name="function_name_url")
     private String functionNameUrl;
@@ -22,18 +24,6 @@ public class FunctionURL {
     private String roleId;
 
     @Column(name="is_activated")
-    private Boolean isActivated;
-
-    @Column(name="created_date")
-    private ZonedDateTime createdDate;
-
-    @Column(name="created_by")
-    private String createdBy;
-
-    @Column(name="modified_date")
-    private ZonedDateTime modifiedDate;
-
-    @Column(name="modified_by")
-    private String modifiedBy;
+    private boolean activated;
     
 }

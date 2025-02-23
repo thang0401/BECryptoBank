@@ -14,14 +14,12 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Entity
 @Data
-@Table(name="referral_bonus")
 @NoArgsConstructor
 @AllArgsConstructor
-public class ReferralBonus {
-    @Id
-    private String id;
+@Entity
+@Table(name="referral_bonus")
+public class ReferralBonus extends BaseEntity {
 
     @ManyToOne
     @JoinColumn(name="user_id")
@@ -36,6 +34,4 @@ public class ReferralBonus {
     @Column(name="referral_user_id")
     private String referralUserId;
 
-    @Column(name="create_at")
-    private ZonedDateTime createAt;
 }

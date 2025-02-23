@@ -10,14 +10,12 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Entity
 @Data
-@Table(name="loan_repayment")
-@AllArgsConstructor
 @NoArgsConstructor
-public class LoanRepayment {
-    @Id
-    private String id;
+@AllArgsConstructor
+@Entity
+@Table(name="loan_repayment")
+public class LoanRepayment extends BaseEntity {
 
     @Column(name="tx_hash")
     private String txHash;
@@ -31,6 +29,4 @@ public class LoanRepayment {
     @Column(name="loan_id")
     private String loanId;
 
-    @Column(name="create_at")
-    private ZonedDateTime createAt;
 }
