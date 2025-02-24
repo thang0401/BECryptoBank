@@ -31,8 +31,6 @@ public class User {
     @Column(name = "phone_num")
     private String phone;
 
-
-
     @Column(name = "gender")
     private String gender;
 
@@ -113,6 +111,15 @@ public class User {
 
     @Column(name="nation")
     private String nation;
+
+    @Column(name = "privy_id")
+    private String privyId;
+
+    @Column(name = "wallet_address")
+    private String walletAddress;
+
+    @Column(name = "has_accepted_terms")
+    private Boolean hasAcceptedTerms;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<AccountRole> roles;
