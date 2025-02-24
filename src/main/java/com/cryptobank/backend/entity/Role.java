@@ -1,32 +1,24 @@
 package com.cryptobank.backend.entity;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
-
-
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
-@SuppressWarnings("serial")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @Table(name = "role")
-public class Role implements Serializable{
+public class Role {
 
     @Id
     @Column(name = "id")
@@ -35,34 +27,27 @@ public class Role implements Serializable{
     @Column(name = "name")
     private String name;
 
-    @Column(name = "note")
-    private String note;
+    @Column(name="status_id")
+    private String statusId;
 
     @Column(name = "is_activated")
-    private boolean activated;
+    private Boolean activated;
 
     @Column(name = "created_date")
-    private LocalDateTime createdDate;
+    private ZonedDateTime createdDate;
 
     @Column(name = "created_by")
     private String createdBy;
 
     @Column(name = "modified_date")
-    private LocalDateTime modifiedDate;
+    private ZonedDateTime modifiedDate;
 
     @Column(name = "modified_by")
     private String modifiedBy;
-    
-    @ManyToOne
-	@JoinColumn(name="status_id")
-	private Status status;
 
-	@JsonIgnore
-	@OneToMany(mappedBy = "role")
-	private List<RolePermission> rolePermissions;
+    @Column(name = "note")
+    private String note;
 
-	@JsonIgnore
-	@OneToMany(mappedBy = "role")
-	private List<User> customers;
-
+    @OneToMany(mappedBy = "role", cascade = CascadeType.ALL)
+    private List<AccountRole> accounts;
 }

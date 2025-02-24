@@ -1,29 +1,21 @@
 package com.cryptobank.backend.entity;
 
-import jakarta.persistence.CascadeType;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.io.Serializable;
-import java.time.LocalDateTime;
-import java.util.List;
+import java.time.ZonedDateTime;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
-@SuppressWarnings("serial")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @Table(name = "ranking")
-public class Ranking implements Serializable {
+public class Ranking {
 
     @Id
     @Column(name = "id")
@@ -33,22 +25,18 @@ public class Ranking implements Serializable {
     private String name;
 
     @Column(name = "is_activated")
-    private boolean activated;
+    private boolean isActivated;
 
     @Column(name = "created_date")
-    private LocalDateTime createdDate;
+    private ZonedDateTime createdDate;
 
     @Column(name = "created_by")
     private String createdBy;
 
     @Column(name = "modified_date")
-    private LocalDateTime modifiedDate;
+    private ZonedDateTime modifiedDate;
 
     @Column(name = "modified_by")
     private String modifiedBy;
-    
-    @JsonIgnore
-	@OneToMany(mappedBy = "ranking", cascade = CascadeType.ALL)
-	private List<User> customers;
 
 }
