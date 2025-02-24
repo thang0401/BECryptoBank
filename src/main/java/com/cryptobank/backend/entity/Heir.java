@@ -1,23 +1,18 @@
 package com.cryptobank.backend.entity;
 
 import jakarta.persistence.*;
-
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
-
-@SuppressWarnings("serial")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @Table(name = "heir")
-public class Heir implements Serializable{
+public class Heir {
 
 	@Id
 	@Column(name = "id")
@@ -26,38 +21,25 @@ public class Heir implements Serializable{
 	@Column(name = "name")
 	private String name;
 
-	@ManyToOne
-	@JoinColumn(name = "portfolio_id")
-	private Portfolio portfolio;
+	@Column(name="saving_account")
+	private String savingAccount;
 
-	@Column(name = "id_card")
-	private String idCard;
+	@Column(name="gg_drive_url")
+	private String GoogleDriveURL;
 
-	@Column(name = "last_words")
-	private String lastWords;
-
-	@Column(name = "date_of_birth")
-	private LocalDateTime dateOfBirth;
-
-	@Column(name = "delete_yn")
-	private boolean deleted;
+	@Column(name="delete_yn")
+	private Boolean isDeleted;
 
 	@Column(name = "created_date")
-	private LocalDateTime createdDate;
+	private ZonedDateTime createdDate;
 
+	@Column(name = "created_by")
+	private String createdBy;
 
 	@Column(name = "modified_date")
-	private LocalDateTime modifiedDate;
+	private ZonedDateTime modifiedDate;
 
 	@Column(name = "modified_by")
 	private String modifiedBy;
-	
-	@ManyToOne
-    @JoinColumn(name = "created_by")
-    private User createdByUser;
-
-//    @ManyToOne
-//    @JoinColumn(name = "portfolio_id", insertable = false, updatable = false)
-//    private PortfolioCategory portfolioCategory;
 
 }

@@ -1,5 +1,9 @@
 package com.cryptobank.backend.entity;
 
+import java.time.ZonedDateTime;
+
+import org.hibernate.annotations.ManyToAny;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -10,36 +14,30 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.ZonedDateTime;
-
+@Entity
 @Data
+@Table(name="saving_transaction")
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
-@Table(name = "transfer_fee")
-public class TransferFee {
-
+public class SavingTransaction {
     @Id
-    @Column(name = "id")
     private String id;
+    
+    @ManyToOne
+    @JoinColumn(name="user_id")
+    private User user;
 
     @ManyToOne
-    @JoinColumn(name="debit_transaction_id")
-    private DebitDetail debitTransaction;
+    @JoinColumn(name="saving_account")
+    private SavingAccount savingAccount;
 
-    @Column(name = "discount_rate")
-    private Double discount;
+    @Column(name="delete_yn")
+    private Boolean isDeleted;
 
-    @Column(name = "fee_amount")
-    private Double amount;
-
-    @Column(name = "delete_yn")
-    private boolean deleted;
-
-    @Column(name = "created_date")
+    @Column(name="created_date")
     private ZonedDateTime createdDate;
 
-    @Column(name = "created_by")
+    @Column(name="created_by")
     private String createdBy;
 
     @Column(name = "modified_date")
@@ -47,4 +45,10 @@ public class TransferFee {
 
     @Column(name = "modified_by")
     private String modifiedBy;
+
+    @Column(name="amount")
+    private Double amount;
+
+    @Column(name="transaction_type")
+    private String transactionType;
 }
