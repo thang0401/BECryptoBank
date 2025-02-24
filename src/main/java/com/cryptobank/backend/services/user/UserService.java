@@ -100,28 +100,29 @@ public class UserService implements IUserService {
     }
 
     private User updateExistingCustomer(User current, User newUser) {
-        return current.builder()
-                .firstName(newUser.getFirstName())
-                .lastName(newUser.getLastName())
-//                .role_id(newCustomer.getRole_id())
-                .phone(newUser.getPhone())
-                .gender(newUser.getGender())
-//                .email(newCustomer.getEmail())
-                .avatarURL(newUser.getAvatarURL())
-                .statusId(newUser.getStatusId())
-                .password(passwordEncoder.encode(newUser.getPassword()))
-                .smartOTP(newUser.getSmartOTP())
-                .idNumber(newUser.getIdNumber())
-                .googleId(newUser.getGoogleId())
-//                .address_id(newCustomer.getAddress_id())
-                .dateOfBirth(newUser.getDateOfBirth())
-                .idCardFrontImgURL(newUser.getIdCardFrontImgURL())
-                .idCardBackImgURL(newUser.getIdCardBackImgURL())
-                .activated(newUser.getActivated())
-                .isDeleted(newUser.getIsDeleted())
-                .modifiedDate(newUser.getModifiedDate())
-                .modifiedBy(newUser.getModifiedBy())
-                .build();
+        return newUser;
+//        return current.builder()
+//                .firstName(newUser.getFirstName())
+//                .lastName(newUser.getLastName())
+////                .role_id(newCustomer.getRole_id())
+//                .phone(newUser.getPhone())
+//                .gender(newUser.getGender())
+////                .email(newCustomer.getEmail())
+//                .avatarURL(newUser.getAvatarURL())
+//                .statusId(newUser.getStatusId())
+//                .password(passwordEncoder.encode(newUser.getPassword()))
+//                .smartOTP(newUser.getSmartOTP())
+//                .idNumber(newUser.getIdNumber())
+//                .googleId(newUser.getGoogleId())
+////                .address_id(newCustomer.getAddress_id())
+//                .dateOfBirth(newUser.getDateOfBirth())
+//                .idCardFrontImgURL(newUser.getIdCardFrontImgURL())
+//                .idCardBackImgURL(newUser.getIdCardBackImgURL())
+//                .activated(newUser.getActivated())
+//                .isDeleted(newUser.getIsDeleted())
+//                .modifiedDate(newUser.getModifiedDate())
+//                .modifiedBy(newUser.getModifiedBy())
+//                .build();
     }
 
     

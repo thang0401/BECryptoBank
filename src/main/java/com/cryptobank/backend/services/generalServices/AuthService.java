@@ -1,6 +1,7 @@
 package com.cryptobank.backend.services.generalServices;
 
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,7 +46,7 @@ public class AuthService {
 		        device.setDeviceId(session.getId()); // Lưu sessionId thay vì token
 		        device.setDeviceName(request.getHeader("User-Agent")); // Lấy thông tin thiết bị từ User-Agent
 		        device.setIpAddress(request.getRemoteAddr()); // Lấy địa chỉ IP
-		        device.setLastLogin(LocalDateTime.now());
+		        device.setLastLogin(ZonedDateTime.now());
 		        device.setUser(user);
 
 		        deviceInfoRepository.save(device);
