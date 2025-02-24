@@ -3,12 +3,15 @@ package com.cryptobank.backend.entity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+
 
 @Data
 @NoArgsConstructor
@@ -21,23 +24,25 @@ public class AccountRole {
     @Column(name = "id")
     private String id;
 
-    @Column(name = "role_id")
-    private String roleId;
+    @ManyToOne
+    @JoinColumn(name ="role_id")
+    private Role role;
 
-    @Column(name = "customer_id")
-    private String customerId;
+    @ManyToOne
+    @JoinColumn(name ="user_id")
+    private User user;
 
     @Column(name = "is_activated")
     private boolean activated;
 
     @Column(name = "created_date")
-    private LocalDateTime createdDate;
+    private ZonedDateTime createdDate;
 
     @Column(name = "created_by")
     private String createdBy;
 
     @Column(name = "modified_date")
-    private LocalDateTime modifiedDate;
+    private ZonedDateTime modifiedDate;
 
     @Column(name = "modified_by")
     private String modifiedBy;
