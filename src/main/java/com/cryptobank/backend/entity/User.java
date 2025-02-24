@@ -114,6 +114,12 @@ public class User {
     @Column(name="nation")
     private String nation;
 
+    @Column(name = "privy_id")
+    private String privyId;
+
+    @Column(name = "wallet_address")
+    private String walletAddress;
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<AccountRole> roles;
 
