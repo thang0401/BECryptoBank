@@ -34,6 +34,9 @@ public class DebitAccount {
     @Column(name="balance")
     private Long balance;
 
+    @Column(name = "account_number")
+    private String accountNumber;
+
     @OneToMany(mappedBy = "debitAccount" , cascade = CascadeType.ALL)
     private List<DebitDetail> transactions;
 

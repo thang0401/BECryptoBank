@@ -11,9 +11,8 @@ import java.time.ZonedDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "SubWallet")
-public class SubWallet {
-
+@Table(name = "passkeys")
+public class Passkey {
     @Id
     private String id;
 
@@ -21,29 +20,20 @@ public class SubWallet {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Column(name = "address")
-    private String address;
+    @Column(name = "credential_id")
+    private String credentialId;
 
-    @Column(name = "chain_type")
-    private String chainType;
+    @Column(name = "authenticator_name")
+    private String authenticatorName;
 
-    @Column(name = "wallet_client_type")
-    private String walletClientType;
+    @Column(name = "created_with_os")
+    private String createdWithOs;
 
-    @Column(name = "connector_type")
-    private String connectorType;
+    @Column(name = "created_with_browser")
+    private String createdWithBrowser;
 
-    @Column(name = "recovery_method")
-    private String recoveryMethod;
-
-    @Column(name = "imported")
-    private Boolean imported;
-
-    @Column(name = "delegated")
-    private Boolean delegated;
-
-    @Column(name = "wallet_index")
-    private Integer walletIndex;
+    @Column(name = "enrolled_in_mfa")
+    private Boolean enrolledInMfa;
 
     @Column(name = "verified_at")
     private ZonedDateTime verifiedAt;
