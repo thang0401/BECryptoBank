@@ -120,6 +120,9 @@ public class User {
     @Column(name = "wallet_address")
     private String walletAddress;
 
+    @Column(name = "has_accepted_terms")
+    private Boolean hasAcceptedTerms;
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<AccountRole> roles;
 
