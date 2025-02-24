@@ -2,10 +2,7 @@ package com.cryptobank.backend.entity;
 
 import java.time.ZonedDateTime;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -26,7 +23,8 @@ public class LoanRepayment extends BaseEntity {
     @Column(name="status")
     private String status;
 
-    @Column(name="loan_id")
-    private String loanId;
+    @ManyToOne
+    @JoinColumn(name="loan_id")
+    private Loan loan;
 
 }
