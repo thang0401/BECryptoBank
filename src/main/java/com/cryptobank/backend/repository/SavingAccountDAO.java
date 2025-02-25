@@ -1,14 +1,13 @@
 package com.cryptobank.backend.repository;
 
-import java.util.List;
-import java.util.UUID;
-
 import com.cryptobank.backend.entity.SavingAccount;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface SavingAccountDAO extends JpaRepository<SavingAccount, UUID> {
+import java.util.List;
+
+public interface SavingAccountDAO extends JpaRepository<SavingAccount, String> {
     
 	// Tìm theo customer_id
 	@Query("SELECT up FROM SavingAccount up WHERE up.user.id = :customerId")

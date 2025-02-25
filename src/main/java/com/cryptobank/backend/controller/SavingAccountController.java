@@ -1,31 +1,20 @@
 package com.cryptobank.backend.controller;
 
-import java.util.List;
-import java.util.UUID;
-
 import com.cryptobank.backend.entity.SavingAccount;
+import com.cryptobank.backend.services.generalServices.SavingAccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-
-import org.springframework.web.bind.annotation.RestController;
-
-import com.cryptobank.backend.services.generalServices.SavingAccountService;
+import java.util.List;
 
 
 @CrossOrigin("*")
 @RestController
 public class SavingAccountController {
 
-	 @Autowired
-     SavingAccountService userPortfolioService;
+    @Autowired
+    SavingAccountService userPortfolioService;
 
     @GetMapping("/customer-management")
     public ResponseEntity<List<SavingAccount>> getAll() {
@@ -33,7 +22,7 @@ public class SavingAccountController {
     }
 
     @GetMapping("/customer-management/{id}")
-    public ResponseEntity<SavingAccount> getOne(@PathVariable("id") UUID id) {
+    public ResponseEntity<SavingAccount> getOne(@PathVariable("id") String id) {
         if (!userPortfolioService.existsById(id)) {
             return ResponseEntity.notFound().build();
         }
@@ -50,7 +39,7 @@ public class SavingAccountController {
     }
 
     @PutMapping("/customer-management/{id}")
-    public ResponseEntity<SavingAccount> put(@PathVariable("id") UUID id, @RequestBody SavingAccount userPortfolio) {
+    public ResponseEntity<SavingAccount> put(@PathVariable("id") String id, @RequestBody SavingAccount userPortfolio) {
         if (!userPortfolioService.existsById(id)) {
             return ResponseEntity.notFound().build();
         }
@@ -59,7 +48,7 @@ public class SavingAccountController {
     }
 
     @DeleteMapping("/customer-management/{id}")
-    public ResponseEntity<Void> delete(@PathVariable("id") UUID id) {
+    public ResponseEntity<Void> delete(@PathVariable("id") String id) {
         if (!userPortfolioService.existsById(id)) {
             return ResponseEntity.notFound().build();
         }
