@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor
@@ -19,7 +20,7 @@ import java.util.List;
 public class User {
 
     @Id
-    @Column(name = "id")
+    @Column(name = "id1")
     private String id;
 
     @Column(name = "first_name")
@@ -30,8 +31,6 @@ public class User {
 
     @Column(name = "phone_num")
     private String phone;
-
-
 
     @Column(name = "gender")
     private String gender;
