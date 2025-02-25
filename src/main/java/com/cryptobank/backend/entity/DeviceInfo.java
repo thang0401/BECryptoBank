@@ -5,7 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.ZonedDateTime;
+import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor
@@ -19,25 +21,27 @@ public class DeviceInfo {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "userid")
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Column(name = "deviceid")
-    private String deviceId;
+    @Column(name = "device_id", nullable = false)
+    private String deviceId; // Session ID hoặc mã thiết bị
 
-    @Column(name = "devicename")
-    private String deviceName;
+    @Column(name = "device_name", nullable = false)
+    private String deviceName; // Model điện thoại hoặc máy tính
 
-    @Column(name="os")
-    private String os;
+    @Column(name = "os", nullable = false)
+    private String os; // Hệ điều hành (Android, iOS, Windows)
 
-    @Column(name="browser")
-    private String browser;
+    @Column(name = "browser", nullable = false)
+    private String browser; // Trình duyệt (Chrome, Firefox, Edge)
 
-    @Column(name = "ipaddress")
-    private String ipAddress;
+    @Column(name = "ip_address", nullable = false)
+    private String ipAddress; // Địa chỉ IP
 
-    @Column(name = "lastlogin")
-    private ZonedDateTime lastLogin;
+    @Column(name = "last_login", nullable = false)
+    private LocalDateTime lastLogin; // Thời gian đăng nhập cuối
 
+    @Column(name = "uuid_id", unique = true, nullable = false)
+    private String uuidId = UUID.randomUUID().toString(); // Mã UUID duy nhất cho từng thiết bị
 }
