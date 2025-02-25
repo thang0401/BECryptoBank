@@ -19,8 +19,8 @@ public class DebitDetail {
     private String id;
 
     @ManyToOne
-    @JoinColumn(name="sender_id")
-    private User sender;
+    @JoinColumn(name="user_id")
+    private User user;
 
     @Column(name="amount")
     private Double amount;
@@ -51,6 +51,12 @@ public class DebitDetail {
 
     @Column(name="transaction_hash")
     private String transactionHash;
+
+    @Column(name = "from_pubKey")
+    private String fromPubkey;
+
+    @Column(name = "to_pubKey")
+    private String toPubkey;
 
     @OneToMany(mappedBy = "debitTransaction",cascade = CascadeType.ALL)
     private List<TransferFee> transferFees;

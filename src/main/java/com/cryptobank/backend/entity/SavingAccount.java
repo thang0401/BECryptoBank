@@ -65,8 +65,5 @@ public class SavingAccount {
     private ZonedDateTime maturityDate;
 
     @OneToMany(mappedBy = "savingAccount",cascade = CascadeType.ALL)
-    private List<Heir> heirs;
-
-    @OneToMany(mappedBy = "savingAccount",cascade = CascadeType.ALL)
     private List<SavingTransaction> transactions; 
 }
