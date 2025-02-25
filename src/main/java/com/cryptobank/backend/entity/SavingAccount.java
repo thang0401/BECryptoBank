@@ -64,6 +64,15 @@ public class SavingAccount {
     @Column(name="maturity_date")
     private ZonedDateTime maturityDate;
 
+    @Column(name = "gg_drive_url")
+    private String ggDriveUrl;
+
+    @Column(name = "heir_status")
+    private Boolean heirStatus;
+
+    @Column(name = "name")
+    private String name;
+
     @OneToMany(mappedBy = "savingAccount",cascade = CascadeType.ALL)
     private List<SavingTransaction> transactions; 
 }
