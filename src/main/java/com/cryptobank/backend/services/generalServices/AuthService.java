@@ -3,7 +3,6 @@ package com.cryptobank.backend.services.generalServices;
 import com.cryptobank.backend.DTO.AuthResponse;
 import com.cryptobank.backend.entity.DeviceInfo;
 import com.cryptobank.backend.entity.User;
-import com.cryptobank.backend.model.UserLoginRequest;
 import com.cryptobank.backend.repository.DeviceInforDAO;
 import com.cryptobank.backend.repository.UserDAO;
 import com.cryptobank.backend.utils.JwtUtil;
