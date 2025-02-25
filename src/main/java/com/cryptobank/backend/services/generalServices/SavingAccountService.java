@@ -1,12 +1,11 @@
 package com.cryptobank.backend.services.generalServices;
 
-import java.util.List;
-import java.util.UUID;
-
 import com.cryptobank.backend.entity.SavingAccount;
 import com.cryptobank.backend.repository.SavingAccountDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class SavingAccountService {
@@ -47,11 +46,11 @@ public class SavingAccountService {
 		return savingAccountDAO.findAll();
 	}
 
-	public SavingAccount findById(UUID id) {
+	public SavingAccount findById(String id) {
 		return savingAccountDAO.findById(id).orElse(null);
 	}
 
-	public boolean existsById(UUID id) {
+	public boolean existsById(String id) {
 		return savingAccountDAO.existsById(id);
 	}
 
@@ -59,7 +58,7 @@ public class SavingAccountService {
 		savingAccountDAO.save(userPortfolio);
 	}
 
-	public void deleteById(UUID id) {
+	public void deleteById(String id) {
 		savingAccountDAO.deleteById(id);
 	}
 

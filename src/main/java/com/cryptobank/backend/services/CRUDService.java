@@ -4,14 +4,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
-import java.util.UUID;
 
 /**
  * Interface chung cho các service có CRUD.<br>
  * Bao gồm các phương thức <code>get</code> <code>getAll</code> <code>create</code> <code>update</code> <code>delete</code>.
  * @param <T> Kiểu dữ liệu entity.
  */
-public interface CRUDService<T> {
+public interface CRUDService<T, ID> {
 
     /**
      * Tìm entity theo ID.
@@ -19,7 +18,7 @@ public interface CRUDService<T> {
      * @return Entity nếu được tìm thấy.
      * @throws com.cryptobank.backend.exception.ResourceNotFoundException Nếu entity không tồn tại.
      */
-    T get(UUID id);
+    T get(ID id);
 
     /**
      * Lấy danh sách tất cả entity.
@@ -47,13 +46,13 @@ public interface CRUDService<T> {
      * @return Entity sau khi cập nhật.
      * @throws com.cryptobank.backend.exception.ResourceNotFoundException Nếu entity không tồn tại.
      */
-    T update(UUID id, T entity);
+    T update(ID id, T entity);
 
     /**
      * Xóa entity theo ID.
      * @param id ID entity cần xóa.
      * @throws com.cryptobank.backend.exception.ResourceNotFoundException Nếu entity không tồn tại.
      */
-    void delete(UUID id);
+    void delete(ID id);
 
 }
