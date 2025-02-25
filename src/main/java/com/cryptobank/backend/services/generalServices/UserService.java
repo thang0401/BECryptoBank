@@ -1,11 +1,9 @@
-package com.cryptobank.backend.services.user;
+package com.cryptobank.backend.services.generalServices;
 
 import com.cryptobank.backend.entity.User;
 import com.cryptobank.backend.exception.AlreadyExistException;
 import com.cryptobank.backend.repository.UserDAO;
 import com.cryptobank.backend.services.AbstractCRUDService;
-import com.cryptobank.backend.services.generalServices.EmailService;
-import com.cryptobank.backend.utils.GetNotFoundThrows;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -14,7 +12,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
-public class UserService extends AbstractCRUDService<User> {
+public class UserService extends AbstractCRUDService<User, String> {
 
     private final UserDAO repository;
     private final EmailService emailService;
@@ -35,7 +33,6 @@ public class UserService extends AbstractCRUDService<User> {
         }
     }
 
-    @GetNotFoundThrows
     public User getEmail(String email) {
         return repository.findByEmail(email);
     }

@@ -9,7 +9,6 @@ import lombok.EqualsAndHashCode;
 import org.hibernate.annotations.SQLRestriction;
 
 import java.time.ZonedDateTime;
-import java.util.UUID;
 
 /**
  * Chứa thuộc tính cần thiết trong mỗi entity.<br>
@@ -24,7 +23,7 @@ public abstract class BaseEntity {
     @Id
     @GeneratedValue
     @EqualsAndHashCode.Include
-    private UUID id;
+    private String id;
 
     @Column(name = "delete_yn")
     private boolean deleted;
