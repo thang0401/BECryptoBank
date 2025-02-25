@@ -19,7 +19,7 @@ public interface UserDAO extends JpaRepository<User, String> {
             "WHERE LOWER(CONCAT(c.firstName, ' ', c.lastName)) LIKE LOWER(CONCAT('%', :name, '%'))")
     List<User> findByName(String name);
 
-    @Query("SELECT new com.cryptobank.backend.model.CustomerUserDetails(c.email, c.password, c.role.id) FROM User c WHERE c.email = :email")
+    @Query("SELECT new com.cryptobank.backend.model.CustomerUserDetails(c.email, c.password, c.roleId) FROM User c WHERE c.email = :email")
     Optional<CustomerUserDetails> authenticate(String email);
     
 

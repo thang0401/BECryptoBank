@@ -3,7 +3,6 @@ package com.cryptobank.backend.entity;
 import java.time.ZonedDateTime;
 import java.util.List;
 
-import org.hibernate.annotations.ManyToAny;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -63,6 +62,9 @@ public class SavingAccount {
 
     @Column(name="maturity_date")
     private ZonedDateTime maturityDate;
+
+    @Column(name="heir_status")
+    private Boolean heirStatus;
 
     @OneToMany(mappedBy = "savingAccount",cascade = CascadeType.ALL)
     private List<Heir> heirs;

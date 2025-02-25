@@ -2,7 +2,7 @@ package com.cryptobank.backend.entity;
 
 import java.time.ZonedDateTime;
 
-import org.hibernate.annotations.ManyToAny;
+
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
