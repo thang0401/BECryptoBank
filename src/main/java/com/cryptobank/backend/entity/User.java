@@ -20,7 +20,7 @@ import java.util.UUID;
 public class User {
 
     @Id
-    @Column(name = "id1")
+    @Column(name = "id")
     private String id;
 
     @Column(name = "first_name")
