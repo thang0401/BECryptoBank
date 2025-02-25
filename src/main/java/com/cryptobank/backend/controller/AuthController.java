@@ -5,7 +5,6 @@ import com.cryptobank.backend.DTO.NameSplit;
 import com.cryptobank.backend.DTO.RegisterRequest;
 import com.cryptobank.backend.DTO.ResetPasswordRequest;
 import com.cryptobank.backend.entity.User;
-import com.cryptobank.backend.model.UserLoginRequest;
 import com.cryptobank.backend.services.generalServices.AuthService;
 import com.cryptobank.backend.services.generalServices.UserService;
 import jakarta.servlet.http.HttpServletRequest;
