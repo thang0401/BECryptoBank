@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class SavingAccountDTO {
+public class AdminSavingAccountDTO {
     private String id;
     private String user_id;
     private String user_firstname;

@@ -2,7 +2,7 @@ package com.cryptobank.backend.controller;
 
 import org.springframework.web.bind.annotation.*;
 
-import com.cryptobank.backend.DTO.SavingAccountDTO;
+import com.cryptobank.backend.DTO.AdminSavingAccountDTO;
 import com.cryptobank.backend.entity.DebitAccount;
 import com.cryptobank.backend.entity.SavingAccount;
 import com.cryptobank.backend.entity.Term;
@@ -21,21 +21,12 @@ import org.springframework.http.ResponseEntity;
 @RequestMapping("/saving")
 @AllArgsConstructor
 @CrossOrigin(origins = "http://localhost:3000") // Thêm dòng này
-public class SavingController {
+public class AdminSavingController {
 
-    TermDAO termDAO;
     SavingAccountDAO savingAccountDAO;
 
-
-    @GetMapping("/add-saving-asset/open")
-    public String getData(@RequestParam String param) {
-        List<Term> terms=getTerm();
-        
-        return new String();
-    }
-
     @GetMapping("/get-saving-list")
-    public ResponseEntity<List<SavingAccountDTO>> getSavingList() {
+    public ResponseEntity<List<AdminSavingAccountDTO>> getSavingList() {
         return ResponseEntity.ok(savingAccountDAO.findAllDTO());
     }
     
@@ -44,18 +35,7 @@ public class SavingController {
         return ResponseEntity.ok(savingAccountDAO.findById(id).orElse(null));
     }
     
-    private List<Term> getTerm(){
-        return termDAO.findAll();
-    }
-
-    private User getUserAccount(){  
-        return null;
-    }
-
-    private List<DebitAccount> getUserDebitAccounts(){
-        User user=getUserAccount();
-        return user.getDebitAccounts();
-    }
+    
 
 
 }
