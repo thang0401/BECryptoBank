@@ -1,24 +1,26 @@
 package com.cryptobank.backend.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.ZonedDateTime;
 
-@Data
+@Getter
+@Setter
+@ToString(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "transfer_fee")
+@Table(name = "transaction_fee")
 public class TransferFee extends BaseEntity {
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name="debit_transaction_id")
     private DebitDetail debitTransaction;
