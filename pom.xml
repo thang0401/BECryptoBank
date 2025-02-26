@@ -119,6 +119,13 @@
 <!--		    <artifactId>spring-security-core</artifactId>-->
 <!--		    <version>5.5.1</version> &lt;!&ndash; Hoặc phiên bản bạn đang sử dụng &ndash;&gt;-->
 <!--		</dependency>-->
+
+		<dependency>
+		    <groupId>com.github.ua-parser</groupId>
+		    <artifactId>uap-java</artifactId>
+		    <version>1.5.2</version>
+		</dependency>
+
 	</dependencies>
 
 	<build>
