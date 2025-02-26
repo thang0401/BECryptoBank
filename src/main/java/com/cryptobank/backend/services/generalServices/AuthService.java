@@ -40,7 +40,6 @@ public class AuthService {
 
 	    	try {
 	    		User user = userRepository.findByEmail(email).orElseThrow();
-
 		        // **Lưu thông tin thiết bị vào database**
 		        DeviceInfo device = new DeviceInfo();
 		        device.setDeviceId(session.getId()); // Lưu sessionId thay vì token

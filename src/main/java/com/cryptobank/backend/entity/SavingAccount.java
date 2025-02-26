@@ -2,7 +2,9 @@ package com.cryptobank.backend.entity;
 
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -40,7 +42,7 @@ public class SavingAccount {
     private String statusId;
 
     @Column(name="delete_yn")
-    private Boolean isDeleted;
+    private Boolean isDeleted=false;
 
     @Column(name="created_date")
     private ZonedDateTime createdDate;
@@ -66,9 +68,16 @@ public class SavingAccount {
     @Column(name="heir_status")
     private Boolean heirStatus;
 
+    @Column(name="uuid_id")
+    private UUID uuid;
+
+    @JsonIgnore
     @OneToMany(mappedBy = "savingAccount",cascade = CascadeType.ALL)
     private List<Heir> heirs;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "savingAccount",cascade = CascadeType.ALL)
     private List<SavingTransaction> transactions; 
+
+
 }

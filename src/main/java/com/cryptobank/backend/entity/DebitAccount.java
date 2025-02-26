@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 import java.time.ZonedDateTime;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -18,6 +20,7 @@ public class DebitAccount {
     @Id
     private String id;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
@@ -32,11 +35,13 @@ public class DebitAccount {
     private String createdBy;
 
     @Column(name="balance")
-    private Long balance;
-
+    private Double balance;
+    
+    @JsonIgnore
     @OneToMany(mappedBy = "debitAccount" , cascade = CascadeType.ALL)
     private List<DebitDetail> transactions;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "debitAccount",cascade = CascadeType.ALL)
     private List<USDCtoVNDTransaction> USDCtoVNDTransactions;
 }
