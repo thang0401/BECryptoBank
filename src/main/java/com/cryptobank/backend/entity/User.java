@@ -1,26 +1,19 @@
 package com.cryptobank.backend.entity;
 
-
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.ZonedDateTime;
 import java.util.List;
 
-@Data
+@Getter
+@Setter
+@ToString(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Builder
 @Table(name = "users")
-public class User {
-
-    @Id
-    @Column(name = "id")
-    private String id;
+public class User extends BaseEntity {
 
     @Column(name = "first_name")
     private String firstName;
@@ -73,18 +66,6 @@ public class User {
     @Column(name = "is_activated")
     private Boolean activated;
 
-    @Column(name = "created_date")
-    private ZonedDateTime createdDate;
-
-    @Column(name = "created_by")
-    private String createdBy;
-
-    @Column(name = "modified_date")
-    private ZonedDateTime modifiedDate;
-
-    @Column(name = "modified_by")
-    private String modifiedBy;
-
     @Column(name = "type_sign_in")
     private String type_sign_in;
 
@@ -96,9 +77,6 @@ public class User {
 
     @Column(name = "kyc_status")
     private Boolean kyc_status;
-
-    @Column(name="delete_yn")
-    private Boolean isDeleted;
 
     @Column(name="ward")
     private String ward;

@@ -1,5 +1,6 @@
 package com.cryptobank.backend.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -11,17 +12,18 @@ import java.time.ZonedDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "SubWallet")
+@Table(name = "sub_wallet")
 public class SubWallet {
 
     @Id
     private String id;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Column(name = "address")
+    @Column(name = "wallet_address")
     private String address;
 
     @Column(name = "chain_type")
@@ -53,4 +55,5 @@ public class SubWallet {
 
     @Column(name = "latest_verified_at")
     private ZonedDateTime latestVerifiedAt;
+
 }

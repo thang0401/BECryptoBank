@@ -1,26 +1,22 @@
 package com.cryptobank.backend.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-import java.time.ZonedDateTime;
-import java.util.List;
-
-@Data
+@Getter
+@Setter
+@ToString(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @Table(name = "debit_transaction")
-public class DebitDetail {
+public class DebitDetail extends BaseEntity {
 
-    @Id
-    private String id;
-
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name="user_id")
-    private User user;
+    private User sender;
 
     @Column(name="amount")
     private Double amount;
@@ -28,20 +24,12 @@ public class DebitDetail {
     @Column(name="status")
     private String status;
 
-    @Column(name = "created_at")
-    private ZonedDateTime createdDate;
-
-    @Column(name = "created_by")
-    private String createdBy;
-
-    
-    @Column(name = "delete_yn")
-    private boolean deleted;
-
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "debit_id")
     private DebitAccount debitAccount;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name="receiver_id")
     private User receiver;
@@ -52,12 +40,4 @@ public class DebitDetail {
     @Column(name="transaction_hash")
     private String transactionHash;
 
-    @Column(name = "from_pubKey")
-    private String fromPubkey;
-
-    @Column(name = "to_pubKey")
-    private String toPubkey;
-
-    @OneToMany(mappedBy = "debitTransaction",cascade = CascadeType.ALL)
-    private List<TransferFee> transferFees;
 }
