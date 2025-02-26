@@ -1,5 +1,6 @@
 package com.cryptobank.backend.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -13,9 +14,11 @@ import java.time.ZonedDateTime;
 @Entity
 @Table(name = "passkeys")
 public class Passkey {
+
     @Id
     private String id;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
@@ -43,4 +46,5 @@ public class Passkey {
 
     @Column(name = "latest_verified_at")
     private ZonedDateTime latestVerifiedAt;
+
 }

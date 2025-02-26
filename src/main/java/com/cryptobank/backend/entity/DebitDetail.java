@@ -1,23 +1,21 @@
 package com.cryptobank.backend.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-import java.time.ZonedDateTime;
-import java.util.List;
-
-@Data
+@Getter
+@Setter
+@ToString(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @Table(name = "debit_transaction")
 public class DebitDetail extends BaseEntity {
 
+    @JsonIgnore
     @ManyToOne
-    @JoinColumn(name="sender_id")
+    @JoinColumn(name="user_id")
     private User sender;
 
     @Column(name="amount")
@@ -26,10 +24,12 @@ public class DebitDetail extends BaseEntity {
     @Column(name="status")
     private String status;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "debit_id")
     private DebitAccount debitAccount;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name="receiver_id")
     private User receiver;
@@ -40,6 +40,4 @@ public class DebitDetail extends BaseEntity {
     @Column(name="transaction_hash")
     private String transactionHash;
 
-    @OneToMany(mappedBy = "debitTransaction", cascade = CascadeType.ALL)
-    private List<TransferFee> transferFees;
 }

@@ -91,7 +91,11 @@ public abstract class AbstractCRUDService<T extends BaseEntity, ID> implements C
         repository
                 .findById(id)
                 .ifPresentOrElse(
-                        repository::delete,
+//                        repository::delete,
+                        entity -> {
+//                            entity.setDeleted(true);
+                            repository.save(entity);
+                        },
                         () -> {
                             throw new ResourceNotFoundException("Không tìm thấy bản ghi của " + entityClass.getSimpleName() + " với id: " + id);
                         }

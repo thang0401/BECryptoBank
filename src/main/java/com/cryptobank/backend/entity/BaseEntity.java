@@ -17,7 +17,7 @@ import java.time.ZonedDateTime;
 @Data
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @MappedSuperclass
-@SQLRestriction("delete_yn <> 'true'")
+@SQLRestriction("deleted <> true")
 public abstract class BaseEntity {
 
     @Id
@@ -25,19 +25,19 @@ public abstract class BaseEntity {
     @EqualsAndHashCode.Include
     private String id;
 
-    @Column(name = "delete_yn")
-    private boolean deleted;
-
-    @Column(name = "created_date")
-    private ZonedDateTime createdDate;
-
-    @Column(name = "created_by")
-    private String createdBy;
-
-    @Column(name = "modified_date")
-    private ZonedDateTime modifiedDate;
-
-    @Column(name = "modified_by")
-    private String modifiedBy;
+//    @Column(name = "delete_yn")
+//    private boolean deleted;
+//
+//    @Column(name = "created_date")
+//    private ZonedDateTime createdDate;
+//
+//    @Column(name = "created_by")
+//    private String createdBy;
+//
+//    @Column(name = "modified_date")
+//    private ZonedDateTime modifiedDate;
+//
+//    @Column(name = "modified_by")
+//    private String modifiedBy;
 
 }

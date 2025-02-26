@@ -9,8 +9,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@CrossOrigin("*")
 @RestController
-@RequestMapping("/api/v1/users")
+@RequestMapping("/api/${api-version}/users")
 @RequiredArgsConstructor
 public class UserController {
 

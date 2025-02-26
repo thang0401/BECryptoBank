@@ -1,26 +1,24 @@
 package com.cryptobank.backend.entity;
 
-import java.time.ZonedDateTime;
-
-import org.hibernate.annotations.ManyToAny;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.*;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-@Data
+@Getter
+@Setter
+@ToString(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @Table(name="referral_bonus")
 public class ReferralBonus extends BaseEntity {
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name="user_id")
     private User user;

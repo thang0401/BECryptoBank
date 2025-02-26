@@ -1,13 +1,12 @@
 package com.cryptobank.backend.entity;
 
-import java.time.ZonedDateTime;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-@Data
+@Getter
+@Setter
+@ToString(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
@@ -23,6 +22,7 @@ public class LoanRepayment extends BaseEntity {
     @Column(name="status")
     private String status;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name="loan_id")
     private Loan loan;

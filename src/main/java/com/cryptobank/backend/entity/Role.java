@@ -6,14 +6,14 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.ZonedDateTime;
 import java.util.List;
 
-@Data
+@Getter
+@Setter
+@ToString(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
@@ -34,5 +34,6 @@ public class Role extends BaseEntity {
 
     @OneToMany(mappedBy = "role", cascade = CascadeType.ALL)
     private List<AccountRole> accounts;
+
 
 }

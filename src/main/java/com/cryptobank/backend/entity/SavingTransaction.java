@@ -1,32 +1,31 @@
 package com.cryptobank.backend.entity;
 
-import java.time.ZonedDateTime;
-
-import org.hibernate.annotations.ManyToAny;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.*;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-@Data
+@Getter
+@Setter
+@ToString(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @Table(name="saving_transaction")
 public class SavingTransaction extends BaseEntity {
-    
+
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name="user_id")
     private User user;
 
+    @JsonIgnore
     @ManyToOne
-    @JoinColumn(name="saving_account")
+    @JoinColumn(name="saving_account_id")
     private SavingAccount savingAccount;
 
     @Column(name="amount")
@@ -34,4 +33,5 @@ public class SavingTransaction extends BaseEntity {
 
     @Column(name="transaction_type")
     private String transactionType;
+
 }
