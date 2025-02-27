@@ -25,7 +25,7 @@ public class DebitAccount extends BaseEntity {
     private String status;
 
     @Column(name="balance")
-    private Long balance;
+    private Double balance;
 
     @Column(name = "account_number")
     private String accountNumber;
