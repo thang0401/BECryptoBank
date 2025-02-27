@@ -3,6 +3,7 @@ package com.cryptobank.backend.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.List;
 
@@ -55,7 +56,7 @@ public class User extends BaseEntity {
     private String addressId;
 
     @Column(name = "date_of_birth")
-    private ZonedDateTime dateOfBirth;
+    private LocalDateTime dateOfBirth;
 
     @Column(name = "id_card_front_img_url")
     private String idCardFrontImgURL;
