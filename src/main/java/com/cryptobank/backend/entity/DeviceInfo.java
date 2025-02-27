@@ -1,43 +1,44 @@
 package com.cryptobank.backend.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.ZonedDateTime;
+import java.util.UUID;
 
-@Data
+@Getter
+@Setter
+@ToString(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @Table(name = "device_info")
-public class DeviceInfo {
+public class DeviceInfo extends BaseEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
+    @JsonIgnore
     @ManyToOne
-    @JoinColumn(name = "userid")
+    @JoinColumn(name = "userid", nullable = false)
     private User user;
 
-    @Column(name = "deviceid")
-    private String deviceId;
+    @Column(name = "deviceid", nullable = false)
+    private String deviceId; // Session ID hoặc mã thiết bị
 
-    @Column(name = "devicename")
-    private String deviceName;
+    @Column(name = "devicename", nullable = false)
+    private String deviceName; // Model điện thoại hoặc máy tính
 
-    @Column(name="os")
-    private String os;
+    @Column(name = "os", nullable = false)
+    private String os; // Hệ điều hành (Android, iOS, Windows)
 
-    @Column(name="browser")
-    private String browser;
+    @Column(name = "browser", nullable = false)
+    private String browser; // Trình duyệt (Chrome, Firefox, Edge)
 
-    @Column(name = "ipaddress")
-    private String ipAddress;
+    @Column(name = "ipaddress", nullable = false)
+    private String ipAddress; // Địa chỉ IP
 
-    @Column(name = "lastlogin")
-    private ZonedDateTime lastLogin;
+    @Column(name = "lastlogin", nullable = false)
+    private ZonedDateTime lastLogin; // Thời gian đăng nhập cuối
 
+    @Column(name = "uuid_id", unique = true, nullable = false)
+    private String uuidId = UUID.randomUUID().toString(); // Mã UUID duy nhất cho từng thiết bị
 }

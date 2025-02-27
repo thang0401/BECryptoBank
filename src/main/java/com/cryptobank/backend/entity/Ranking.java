@@ -4,39 +4,23 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.ZonedDateTime;
 
-@Data
+@Getter
+@Setter
+@ToString(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @Table(name = "ranking")
-public class Ranking {
-
-    @Id
-    @Column(name = "id")
-    private String id;
+public class Ranking extends BaseEntity {
 
     @Column(name = "name")
     private String name;
 
     @Column(name = "is_activated")
-    private boolean isActivated;
-
-    @Column(name = "created_date")
-    private ZonedDateTime createdDate;
-
-    @Column(name = "created_by")
-    private String createdBy;
-
-    @Column(name = "modified_date")
-    private ZonedDateTime modifiedDate;
-
-    @Column(name = "modified_by")
-    private String modifiedBy;
+    private boolean activated;
 
 }
