@@ -89,14 +89,14 @@ public class UserSavingController {
             //Save to DB
             SavingAccount newSavingAccount=new SavingAccount();
             newSavingAccount.setBalance(entity.getAmount());
-            newSavingAccount.setHeirStatus(false);
+            // newSavingAccount.setHeirStatus(false);
             newSavingAccount.setInterestRate(selectedTerm.getInterestRateOfMonth());
-            newSavingAccount.setCreatedBy(userId);
-            newSavingAccount.setCreatedDate(ZonedDateTime.now());
+            // newSavingAccount.setCreatedBy(userId);
+            // newSavingAccount.setCreatedDate(ZonedDateTime.now());
             newSavingAccount.setMaturityDate(null);
             newSavingAccount.setUser(user);
             newSavingAccount.setId(uuid.toString());
-            newSavingAccount.setUuid(uuid);
+            // newSavingAccount.setUuid(uuid);
             newSavingAccount.setTerm(selectedTerm);
             savingAccountDAO.save(newSavingAccount);
             //Reduce balance
