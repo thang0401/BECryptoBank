@@ -1,27 +1,20 @@
 package com.cryptobank.backend.entity;
 
-
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 
-@Data
+@Getter
+@Setter
+@ToString(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Builder
 @Table(name = "users")
-public class User {
-
-    @Id
-    @Column(name = "id")
-    private String id;
+public class User extends BaseEntity {
 
     @Column(name = "first_name")
     private String firstName;
@@ -74,18 +67,6 @@ public class User {
     @Column(name = "is_activated")
     private Boolean activated;
 
-    @Column(name = "created_date")
-    private ZonedDateTime createdDate;
-
-    @Column(name = "created_by")
-    private String createdBy;
-
-    @Column(name = "modified_date")
-    private ZonedDateTime modifiedDate;
-
-    @Column(name = "modified_by")
-    private String modifiedBy;
-
     @Column(name = "type_sign_in")
     private String type_sign_in;
 
@@ -98,9 +79,6 @@ public class User {
     @Column(name = "kyc_status")
     private Boolean kyc_status;
 
-    @Column(name="delete_yn")
-    private Boolean isDeleted;
-
     @Column(name="ward")
     private String ward;
 
@@ -112,6 +90,15 @@ public class User {
 
     @Column(name="nation")
     private String nation;
+
+    @Column(name = "privy_id")
+    private String privyId;
+
+    @Column(name = "wallet_address")
+    private String walletAddress;
+
+    @Column(name = "has_accepted_terms")
+    private Boolean hasAcceptedTerms;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<AccountRole> roles;

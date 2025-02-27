@@ -1,29 +1,23 @@
 package com.cryptobank.backend.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
+import com.cryptobank.backend.DTO.AuthResponse;
 import com.cryptobank.backend.DTO.NameSplit;
 import com.cryptobank.backend.DTO.RegisterRequest;
 import com.cryptobank.backend.DTO.ResetPasswordRequest;
 import com.cryptobank.backend.entity.User;
 import com.cryptobank.backend.services.generalServices.AuthService;
-import com.cryptobank.backend.services.user.UserService;
-
+import com.cryptobank.backend.services.generalServices.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
-
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/Auth")
+@RequestMapping("/api/auth")
 public class AuthController {
 	@Autowired
 	private AuthService authService;
@@ -90,7 +84,7 @@ public class AuthController {
 		user.setPassword(encodePassword(registerRequest.getPassword())); // Mã hóa mật khẩu
 
 		// Lưu người dùng vào cơ sở dữ liệu
-		userService.createUser(user);
+		userService.save(user);
 
 		return ResponseEntity.status(HttpStatus.CREATED).body("Đăng ký thành công");
 	}
@@ -137,4 +131,10 @@ public class AuthController {
 
 		return new NameSplit(firstName, lastName);
 	}
+
+	@PostMapping("/accesstoken")
+	public AuthResponse getAccessToken(@RequestParam String username, @RequestParam String password) {
+		return authService.authenticate(username, password);
+	}
+
 }
