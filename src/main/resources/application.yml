@@ -32,3 +32,9 @@ banking-api:
   api-key: your-api-key-here         # API Key dùng để xác thực
   transfer-endpoint: /v1/transfer    # Endpoint chuyển tiền
   withdraw-endpoint: /v1/withdraw    # Endpoint rút tiền
+
+payos:
+  client-id: f0522096-3074-4461-a2d1-7e84ea714d06       # ID của bạn từ PayOS
+  api-key: 43460806-5853-4ea8-982b-dec5c15d9b10              # API Key từ PayOS
+  checksum-key: fa3e160e48bed97941cd9a41598477d1e88f2c12f06d06c4da314355be53b8f3    # Checksum Key để xác thực
+  base-url: https://api.payos.vn     # URL của PayOS API
