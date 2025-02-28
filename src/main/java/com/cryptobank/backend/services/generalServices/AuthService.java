@@ -1,6 +1,7 @@
 package com.cryptobank.backend.services.generalServices;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,38 +28,78 @@ public class AuthService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+    
+    private EmailDeviceService emailDeviceService;
 
     public Boolean login(String email, String password, HttpServletRequest request, HttpSession session) {
         try {
             User user = userRepository.findByEmail(email).orElseThrow();
-            
+
             // Lấy User-Agent từ request
             String userAgent = request.getHeader("User-Agent");
             Parser parser = new Parser(); // Khởi tạo UAParser
             Client client = parser.parse(userAgent);
 
             // Lấy thông tin hệ điều hành, trình duyệt và thiết bị
-            String deviceName = client.device.family; // VD: iPhone 12, Realme 9
-            String os = client.os.family + " " + client.os.major; // VD: Android 14, iOS 17
-            String browser = client.userAgent.family + " " + client.userAgent.major; // VD: Chrome 120
+            String deviceName = client.device.family;
+            String os = client.os.family + " " + client.os.major;
+            String browser = client.userAgent.family + " " + client.userAgent.major;
+            String ipAddress = request.getRemoteAddr();
+            String sessionId = session.getId();
 
-            // Lưu thông tin thiết bị vào database
-            DeviceInfo device = new DeviceInfo();
-            device.setDeviceId(session.getId()); 
-            device.setDeviceName(deviceName);
-            device.setOs(os);
-            device.setBrowser(browser);
-            device.setIpAddress(request.getRemoteAddr()); 
-            device.setLastLogin(LocalDateTime.now());
-            device.setUser(user);
+            // Kiểm tra xem thiết bị đã tồn tại hay chưa
+            Optional<DeviceInfo> existingDevice = deviceInfoRepository.findByDeviceIdAndUser(sessionId, user);
 
-            deviceInfoRepository.save(device);
+            if (existingDevice.isPresent()) {
+                // Nếu thiết bị đã tồn tại, chỉ cập nhật ngày truy cập
+                DeviceInfo device = existingDevice.get();
+                device.setLastLogin(LocalDateTime.now());
+                deviceInfoRepository.save(device);
+            } else {
+                // Nếu là thiết bị mới, thêm mới vào DB
+                DeviceInfo newDevice = new DeviceInfo();
+                newDevice.setDeviceId(sessionId);
+                newDevice.setDeviceName(deviceName);
+                newDevice.setOs(os);
+                newDevice.setBrowser(browser);
+                newDevice.setIpAddress(ipAddress);
+                newDevice.setLastLogin(LocalDateTime.now());
+                newDevice.setUser(user);
 
+                deviceInfoRepository.save(newDevice);
+
+                //  Gửi cảnh báo email vì là thiết bị mới
+                sendNewDeviceAlert(user, newDevice);
+            }
             return true;
         } catch (Exception e) {
             return false;
         }
     }
+
+    private void sendNewDeviceAlert(User user, DeviceInfo device) {
+        String subject = "Cảnh báo đăng nhập từ thiết bị mới!";
+        String message = String.format(
+            "Xin chào %s,\n\n" +
+            "Chúng tôi phát hiện tài khoản của bạn vừa đăng nhập từ một thiết bị mới:\n\n" +
+            "🔹 Thiết bị: %s\n" +
+            "🔹 Hệ điều hành: %s\n" +
+            "🔹 Trình duyệt: %s\n" +
+            "🔹 Địa chỉ IP: %s\n" +
+            "🔹 Thời gian đăng nhập: %s\n\n" +
+            "Nếu đây không phải bạn, vui lòng đổi mật khẩu ngay lập tức hoặc liên hệ hỗ trợ!",
+            user.getFirstName()+" "+user.getLastName(),
+            device.getDeviceName(),
+            device.getOs(),
+            device.getBrowser(),
+            device.getIpAddress(),
+            device.getLastLogin().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+        );
+
+        // Gọi service gửi email
+        emailDeviceService.sendEmail(user.getEmail(), subject, message);
+    }
+
 
     public void logout(HttpSession session) {
         session.invalidate();
