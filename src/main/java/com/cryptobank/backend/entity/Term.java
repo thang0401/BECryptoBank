@@ -23,4 +23,7 @@ public class Term extends BaseEntity {
     @Column(name = "interest_rate_of_month")
     private Double interestRateOfMonth;
 
+    @Column(name="deleted_yn")
+    private Boolean deletedYN=false;
+
 }
