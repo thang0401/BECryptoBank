@@ -1,6 +1,6 @@
 package com.cryptobank.backend.controller;
 
-import java.time.ZonedDateTime;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -21,7 +21,6 @@ import com.cryptobank.backend.repository.TermDAO;
 import com.cryptobank.backend.repository.UserDAO;
 import com.cryptobank.backend.services.generalServices.WithdrawService;
 
-import jakarta.servlet.http.HttpSession;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
