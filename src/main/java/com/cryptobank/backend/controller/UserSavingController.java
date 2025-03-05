@@ -21,7 +21,6 @@ import com.cryptobank.backend.repository.TermDAO;
 import com.cryptobank.backend.repository.UserDAO;
 import com.cryptobank.backend.services.generalServices.WithdrawService;
 
-import jakarta.servlet.http.HttpSession;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -35,8 +34,6 @@ public class UserSavingController {
     UserDAO userDAO;
     SavingAccountDAO savingAccountDAO;
     WithdrawService withdrawService;
-
-    
 
     @GetMapping("/add-saving-asset")
     public ResponseEntity<InformationFormResponseDTO> getData(@RequestParam String userId) {

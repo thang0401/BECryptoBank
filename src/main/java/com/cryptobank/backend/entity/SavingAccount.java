@@ -1,5 +1,6 @@
 package com.cryptobank.backend.entity;
 
+import java.security.Timestamp;
 import java.time.ZonedDateTime;
 import java.util.List;
 
@@ -15,6 +16,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 
 @Getter
 @Setter
@@ -49,6 +51,10 @@ public class SavingAccount extends BaseEntity {
 
     @Column(name="maturity_date")
     private ZonedDateTime maturityDate;
+
+    @Version
+    @Column(name = "modified_date")
+    private Timestamp modifiedDate;
 
     @JsonIgnore
     @OneToMany(mappedBy = "savingAccount",cascade = CascadeType.ALL)
