@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping("/term")
 public class TermController {
     TermDAO termDAO;
-    TermViewDAO TermViewDAO;
+    TermViewDAO termViewDAO;
 
 
     @GetMapping("/all-term")
@@ -42,7 +42,7 @@ public class TermController {
     
     @GetMapping("/term-active")
     public ResponseEntity<?> getActiveTermList(@RequestParam String param) {
-        List<TermView> list=TermViewDAO.findAll();
+        List<TermView> list=termViewDAO.findAll();
         if(list!=null){
             return ResponseEntity.ok(list);
         }
@@ -53,6 +53,11 @@ public class TermController {
     public ResponseEntity<?> addTerm(@RequestBody TermAddDTO entity) {
         //TODO: process POST request
         //Setup new instance of term
+        String existId=checkIfExistAndActive(entity.getAmountMonth());
+        if(!existId.isEmpty()){
+            return ResponseEntity.badRequest().build();
+        }
+
         Term term=new Term();
         term.setId(entity.getId());
         term.setAmount_month(entity.getAmountMonth());
@@ -80,21 +85,27 @@ public class TermController {
         return ResponseEntity.notFound().build();
     }
 
-    @PostMapping("/update-term")
-    public ResponseEntity<?> updateTerm(@RequestBody TermAddDTO entity) {
+    @PostMapping("/update-term-interest-rate")
+    public ResponseEntity<?> updateTermInterestRate(@RequestBody TermAddDTO entity) {
         //TODO: process POST request
         Term term=termDAO.findById(entity.getId()).orElse(null);
         if(term!=null){
-            term.setAmount_month(entity.getAmountMonth());
+            term.setInterestRateOfMonth(entity.getInterestRate());
             return ResponseEntity.ok().body(null);
         }
-
-
         return ResponseEntity.notFound().build();
     }
 
-    private Boolean checkIfExistAndActive(Long amountMonth){
-        
+    private String checkIfExistAndActive(Long amountMonth){
+        String result=null;
+        List<TermView> termViews=termViewDAO.findAll();
+        for(int i=0;i<termViews.size()-1;i++){
+            TermView termView=termViews.get(i);
+            if(termView.getAmountMonth()==amountMonth){
+                result=termView.getId();
+            }
+        }
+        return result;
     }
     
     
