@@ -1,8 +1,11 @@
 package com.cryptobank.backend.controller;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,6 +17,7 @@ import com.cryptobank.backend.DTO.LoginRequest;
 import com.cryptobank.backend.DTO.NameSplit;
 import com.cryptobank.backend.DTO.RegisterRequest;
 import com.cryptobank.backend.DTO.ResetPasswordRequest;
+import com.cryptobank.backend.entity.DeviceInfo;
 import com.cryptobank.backend.entity.User;
 import com.cryptobank.backend.services.generalServices.AuthService;
 import com.cryptobank.backend.services.user.UserService;
@@ -78,9 +82,9 @@ public class AuthController {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Số điện thoại đã được đăng ký");
 		}
 
-		// Kiểm tra xem số CMND đã tồn tại chưa
+		// Kiểm tra xem số CCCD đã tồn tại chưa
 		if (userService.existsByIdCardNumber(registerRequest.getIdCardNumber())) {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Số CMND đã được đăng ký");
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Số CCCD đã được đăng ký");
 		}
 
 		// Tạo đối tượng người dùng và lưu vào cơ sở dữ liệu
@@ -141,4 +145,7 @@ public class AuthController {
 
 		return new NameSplit(firstName, lastName);
 	}
+	
+	@GetMapping("/getAllDevice")
+	public ResponseEntity<Optional<DeviceInfo>> getAllDeviceFromUser()
 }
