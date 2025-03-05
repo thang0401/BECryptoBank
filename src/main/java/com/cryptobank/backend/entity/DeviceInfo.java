@@ -44,4 +44,7 @@ public class DeviceInfo {
 
     @Column(name = "uuid_id", unique = true, nullable = false)
     private String uuidId = UUID.randomUUID().toString(); // Mã UUID duy nhất cho từng thiết bị
+    
+    @Column(name="in_use")
+    private Boolean inUse; // dùng để kiểm tra hiện tại tài khoản đang được hoạt động ở thiết bị nào
 }
