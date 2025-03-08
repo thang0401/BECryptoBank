@@ -1,0 +1,24 @@
+package com.cryptobank.backend.entity;
+
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.math.BigDecimal;
+
+@Getter
+@Setter
+@Entity
+@Table(name = "term")
+public class Term extends BaseEntity {
+
+    @Column(name = "amount_month")
+    private Long amountMonth;
+
+    @Column(name = "type")
+    private String type;
+
+    @Column(name = "interest_rate_of_month")
+    private BigDecimal interestRateOfMonth = BigDecimal.ZERO;
+
+}
