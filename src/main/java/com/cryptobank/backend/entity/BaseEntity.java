@@ -20,22 +20,22 @@ import java.time.OffsetDateTime;
 public abstract class BaseEntity {
 
     @Id
-    @Column(name = "id", nullable = false)
-    private Long id = IdGenerator.generate();
+    @Column(name = "id", length = 50, nullable = false)
+    private String id = IdGenerator.generate();
 
     @Column(name = "delete_yn")
     private Boolean deleted = false;
 
-    @Column(name = "created_date")
-    private OffsetDateTime createdDate = OffsetDateTime.now();
+    @Column(name = "created_at")
+    private OffsetDateTime createdAt = OffsetDateTime.now();
 
-    @Column(name = "created_by")
+    @Column(name = "created_by", columnDefinition = "TEXT")
     private String createdBy;
 
-    @Column(name = "modified_date")
-    private OffsetDateTime modifiedDate;
+    @Column(name = "modified_at")
+    private OffsetDateTime modifiedAt;
 
-    @Column(name = "modified_by")
+    @Column(name = "modified_by", columnDefinition = "TEXT")
     private String modifiedBy;
 
     @Override

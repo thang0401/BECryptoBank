@@ -13,8 +13,8 @@ import java.math.BigDecimal;
 public class ReferralBonus extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "customer_id")
-    private Customer customer;
+    @JoinColumn(name = "user_id")
+    private User user;
 
     @Column(name = "bonus_amount")
     private BigDecimal bonusAmount = BigDecimal.valueOf(5);
@@ -25,6 +25,6 @@ public class ReferralBonus extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "referral_user_id")
-    private Customer referralCustomer;
+    private User referralUser;
 
 }

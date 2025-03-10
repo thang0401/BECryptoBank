@@ -21,6 +21,6 @@ public class UserRole extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    private Customer user;
+    private User user;
 
 }

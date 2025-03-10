@@ -12,7 +12,7 @@ import lombok.Setter;
 @Table(name = "ranking")
 public class Ranking extends BaseEntity {
 
-    @Column(name = "name")
+    @Column(name = "name", columnDefinition = "TEXT")
     private String name;
 
 }

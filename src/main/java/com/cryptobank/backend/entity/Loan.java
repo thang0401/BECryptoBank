@@ -15,7 +15,7 @@ public class Loan extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    private Customer customer;
+    private User user;
 
     @Column(name = "loan_amount")
     private BigDecimal loanAmount = BigDecimal.ZERO;

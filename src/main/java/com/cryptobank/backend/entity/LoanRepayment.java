@@ -12,7 +12,7 @@ import java.math.BigDecimal;
 @Table(name = "loan_repayment")
 public class LoanRepayment extends BaseEntity {
 
-    @Column(name = "tx_hash")
+    @Column(name = "tx_hash", columnDefinition = "TEXT")
     private String txHash;
 
     @Column(name = "amount")

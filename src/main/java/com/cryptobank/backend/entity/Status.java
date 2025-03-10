@@ -10,10 +10,10 @@ import lombok.Setter;
 @Table(name = "status")
 public class Status extends BaseEntity {
 
-    @Column(name = "name")
+    @Column(name = "name", columnDefinition = "TEXT")
     private String name;
 
-    @Column(name = "note")
+    @Column(name = "note", columnDefinition = "TEXT")
     private String note;
 
     @ManyToOne(fetch = FetchType.LAZY)

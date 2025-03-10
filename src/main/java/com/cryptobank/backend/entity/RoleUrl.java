@@ -10,7 +10,7 @@ import lombok.Setter;
 @Table(name = "role_url")
 public class RoleUrl extends BaseEntity {
 
-    @Column(name = "function_url")
+    @Column(name = "function_url", columnDefinition = "TEXT")
     private String functionUrl;
 
     @ManyToOne(fetch = FetchType.LAZY)

@@ -10,29 +10,32 @@ import java.time.OffsetDateTime;
 @Getter
 @Setter
 @Entity
-@Table(name = "sub_wallet")
-public class SubWallet extends BaseEntity {
+@Table(name = "debit_account")
+public class DebitWallet extends BaseEntity {
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "customer_id", nullable = false)
-    private Customer customer;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
 
-    @Column(name = "wallet_address")
+    @Column(name = "balance")
+    private BigDecimal balance = BigDecimal.ZERO;
+
+    @Column(name = "wallet_address", columnDefinition = "TEXT")
     private String walletAddress;
 
-    @Column(name = "private_key")
+    @Column(name = "private_key", columnDefinition = "TEXT")
     private String privateKey;
 
-    @Column(name = "chain_type")
+    @Column(name = "chain_type", columnDefinition = "TEXT")
     private String chainType;
 
-    @Column(name = "wallet_client_type")
+    @Column(name = "wallet_client_type", columnDefinition = "TEXT")
     private String walletClientType;
 
-    @Column(name = "connector_type")
+    @Column(name = "connector_type", columnDefinition = "TEXT")
     private String connectorType;
 
-    @Column(name = "recovery_method")
+    @Column(name = "recovery_method", columnDefinition = "TEXT")
     private String recoveryMethod;
 
     @Column(name = "imported")
@@ -53,10 +56,7 @@ public class SubWallet extends BaseEntity {
     @Column(name = "latest_verified_at")
     private OffsetDateTime latestVerifiedAt;
 
-    @Column(name = "custom_metadata")
+    @Column(name = "custom_metadata", columnDefinition = "TEXT")
     private String customMetadata;
-
-    @Column(name = "balance")
-    private BigDecimal balance = BigDecimal.ZERO;
 
 }

@@ -14,7 +14,7 @@ public class UsdcVndTransaction extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "debit_account_id")
-    private DebitAccount debitAccount;
+    private DebitWallet debitAccount;
 
     @Column(name = "VND_amount")
     private BigDecimal vndAmount;
@@ -25,7 +25,7 @@ public class UsdcVndTransaction extends BaseEntity {
     @Column(name = "exchange_rate")
     private BigDecimal exchangeRate;
 
-    @Column(name = "type")
+    @Column(name = "type", columnDefinition = "TEXT")
     private String type;
 
     @ManyToOne(fetch = FetchType.LAZY)

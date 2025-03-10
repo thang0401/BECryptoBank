@@ -13,8 +13,8 @@ import java.math.BigDecimal;
 public class SavingTransaction extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "customer_id")
-    private Customer customer;
+    @JoinColumn(name = "user_id")
+    private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "saving_account_id")
@@ -23,7 +23,7 @@ public class SavingTransaction extends BaseEntity {
     @Column(name = "amount")
     private BigDecimal amount = BigDecimal.ZERO;
 
-    @Column(name = "transaction_type")
+    @Column(name = "transaction_type", columnDefinition = "TEXT")
     private String transactionType;
 
 }

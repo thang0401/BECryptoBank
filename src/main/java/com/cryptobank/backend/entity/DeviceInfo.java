@@ -16,23 +16,23 @@ public class DeviceInfo extends BaseEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Column(name = "device_id", nullable = false)
+    @Column(name = "device_id", nullable = false, columnDefinition = "TEXT")
     private String deviceId;
 
-    @Column(name = "device_name")
+    @Column(name = "device_name", columnDefinition = "TEXT")
     private String deviceName;
 
-    @Column(name = "os", length = 100)
+    @Column(name = "os", length = 100, columnDefinition = "TEXT")
     private String os;
 
-    @Column(name = "browser", length = 100)
+    @Column(name = "browser", length = 100, columnDefinition = "TEXT")
     private String browser;
 
-    @Column(name = "ipAddress", length = 45)
+    @Column(name = "ip_address", length = 45, columnDefinition = "TEXT")
     private String ipAddress;
 
-    @Column(name = "lastLoginAt")
-    private OffsetDateTime lastlogin;
+    @Column(name = "last_login_at")
+    private OffsetDateTime lastLoginAt;
 
     @Column(name = "in_use")
     private Boolean inUse = false;

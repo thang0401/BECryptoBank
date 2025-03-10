@@ -10,7 +10,7 @@ import lombok.Setter;
 @Table(name = "group_status")
 public class GroupStatus extends BaseEntity {
 
-    @Column(name = "name")
+    @Column(name = "name", columnDefinition = "TEXT")
     private String name;
 
     @ManyToOne(fetch = FetchType.LAZY)

@@ -20,27 +20,19 @@ public class DebitTransaction extends BaseEntity {
     private Status status;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "debit_id")
-    private DebitAccount debit;
+    @JoinColumn(name = "debit_wallet_id")
+    private DebitWallet debitWallet;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "receiver_id")
-    private Customer receiver;
-
-    @Column(name = "transaction_type")
+    @Column(name = "transaction_type", columnDefinition = "TEXT")
     private String transactionType;
 
-    @Column(name = "transaction_hash")
+    @Column(name = "transaction_hash", columnDefinition = "TEXT")
     private String transactionHash;
 
-    @Column(name = "from_pubKey")
+    @Column(name = "from_pub_Key", columnDefinition = "TEXT")
     private String fromPubKey;
 
-    @Column(name = "to_pubKey")
+    @Column(name = "to_pub_Key", columnDefinition = "TEXT")
     private String toPubKey;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sub_wallet_id")
-    private SubWallet subWallet;
 
 }

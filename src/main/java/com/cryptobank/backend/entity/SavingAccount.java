@@ -14,14 +14,14 @@ import java.time.OffsetDateTime;
 public class SavingAccount extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "customer_id")
-    private Customer customer;
+    @JoinColumn(name = "user_id")
+    private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "term_id")
     private Term term;
 
-    @Column(name = "note")
+    @Column(name = "note", columnDefinition = "TEXT")
     private String note;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -37,13 +37,13 @@ public class SavingAccount extends BaseEntity {
     @Column(name = "maturity_date")
     private OffsetDateTime maturityDate;
 
-    @Column(name = "gg_drive_url")
+    @Column(name = "gg_drive_url", columnDefinition = "TEXT")
     private String ggDriveUrl;
 
     @Column(name = "heir_status")
     private Boolean heirStatus = false;
 
-    @Column(name = "heir_name")
+    @Column(name = "heir_name", columnDefinition = "TEXT")
     private String heirName;
 
 }

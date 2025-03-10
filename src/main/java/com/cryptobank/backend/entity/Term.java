@@ -17,7 +17,7 @@ public class Term extends BaseEntity {
     @Column(name = "amount_month")
     private Long amountMonth;
 
-    @Column(name = "type")
+    @Column(name = "type", columnDefinition = "TEXT")
     private String type;
 
     @Column(name = "interest_rate_of_month")

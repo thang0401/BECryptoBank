@@ -3,11 +3,9 @@ package com.cryptobank.backend.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.ColumnDefault;
 
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
-import java.util.UUID;
 
 @Getter
 @Setter
@@ -15,23 +13,23 @@ import java.util.UUID;
 @Table(name = "passkeys")
 public class Passkey {
     @Id
-    @Column(name = "id", nullable = false)
+    @Column(name = "id", length = 50, nullable = false)
     private String id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    private Customer customer;
+    private User user;
 
-    @Column(name = "credential_id")
+    @Column(name = "credential_id", columnDefinition = "TEXT")
     private String credentialId;
 
-    @Column(name = "authenticator_name")
+    @Column(name = "authenticator_name", columnDefinition = "TEXT")
     private String authenticatorName;
 
-    @Column(name = "created_with_os")
+    @Column(name = "created_with_os", columnDefinition = "TEXT")
     private String createdWithOs;
 
-    @Column(name = "created_with_browser")
+    @Column(name = "created_with_browser", columnDefinition = "TEXT")
     private String createdWithBrowser;
 
     @Column(name = "enrolled_in_mfa")
@@ -45,9 +43,5 @@ public class Passkey {
 
     @Column(name = "latest_verified_at")
     private OffsetTime latestVerifiedAt;
-
-    @ColumnDefault("gen_random_uuid()")
-    @Column(name = "uuid_id")
-    private UUID uuidId;
 
 }
