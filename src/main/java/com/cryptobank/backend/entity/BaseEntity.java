@@ -1,43 +1,55 @@
 package com.cryptobank.backend.entity;
 
+import com.cryptobank.backend.utils.IdGenerator;
 import jakarta.persistence.Column;
-import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import org.hibernate.annotations.SQLRestriction;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 
 /**
- * Chứa thuộc tính cần thiết trong mỗi entity.<br>
- * Có thêm điều kiện <code>delete_yn <> true</code> cho các lần query database tiếp theo.<br>
+ * Chứa thuộc tính cần thiết trong mỗi entity.
  */
-@Data
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@Getter
+@Setter
+@ToString
 @MappedSuperclass
-@SQLRestriction("deleted <> true")
 public abstract class BaseEntity {
 
     @Id
-    @GeneratedValue
-    @EqualsAndHashCode.Include
-    private String id;
+    @Column(name = "id", length = 50, nullable = false)
+    private String id = IdGenerator.generate();
 
-//    @Column(name = "delete_yn")
-//    private boolean deleted;
-//
-//    @Column(name = "created_date")
-//    private ZonedDateTime createdDate;
-//
-//    @Column(name = "created_by")
-//    private String createdBy;
-//
-//    @Column(name = "modified_date")
-//    private ZonedDateTime modifiedDate;
-//
-//    @Column(name = "modified_by")
-//    private String modifiedBy;
+    @Column(name = "delete_yn")
+    private Boolean deleted = false;
+
+    @Column(name = "created_at")
+    private OffsetDateTime createdAt = OffsetDateTime.now();
+
+    @Column(name = "created_by", columnDefinition = "TEXT")
+    private String createdBy;
+
+    @Column(name = "modified_at")
+    private OffsetDateTime modifiedAt;
+
+    @Column(name = "modified_by", columnDefinition = "TEXT")
+    private String modifiedBy;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        BaseEntity that = (BaseEntity) o;
+        return id.equals(that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return id.hashCode();
+    }
 
 }

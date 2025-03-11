@@ -1,28 +1,20 @@
 package com.cryptobank.backend.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import lombok.*;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 @Getter
 @Setter
-@ToString(callSuper = true)
-@NoArgsConstructor
-@AllArgsConstructor
 @Entity
-@Table(name="group_status")
+@Table(name = "group_status")
 public class GroupStatus extends BaseEntity {
 
-    @Column(name="group_name")
-    private String groupName;
+    @Column(name = "name", columnDefinition = "TEXT")
+    private String name;
 
-    @JsonIgnore
-    @ManyToOne
-    @JoinColumn(name="status_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "status_id")
     private Status status;
 
 }
