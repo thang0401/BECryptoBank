@@ -3,33 +3,53 @@ package com.cryptobank.backend.services.generalServices;
 import com.cryptobank.backend.entity.User;
 import com.cryptobank.backend.exception.AlreadyExistException;
 import com.cryptobank.backend.repository.UserDAO;
-import com.cryptobank.backend.services.AbstractCRUDService;
 import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.crossstore.ChangeSetPersister;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+@RequiredArgsConstructor
 @Service
-public class UserService extends AbstractCRUDService<User, String> {
+public class UserService {
 
     private final UserDAO repository;
     private final EmailService emailService;
 
-    public UserService(UserDAO repository, EmailService emailService) {
-        super(repository, User.class);
-        this.repository = repository;
-        this.emailService = emailService;
+    public User get(String id) {
+        return repository.findById(id).orElseThrow(() -> new RuntimeException("User id " + id + " not found"));
     }
 
-    @Override
+    public List<User> getAll() {
+        return repository.findAll();
+    }
+
+    public Page<User> getAll(int page, int size) {
+        return repository.findAll(PageRequest.of(page, size));
+    }
+
+    public void delete(String id) {
+        User user = get(id);
+        repository.delete(user);
+    }
+
+    public void update(String id, User user) {
+        if (repository.existsById(id)) {
+            repository.save(user);
+        }
+    }
+
     public User save(User entity) {
         User user = repository.findByEmail(entity.getEmail());
         if (user != null) {
             throw new AlreadyExistException("User with email " + entity.getEmail() + " already exists");
         } else {
-            return super.save(entity);
+            return repository.save(entity);
         }
     }
 
@@ -93,7 +113,7 @@ public class UserService extends AbstractCRUDService<User, String> {
         userChangePass.setPassword(encodedPassword);
 
         // Lưu thông tin người dùng mới với mật khẩu đã thay đổi vào database
-        super.save(userChangePass);
+        save(userChangePass);
     }
 
 }
