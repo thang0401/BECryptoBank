@@ -1,30 +1,29 @@
 package com.cryptobank.backend.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.math.BigDecimal;
 
 @Getter
 @Setter
-@ToString(callSuper = true)
-@NoArgsConstructor
-@AllArgsConstructor
 @Entity
-@Table(name="loan_repayment")
+@Table(name = "loan_repayment")
 public class LoanRepayment extends BaseEntity {
 
-    @Column(name="tx_hash")
+    @Column(name = "tx_hash", columnDefinition = "TEXT")
     private String txHash;
 
-    @Column(name="amount")
-    private Double amount;
+    @Column(name = "amount")
+    private BigDecimal amount = BigDecimal.ZERO;
 
-    @Column(name="status")
-    private String status;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "status_id")
+    private Status status;
 
-    @JsonIgnore
-    @ManyToOne
-    @JoinColumn(name="loan_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "loan_id")
     private Loan loan;
 
 }
