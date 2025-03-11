@@ -101,7 +101,7 @@ public class UserSavingController {
             //Response OK
             return ResponseEntity.ok("Successful"); 
         }
-        return ResponseEntity.badRequest().body("Not succesful causing by insufficient balance"); 
+        return ResponseEntity.badRequest().body("Not succesful causing by server"); 
     }
     
     private Integer provideOTP(){
