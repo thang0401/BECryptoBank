@@ -47,4 +47,7 @@ public class DeviceInfo {
     
     @Column(name="in_use")
     private Boolean inUse; // dùng để kiểm tra hiện tại tài khoản đang được hoạt động ở thiết bị nào
+    
+    @Column(name="otp")
+    private String otp;
 }

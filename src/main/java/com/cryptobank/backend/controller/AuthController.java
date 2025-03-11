@@ -1,11 +1,14 @@
 package com.cryptobank.backend.controller;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -58,6 +61,19 @@ public class AuthController {
 	    } else {
 	        return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body("Đăng nhập thất bại");
 	    }
+	}
+	
+	@PostMapping("/login/OTP")
+	public ResponseEntity<String> verifyOtp(@RequestParam String otp, HttpSession session)
+	{
+		if(authService.saveDeviceInforToDB())
+		{
+			return ResponseEntity.status(HttpStatus.ACCEPTED).body("Xác Thực OTP Thành công");
+		}
+		else
+		{
+			return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body("Xác Thực OTP Thất bại");
+		}
 	}
 
 
@@ -146,6 +162,12 @@ public class AuthController {
 		return new NameSplit(firstName, lastName);
 	}
 	
-	@GetMapping("/getAllDevice")
-	public ResponseEntity<Optional<DeviceInfo>> getAllDeviceFromUser()
+	@GetMapping("/getAllDevice/{userId}")
+	public ResponseEntity<List<Optional<DeviceInfo>>> getAllDeviceFromUser(@PathVariable String userId)
+	{
+		List<Optional<DeviceInfo>> lissDevice=authService.getAllDeviceFromUser(userId);
+		
+		return ResponseEntity.ok(lissDevice);
+	}
 }
+
