@@ -11,15 +11,15 @@ public interface UserDAO extends JpaRepository<User, String> {
 
     User findByEmail(String email);
 
-    User findByPhone(String phone);
+    User findByPhoneNumber(String phone);
 
-    User findByIdNumber(String idNumber);
+    User findByIdCardNumber(String idNumber);
 
     boolean existsByEmail(String email);
 
-    boolean existsByPhone(String phone);
+    boolean existsByPhoneNumber(String phone);
 
-    boolean existsByIdNumber(String idNumber);
+    boolean existsByIdCardNumber(String idNumber);
 
     /**
      * Lấy danh sách User chứa tên liên quan (bỏ qua hoa thường)

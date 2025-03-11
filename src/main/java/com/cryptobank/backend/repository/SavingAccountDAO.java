@@ -25,7 +25,7 @@ public interface SavingAccountDAO extends JpaRepository<SavingAccount, String> {
 //	List<SavingAccount> findByRankingId(@Param("rankingId") String rankingId);
 
 	// Truy vấn User_portfolio theo số điện thoại
-	@Query("SELECT up FROM SavingAccount up WHERE up.user.phone = :phoneNum")
+	@Query("SELECT up FROM SavingAccount up WHERE up.user.phoneNumber = :phoneNum")
 	List<SavingAccount> findByPhoneNumber(@Param("phoneNum") String phoneNum);
 
 	// Truy vấn User_portfolio theo tên User (first name hoặc last name)
@@ -44,7 +44,7 @@ public interface SavingAccountDAO extends JpaRepository<SavingAccount, String> {
 	+ " OFFSET ?3"  , nativeQuery = true)
     public List<SavingAccount> getAllSavingAccountAndPagination(String sortBy,int limit,int offset);
 
-    @Query("SELECT new com.cryptobank.backend.DTO.AdminSavingAccountDTO(s.id ,s.user.id,s.user.firstName,s.user.lastName,s.heirStatus,s.balance,s.term.amount_month,s.term.type,s.createdDate,s.createdDate) FROM SavingAccount s")
+    @Query("SELECT new com.cryptobank.backend.DTO.AdminSavingAccountDTO(s.id ,s.user.id,s.user.firstName,s.user.lastName,s.heirStatus,s.balance,s.term.amountMonth,s.term.type,s.createdAt,s.createdAt) FROM SavingAccount s")
     public List<AdminSavingAccountDTO> findAllDTO();
 
     @Query(value = "SELECT id,user_id,name,heir_status,balance,term_id,created_date FROM saving_account WHERE user_id=?1"

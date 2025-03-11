@@ -1,8 +1,8 @@
 package com.cryptobank.backend.DTO;
 
-import java.time.LocalDateTime;
-
 import lombok.Data;
+
+import java.time.OffsetDateTime;
 
 @Data
 public class KycRequest {
@@ -11,7 +11,7 @@ public class KycRequest {
 	private String lastName;
 	private String email;
 	private String address;
-	private LocalDateTime dateOfBirth;
+	private OffsetDateTime dateOfBirth;
 	private String gender;
 	private String phone;
 	private String idCardFrontImgUrl;
