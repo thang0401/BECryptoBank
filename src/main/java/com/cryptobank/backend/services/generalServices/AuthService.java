@@ -34,7 +34,7 @@ public class AuthService {
 
 	@Autowired
 	private PasswordEncoder passwordEncoder;
-	
+
 	@Autowired
 	private UserOtpRepository userOtpRepository;
 
@@ -49,54 +49,41 @@ public class AuthService {
 			User user = userRepository.findByEmail(email).orElseThrow();
 
 			// Kiểm tra xem user có đúng không
-			if (user.getUsername().isEmpty()) 
-			{
+			if (user.getUsername().isEmpty()) {
 				return false;
-			} 
-			else 
-			{
-				//Kiểm tra xem mật khẩu nhập có đúng không
-				if (user.getPassword().equals(password)) 
-				{
+			} else {
+				// Kiểm tra xem mật khẩu nhập có đúng không
+				if (user.getPassword().equals(password)) {
 					// Lấy User-Agent từ request
 					String userAgent = request.getHeader("User-Agent");
 					Parser parser = new Parser(); // Khởi tạo UAParser
 					Client client = parser.parse(userAgent);
 
 					// Kiểm tra xem thiết bị đã tồn tại hay chưa
-					Optional<DeviceInfo> existingDevice = deviceInfoRepository.findByDeviceIdAndUser(session.getId(),user);
+					Optional<DeviceInfo> existingDevice = deviceInfoRepository.findByDeviceIdAndUser(session.getId(),
+							user);
 
-					if (existingDevice.isPresent()) 
-					{
+					if (existingDevice.isPresent()) {
 						// Nếu thiết bị đã tồn tại, kiểm tra xem có phải là thiết bị đang dùng không
 						DeviceInfo device = existingDevice.get();
-						if (checkDevicePresentIsInUse(user, device)) 
-						{
+						if (checkDevicePresentIsInUse(user, device)) {
 							return true;
-						} 
-						else 
-						{
+						} else {
 							noticationDifferentDeviceLogin(user, device);
 						}
-					} 
-					else 
-					{
+					} else {
 						// Nếu là thiết bị mới, gửi thông báo xác thực
 						DeviceInfo newDevice = formatToDeviceInfor(session, client, user, request);
 						// Gửi cảnh báo email vì là thiết bị mới
 						firstDeviceLoginNotication(user, newDevice);
 					}
 					return true;
-				} 
-				else 
-				{
+				} else {
 					return false;
 				}
 			}
 
-		} 
-		catch (Exception e) 
-		{
+		} catch (Exception e) {
 			return false;
 		}
 	}
@@ -139,7 +126,8 @@ public class AuthService {
 		String message = String.format(
 				"Xin chào %s,\n\n" + "Chúng tôi nhận thấy tài khoản của bạn đang đăng nhập trên thiết bị khác:\n\n"
 						+ "🔹 Thiết bị: %s\n" + "🔹 Hệ điều hành: %s\n" + "🔹 Trình duyệt: %s\n" + "🔹 Địa chỉ IP: %s\n"
-						+ "🔹 Thời gian đăng nhập: %s\n\n" + "🔹 Đây là mã xác thực OTP xác thực người dùng (có hiệu lực 2 phút) : %s\n\n"
+						+ "🔹 Thời gian đăng nhập: %s\n\n"
+						+ "🔹 Đây là mã xác thực OTP xác thực người dùng (có hiệu lực 2 phút) : %s\n\n"
 						+ "Nếu đây không phải bạn vui lòng đăng nhập sau đó thay đổi mật khẩu!",
 				user.getFirstName() + " " + user.getLastName(), device.getDeviceName(), device.getOs(),
 				device.getBrowser(), device.getIpAddress(),
@@ -156,17 +144,15 @@ public class AuthService {
 			} else {
 				return false;
 			}
-			
 		}
 	}
 
 	private String CreateOTP(User user) {
 		Random random = new Random();
 		int otp = 100000 + random.nextInt(900000);
-		UserOtp userOtp=userOtpRepository.getById(user.getId());
-		if(userOtp.getUserId().isEmpty())
-		{
-			userOtp=new UserOtp();
+		UserOtp userOtp = userOtpRepository.getById(user.getId());
+		if (userOtp.getUserId().isEmpty()) {
+			userOtp = new UserOtp();
 			userOtp.setUser(user);
 		}
 		userOtp.setOtpCode(String.valueOf(otp));
@@ -176,19 +162,30 @@ public class AuthService {
 		return String.valueOf(otp);
 	}
 
-    public Boolean saveDeviceInforToDB(DeviceInfo deviceInfo,String OTPFromUser, HttpServletRequest request, HttpSession session,String userId)
-    {
-    	if(OTPFromUser.equals(userOtpRepository.getById(userId)))
-    	{
-    		 deviceInfoRepository.save(deviceInfo);
-    		 return true;
-    	}
-    	else
-    	{
-    		return false;
-    	}
-    }
-	
+	public Boolean saveDeviceInforToDB(DeviceInfo deviceInfo, String OTPFromUser, HttpServletRequest request,
+			HttpSession session, String userId) {
+		UserOtp userOtp=userOtpRepository.getById(userId);
+		if(userOtp.getTimeEnd().isAfter(LocalDateTime.now()))
+		{
+			if (OTPFromUser.equals(userOtp.getOtpCode())) {
+				// Lấy User-Agent từ request
+				String userAgent = request.getHeader("User-Agent");
+				Parser parser = new Parser(); // Khởi tạo UAParser
+				Client client = parser.parse(userAgent);
+				
+				
+				deviceInfoRepository.save(deviceInfo);
+				return true;
+			} else {
+				return false;
+			}
+		}
+		else
+		{
+			
+		}
+		
+	}
 
 	private DeviceInfo formatToDeviceInfor(HttpSession session, Client client, User user, HttpServletRequest request) {
 
