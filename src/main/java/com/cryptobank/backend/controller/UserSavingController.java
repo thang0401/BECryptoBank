@@ -35,8 +35,6 @@ public class UserSavingController {
     SavingAccountDAO savingAccountDAO;
     WithdrawService withdrawService;
 
-    
-
     @GetMapping("/add-saving-asset")
     public ResponseEntity<InformationFormResponseDTO> getData(@RequestParam String userId) {
         List<Term> terms=getTerm();
