@@ -1,14 +1,14 @@
 package com.cryptobank.backend.services.generalServices;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import com.cryptobank.backend.entity.DebitAccount;
-import com.cryptobank.backend.repository.DebitAccountDAO;
-
+import com.cryptobank.backend.entity.DebitWallet;
+import com.cryptobank.backend.repository.DebitWalletDAO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
 
 @Service
 @AllArgsConstructor
@@ -17,23 +17,20 @@ import lombok.NoArgsConstructor;
 public class WithdrawService {
 
 	@Autowired
-	DebitAccountDAO debitAccountDAO;
+	DebitWalletDAO debitAccountDAO;
 
-	public Boolean WithdrawIntoSavingAccount(DebitAccount account,Double amount){
-		if(checkValidBalance(account, amount)){
-			account.setBalance(account.getBalance()-amount);
-			debitAccountDAO.save(account);
+	public Boolean WithdrawIntoSavingAccount(DebitWallet wallet, Double amount){
+		if(checkValidBalance(wallet, amount)){
+			wallet.setBalance(wallet.getBalance().subtract(BigDecimal.valueOf(amount)));
+			debitAccountDAO.save(wallet);
 			return true;
 		}
 		return false;
 	}
 
-	public Boolean checkValidBalance(DebitAccount account,Double amount){
-		Double currentBalance=account.getBalance();
-		if(amount<currentBalance){
-			return true;
-		}
-		return false;
+	public Boolean checkValidBalance(DebitWallet wallet,Double amount){
+		BigDecimal currentBalance=wallet.getBalance();
+        return currentBalance.compareTo(BigDecimal.valueOf(amount)) > 0;
 	}
 	
 
