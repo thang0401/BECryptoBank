@@ -5,7 +5,6 @@ import com.cryptobank.backend.exception.AlreadyExistException;
 import com.cryptobank.backend.repository.UserDAO;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -66,11 +65,11 @@ public class UserService {
     }
 
     public boolean existsByPhoneNumber(String phoneNumber) {
-        return repository.existsByPhone(phoneNumber);
+        return repository.existsByPhoneNumber(phoneNumber);
     }
 
     public boolean existsByIdCardNumber(String cardNumber) {
-        return repository.existsByIdNumber(cardNumber);
+        return repository.existsByIdCardNumber(cardNumber);
     }
 
     private String generateResetCode() {

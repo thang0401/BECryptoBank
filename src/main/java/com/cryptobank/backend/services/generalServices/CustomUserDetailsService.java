@@ -1,6 +1,5 @@
 package com.cryptobank.backend.services.generalServices;
 
-import com.cryptobank.backend.entity.User;
 import com.cryptobank.backend.model.CustomerUserDetails;
 import com.cryptobank.backend.repository.UserDAO;
 import lombok.RequiredArgsConstructor;
