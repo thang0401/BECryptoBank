@@ -33,17 +33,17 @@ public class KycController {
 			userKYC.setFirstName(request.getFirstName());
 			userKYC.setLastName(request.getLastName());
 			userKYC.setGender(request.getGender());
-			userKYC.setPhone(request.getPhone());
+			userKYC.setPhoneNumber(request.getPhone());
 			userKYC.setDateOfBirth(request.getDateOfBirth());
-			userKYC .setAddressId(request.getAddress());
+			userKYC.setHomeAddress(request.getAddress());
 			userKYC.setWard(request.getWard());
 			userKYC.setDistrict(request.getDistrict());
 			userKYC.setProvince(request.getProvince());
-			userKYC.setIdCardFrontImgURL(request.getIdCardFrontImgUrl());
-			userKYC.setIdCardBackImgURL(request.getIdCardBackImgUrl());
+			userKYC.setIdCardFrontImgUrl(request.getIdCardFrontImgUrl());
+			userKYC.setIdCardBackImgUrl(request.getIdCardBackImgUrl());
 			userKYC.setEmail(request.getEmail());
 			userKYC.setNation(request.getNation());
-			userKYC.setIdNumber(request.getIdNumber());
+			userKYC.setIdCardNumber(request.getIdNumber());
 			userDao.save(userKYC);
 			return ResponseEntity.ok("Xác thực người dùng thành công");
 		} catch (Exception e) {

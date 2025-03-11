@@ -1,29 +1,26 @@
 package com.cryptobank.backend.entity;
 
-import jakarta.persistence.*;
-import lombok.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
 
-import java.time.ZonedDateTime;
+import java.math.BigDecimal;
 
 @Getter
 @Setter
-@ToString(callSuper = true)
-@NoArgsConstructor
-@AllArgsConstructor
 @Entity
 @Table(name = "term")
 public class Term extends BaseEntity {
 
     @Column(name = "amount_month")
-    private Long amount_month;
+    private Long amountMonth;
 
-    @Column(name = "type")
+    @Column(name = "type", columnDefinition = "TEXT")
     private String type;
 
     @Column(name = "interest_rate_of_month")
-    private Double interestRateOfMonth;
-
-    @Column(name="deleted_yn")
-    private Boolean deletedYN=false;
+    private BigDecimal interestRateOfMonth = BigDecimal.ZERO;
 
 }

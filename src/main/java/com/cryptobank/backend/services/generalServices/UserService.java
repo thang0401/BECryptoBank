@@ -110,7 +110,7 @@ public class UserService {
         // Mã hóa mật khẩu mới
         String encodedPassword = new BCryptPasswordEncoder().encode(newPassword);
         User userChangePass=repository.findByEmail(email);
-        userChangePass.setPassword(encodedPassword);
+        // userChangePass.setPassword(encodedPassword);
 
         // Lưu thông tin người dùng mới với mật khẩu đã thay đổi vào database
         save(userChangePass);

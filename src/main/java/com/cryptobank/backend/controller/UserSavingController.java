@@ -12,10 +12,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.cryptobank.backend.DTO.UserSavingAccountDTO.InformationFormPostRequestDTO;
 import com.cryptobank.backend.DTO.UserSavingAccountDTO.InformationFormResponseDTO;
-import com.cryptobank.backend.entity.DebitAccount;
+import com.cryptobank.backend.entity.DebitWallet;
 import com.cryptobank.backend.entity.SavingAccount;
 import com.cryptobank.backend.entity.Term;
 import com.cryptobank.backend.entity.User;
+import com.cryptobank.backend.repository.DebitWalletDAO;
 import com.cryptobank.backend.repository.SavingAccountDAO;
 import com.cryptobank.backend.repository.TermDAO;
 import com.cryptobank.backend.repository.UserDAO;
@@ -34,12 +35,13 @@ public class UserSavingController {
     UserDAO userDAO;
     SavingAccountDAO savingAccountDAO;
     WithdrawService withdrawService;
+    DebitWalletDAO debitWalletDAO;
 
     @GetMapping("/add-saving-asset")
     public ResponseEntity<InformationFormResponseDTO> getData(@RequestParam String userId) {
         List<Term> terms=getTerm();
         User user=getUserAccount(userId);
-        List<DebitAccount> debitAccounts=getUserDebitAccounts(user);
+        String debitAccounts=getUserWalletAddress(user);
         if(debitAccounts!=null){
         InformationFormResponseDTO informationFormResponseDTO=new InformationFormResponseDTO(debitAccounts,terms);
         return ResponseEntity.ok(informationFormResponseDTO);}
@@ -52,14 +54,9 @@ public class UserSavingController {
         System.out.println(userId);
         System.out.println(entity.toString());
         User user=getUserAccount(userId);
-        List<DebitAccount> debitAccounts=getUserDebitAccounts(user);
-        DebitAccount account=null;
-        for (DebitAccount debitAccount : debitAccounts) {
-            System.out.println(debitAccount.getId());
-            if(debitAccount.getId().equals(entity.getDebitAccountId())){
-                account=debitAccount;
-            }
-        }
+        String debitWalletAdress=getUserWalletAddress(user);
+        DebitWallet account=debitWalletDAO.findByWalletAddress(debitWalletAdress);
+        
 
         //Get selected Term instance
         Term selectedTerm=termDAO.findById(entity.getTermId()).orElse(null);
@@ -97,7 +94,7 @@ public class UserSavingController {
             newSavingAccount.setTerm(selectedTerm);
             savingAccountDAO.save(newSavingAccount);
             //Reduce balance
-            withdrawService.WithdrawIntoSavingAccount(account, entity.getAmount());
+            withdrawService.TransferIntoSavingAccount(account, entity.getAmount());
             //Response OK
             return ResponseEntity.ok("Successful"); 
         }
@@ -113,8 +110,8 @@ public class UserSavingController {
         return user;
     }
 
-    private List<DebitAccount> getUserDebitAccounts(User user){
-        return user.getDebitAccounts();
+    private String getUserWalletAddress(User user){
+        return user.getWalletAddress();
     }
 
     private List<Term> getTerm(){

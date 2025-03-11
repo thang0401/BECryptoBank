@@ -79,9 +79,9 @@ public class AuthController {
 		user.setEmail(registerRequest.getEmail());
 		user.setFirstName(getFirstAndLastName(registerRequest.getFullname()).getFirstName());
 		user.setLastName(getFirstAndLastName(registerRequest.getFullname()).getLastname());
-		user.setPhone(registerRequest.getPhoneNumber());
-		user.setIdNumber(registerRequest.getIdCardNumber());
-		user.setPassword(encodePassword(registerRequest.getPassword())); // Mã hóa mật khẩu
+		user.setPhoneNumber(registerRequest.getPhoneNumber());
+		user.setIdCardNumber(registerRequest.getIdCardNumber());
+		// user.setPassword(encodePassword(registerRequest.getPassword())); // Mã hóa mật khẩu
 
 		// Lưu người dùng vào cơ sở dữ liệu
 		userService.save(user);

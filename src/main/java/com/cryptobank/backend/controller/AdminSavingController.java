@@ -3,7 +3,6 @@ package com.cryptobank.backend.controller;
 import org.springframework.web.bind.annotation.*;
 
 import com.cryptobank.backend.DTO.AdminSavingAccountDTO;
-import com.cryptobank.backend.entity.DebitAccount;
 import com.cryptobank.backend.entity.SavingAccount;
 import com.cryptobank.backend.entity.Term;
 import com.cryptobank.backend.entity.User;
@@ -35,7 +34,5 @@ public class AdminSavingController {
         return ResponseEntity.ok(savingAccountDAO.findById(id).orElse(null));
     }
     
-    
-
 
 }

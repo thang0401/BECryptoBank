@@ -1,44 +1,40 @@
 package com.cryptobank.backend.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Getter;
+import lombok.Setter;
 
-import java.time.ZonedDateTime;
-import java.util.UUID;
+import java.time.OffsetDateTime;
 
 @Getter
 @Setter
-@ToString(callSuper = true)
-@NoArgsConstructor
-@AllArgsConstructor
 @Entity
 @Table(name = "device_info")
 public class DeviceInfo extends BaseEntity {
 
-    @JsonIgnore
-    @ManyToOne
-    @JoinColumn(name = "userid", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Column(name = "deviceid", nullable = false)
-    private String deviceId; // Session ID hoặc mã thiết bị
+    @Column(name = "device_id", nullable = false, columnDefinition = "TEXT")
+    private String deviceId;
 
-    @Column(name = "devicename", nullable = false)
-    private String deviceName; // Model điện thoại hoặc máy tính
+    @Column(name = "device_name", columnDefinition = "TEXT")
+    private String deviceName;
 
-    @Column(name = "os", nullable = false)
-    private String os; // Hệ điều hành (Android, iOS, Windows)
+    @Column(name = "os", length = 100, columnDefinition = "TEXT")
+    private String os;
 
-    @Column(name = "browser", nullable = false)
-    private String browser; // Trình duyệt (Chrome, Firefox, Edge)
+    @Column(name = "browser", length = 100, columnDefinition = "TEXT")
+    private String browser;
 
-    @Column(name = "ipaddress", nullable = false)
-    private String ipAddress; // Địa chỉ IP
+    @Column(name = "ip_address", length = 45, columnDefinition = "TEXT")
+    private String ipAddress;
 
-    @Column(name = "lastlogin", nullable = false)
-    private ZonedDateTime lastLogin; // Thời gian đăng nhập cuối
+    @Column(name = "last_login_at")
+    private OffsetDateTime lastLoginAt;
 
-    @Column(name = "uuid_id", unique = true, nullable = false)
-    private String uuidId = UUID.randomUUID().toString(); // Mã UUID duy nhất cho từng thiết bị
+    @Column(name = "in_use")
+    private Boolean inUse = false;
+
 }

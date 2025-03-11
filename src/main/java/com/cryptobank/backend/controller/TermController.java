@@ -60,7 +60,7 @@ public class TermController {
 
         Term term=new Term();
         term.setId(entity.getId());
-        term.setAmount_month(entity.getAmountMonth());
+        term.setAmountMonth(entity.getAmountMonth());
         term.setType(entity.getType());
         term.setInterestRateOfMonth(entity.getInterestRate());
         //Save term
@@ -78,7 +78,7 @@ public class TermController {
         //TODO: process POST request
         Term term=termDAO.findById(id).orElse(null);
         if(term!=null){
-            term.setDeletedYN(true);
+            term.setDeleted(true);
             termDAO.save(term);
             return ResponseEntity.ok().build();
         }
