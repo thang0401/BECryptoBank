@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Getter
 @Setter
 @Entity
@@ -16,5 +19,8 @@ public class GroupStatus extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "status_id")
     private Status status;
+
+    @OneToMany(mappedBy = "groupStatus")
+    private List<Status> statuses = new ArrayList<>();
 
 }
