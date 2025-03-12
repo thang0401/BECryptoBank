@@ -1,5 +1,18 @@
 package com.cryptobank.backend.controller;
 
+<<<<<<< HEAD
+=======
+
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+>>>>>>> d6d129eefe86f0e7a73979445db3e1eb9f9d48a3
 import com.cryptobank.backend.DTO.UserSavingAccountDTO.InformationFormPostRequestDTO;
 import com.cryptobank.backend.DTO.UserSavingAccountDTO.InformationFormResponseDTO;
 import com.cryptobank.backend.entity.DebitWallet;
@@ -12,6 +25,10 @@ import com.cryptobank.backend.repository.TermDAO;
 import com.cryptobank.backend.repository.UserDAO;
 import com.cryptobank.backend.services.generalServices.AccruedInterestService;
 import com.cryptobank.backend.services.generalServices.WithdrawService;
+<<<<<<< HEAD
+=======
+
+>>>>>>> d6d129eefe86f0e7a73979445db3e1eb9f9d48a3
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
