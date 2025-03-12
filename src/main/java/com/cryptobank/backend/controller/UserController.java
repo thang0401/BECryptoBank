@@ -1,6 +1,7 @@
 package com.cryptobank.backend.controller;
 
 import com.cryptobank.backend.entity.User;
+import com.cryptobank.backend.model.ApiResponse;
 import com.cryptobank.backend.services.generalServices.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -11,48 +12,48 @@ import java.util.List;
 
 @CrossOrigin("*")
 @RestController
-@RequestMapping("/api/${api-version}/users")
+@RequestMapping("/api/users")
 @RequiredArgsConstructor
 public class UserController {
 
     private final UserService userService;
 
     @GetMapping("/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable String id) {
-        return ResponseEntity.ok(userService.get(id));
+    public ResponseEntity<ApiResponse<User>> getUserById(@PathVariable String id) {
+        return ResponseEntity.ok(new ApiResponse<>("", userService.get(id)));
     }
 
     @GetMapping("/name/{name}")
-    public ResponseEntity<List<User>> getUserByName(@PathVariable String name) {
-        return ResponseEntity.ok(userService.getName(name));
+    public ResponseEntity<ApiResponse<List<User>>> getUserByName(@PathVariable String name) {
+        return ResponseEntity.ok(new ApiResponse<>("", userService.getName(name)));
     }
 
     @GetMapping("/email/{email}")
-    public ResponseEntity<User> getUserByEmail(@PathVariable String email) {
-        return ResponseEntity.ok(userService.getEmail(email));
+    public ResponseEntity<ApiResponse<User>> getUserByEmail(@PathVariable String email) {
+        return ResponseEntity.ok(new ApiResponse<>("", userService.getEmail(email)));
     }
 
     @GetMapping
-    public ResponseEntity<List<User>> getAllUsers() {
-        return ResponseEntity.ok(userService.getAll());
+    public ResponseEntity<ApiResponse<List<User>>> getAllUsers() {
+        return ResponseEntity.ok(new ApiResponse<>("", userService.getAll()));
     }
 
     @GetMapping("/page")
-    public ResponseEntity<Page<User>> getAllUsers(
+    public ResponseEntity<ApiResponse<Page<User>>> getAllUsers(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        return ResponseEntity.ok(userService.getAll(page, size));
+        return ResponseEntity.ok(new ApiResponse<>("", userService.getAll(page, size)));
     }
 
     @PostMapping
-    public ResponseEntity<User> creatUser(@RequestBody User user) {
-        return ResponseEntity.ok(userService.save(user));
+    public ResponseEntity<ApiResponse<User>> creatUser(@RequestBody User user) {
+        return ResponseEntity.ok(new ApiResponse<>("", userService.save(user)));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<User> updateUser(@PathVariable String id, @RequestBody User user) {
+    public ResponseEntity<ApiResponse<User>> updateUser(@PathVariable String id, @RequestBody User user) {
         userService.update(id, user);
-        return ResponseEntity.ok(user);
+        return ResponseEntity.ok(new ApiResponse<>("", user));
     }
 
     @DeleteMapping("/{id}")
