@@ -62,4 +62,31 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 
+    // Tìm theo vai trò của User
+    @GetMapping("/role/{roleName}")
+    public ResponseEntity<List<User>> getUsersByRoleName(@PathVariable("roleName") String roleName) {
+        List<User> Users = userService.getUsersByRoleName(roleName);
+        return ResponseEntity.ok(Users);
+    }
+
+    // Tìm theo ranking ID
+    @GetMapping("/ranking/{rankingName}")
+    public ResponseEntity<List<User>> getUsersByRankingName(@PathVariable("rankingName") String rankingName) {
+        List<User> Users = userService.getUsersByRankingName(rankingName);
+        return ResponseEntity.ok(Users);
+    }
+
+    // Tìm theo số điện thoại
+    @GetMapping("/phone/{phoneNumber}")
+    public ResponseEntity<List<User>> getUsersByPhoneNumber(@PathVariable("phoneNumber") String phoneNum) {
+        List<User> Users = userService.getUsersByPhoneNumber(phoneNum);
+        return ResponseEntity.ok(Users);
+    }
+
+    // Tìm theo id_number của Heir
+    @GetMapping("/id-card/{idNumber}")
+    public ResponseEntity<User> getUsersByIdNumber(@PathVariable("idNumber") String idNumber) {
+        return ResponseEntity.ok(userService.getUsersByIdNumber(idNumber));
+    }
+
 }

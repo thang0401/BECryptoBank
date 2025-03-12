@@ -11,7 +11,15 @@ public interface UserDAO extends JpaRepository<User, String> {
 
     User findByEmail(String email);
 
-    User findByPhoneNumber(String phone);
+    List<User> findByPhoneNumberContaining(String phone);
+
+    @Query("select u from User u " +
+            "join u.userRoles ur " +
+            "join ur.role r " +
+            "where r.name = :role")
+    List<User> findByRole(String role);
+
+    List<User> findByRanking_NameContaining(String rankingName);
 
     User findByIdCardNumber(String idNumber);
 
