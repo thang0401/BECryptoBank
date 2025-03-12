@@ -10,6 +10,7 @@ import com.cryptobank.backend.repository.DebitWalletDAO;
 import com.cryptobank.backend.repository.SavingAccountDAO;
 import com.cryptobank.backend.repository.TermDAO;
 import com.cryptobank.backend.repository.UserDAO;
+import com.cryptobank.backend.services.generalServices.AccruedInterestService;
 import com.cryptobank.backend.services.generalServices.WithdrawService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,12 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+
+
 
 
 @RestController
@@ -29,7 +36,7 @@ public class UserSavingController {
     SavingAccountDAO savingAccountDAO;
     DebitWalletDAO debitWalletDAO;
     WithdrawService withdrawService;
-
+    AccruedInterestService accruedInterestService;
     
 
     @GetMapping("/add-saving-asset")
@@ -42,6 +49,20 @@ public class UserSavingController {
         return ResponseEntity.ok(informationFormResponseDTO);}
         return ResponseEntity.notFound().build();
     }
+
+    @GetMapping("/account-status")
+    public ResponseEntity<?> getAccuredInterest(@RequestBody String accountId) {
+        SavingAccount savingAccount=savingAccountDAO.findById(accountId).orElse(null);
+        if(savingAccount!=null){
+
+
+
+
+            return ResponseEntity.ok().build();
+        }
+        return ResponseEntity.notFound().build();
+    }
+    
 
     @PostMapping("/add-saving-asset")
     public ResponseEntity<?> postMethodName(@RequestParam(required = true) String userId,@RequestBody InformationFormPostRequestDTO entity) {
@@ -100,6 +121,27 @@ public class UserSavingController {
         }
         return ResponseEntity.badRequest().body("Not succesful causing by insufficient balance"); 
     }
+
+    @PostMapping("/withdraw-saving")
+    public ResponseEntity<?> postMethodName(@RequestBody String accountId) {
+        //TODO: process POST request
+        SavingAccount savingAccount=savingAccountDAO.findById(accountId).orElse(null);
+        if(savingAccount!=null){
+            Boolean userConfirmation=getUserConfirmation();
+            if(userConfirmation){
+                return ResponseEntity.ok().build();
+
+            }
+        }
+
+
+        return ResponseEntity.badRequest().build();
+    }
+    
+    private Boolean getUserConfirmation(){
+        return null;
+    }
+
     
     private Integer provideOTP(){
         return 123456;
