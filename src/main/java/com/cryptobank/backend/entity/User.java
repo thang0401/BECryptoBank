@@ -5,6 +5,10 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Entity này được sử dụng trong chức năng Authentication.<br>
@@ -107,5 +111,32 @@ public class User extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ranking_id")
     private Ranking ranking;
+
+    @OneToMany(mappedBy = "user")
+    private List<UserRole> userRoles = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user")
+    private List<DebitWallet> debitWallets = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user")
+    private List<DeviceInfo> deviceInfoes = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user")
+    private List<Loan> loans = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user")
+    private List<Passkey> passkeys = new ArrayList<>();
+
+    @OneToMany(mappedBy = "beReferralUser")
+    private List<ReferralBonus> beReferralBonuses = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user")
+    private List<SavingAccount> savingAccounts = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user")
+    private List<SavingTransaction> savingTransactions = new ArrayList<>();
+
+    @OneToMany(mappedBy = "beReferralUser", orphanRemoval = true)
+    private List<ReferralBonus> referralBonuses = new ArrayList<>();
 
 }
