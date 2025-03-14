@@ -14,7 +14,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -40,7 +40,7 @@ public class AuthService {
 			device.setDeviceId(session.getId()); // Lưu sessionId thay vì token
 			device.setDeviceName(request.getHeader("User-Agent")); // Lấy thông tin thiết bị từ User-Agent
 			device.setIpAddress(request.getRemoteAddr()); // Lấy địa chỉ IP
-			device.setLastLogin(ZonedDateTime.now());
+			device.setLastLoginAt(OffsetDateTime.now());
 			device.setUser(user);
 
 			deviceInfoRepository.save(device);

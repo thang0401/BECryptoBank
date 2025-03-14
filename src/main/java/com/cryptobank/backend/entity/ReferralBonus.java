@@ -1,35 +1,30 @@
 package com.cryptobank.backend.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.*;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import java.math.BigDecimal;
 
 @Getter
 @Setter
-@ToString(callSuper = true)
-@NoArgsConstructor
-@AllArgsConstructor
 @Entity
-@Table(name="referral_bonus")
+@Table(name = "referral_bonus")
 public class ReferralBonus extends BaseEntity {
 
-    @JsonIgnore
-    @ManyToOne
-    @JoinColumn(name="user_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
     private User user;
 
-    @Column(name="bonus_amount")
-    private Double bonusAmount;
+    @Column(name = "bonus_amount")
+    private BigDecimal bonusAmount = BigDecimal.valueOf(5);
 
-    @Column(name="status_id")
-    private String statusId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "status_id")
+    private Status status;
 
-    @Column(name="referral_user_id")
-    private String referralUserId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "referral_user_id")
+    private User referralUser;
 
 }

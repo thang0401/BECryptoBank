@@ -1,6 +1,6 @@
 package com.cryptobank.backend.controller;
 
-
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -12,18 +12,22 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.cryptobank.backend.DTO.UserSavingAccountDTO.InformationFormPostRequestDTO;
 import com.cryptobank.backend.DTO.UserSavingAccountDTO.InformationFormResponseDTO;
-import com.cryptobank.backend.entity.DebitAccount;
+import com.cryptobank.backend.entity.DebitWallet;
 import com.cryptobank.backend.entity.SavingAccount;
 import com.cryptobank.backend.entity.Term;
 import com.cryptobank.backend.entity.User;
+import com.cryptobank.backend.repository.DebitWalletDAO;
 import com.cryptobank.backend.repository.SavingAccountDAO;
 import com.cryptobank.backend.repository.TermDAO;
 import com.cryptobank.backend.repository.UserDAO;
 import com.cryptobank.backend.services.generalServices.WithdrawService;
-
 import lombok.AllArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.UUID;
 
 
 @RestController
@@ -33,15 +37,16 @@ public class UserSavingController {
     TermDAO termDAO;
     UserDAO userDAO;
     SavingAccountDAO savingAccountDAO;
+    DebitWalletDAO debitWalletDAO;
     WithdrawService withdrawService;
 
     @GetMapping("/add-saving-asset")
     public ResponseEntity<InformationFormResponseDTO> getData(@RequestParam String userId) {
         List<Term> terms=getTerm();
         User user=getUserAccount(userId);
-        List<DebitAccount> debitAccounts=getUserDebitAccounts(user);
-        if(debitAccounts!=null){
-        InformationFormResponseDTO informationFormResponseDTO=new InformationFormResponseDTO(debitAccounts,terms);
+        List<DebitWallet> debitWallets=getUserDebitWallets(user);
+        if(debitWallets!=null){
+        InformationFormResponseDTO informationFormResponseDTO=new InformationFormResponseDTO(debitWallets,terms);
         return ResponseEntity.ok(informationFormResponseDTO);}
         return ResponseEntity.notFound().build();
     }
@@ -52,9 +57,9 @@ public class UserSavingController {
         System.out.println(userId);
         System.out.println(entity.toString());
         User user=getUserAccount(userId);
-        List<DebitAccount> debitAccounts=getUserDebitAccounts(user);
-        DebitAccount account=null;
-        for (DebitAccount debitAccount : debitAccounts) {
+        List<DebitWallet> debitWallets=getUserDebitWallets(user);
+        DebitWallet account=null;
+        for (DebitWallet debitAccount : debitWallets) {
             System.out.println(debitAccount.getId());
             if(debitAccount.getId().equals(entity.getDebitAccountId())){
                 account=debitAccount;
@@ -85,7 +90,7 @@ public class UserSavingController {
             UUID uuid=UUID.randomUUID();
             //Save to DB
             SavingAccount newSavingAccount=new SavingAccount();
-            newSavingAccount.setBalance(entity.getAmount());
+            newSavingAccount.setBalance(BigDecimal.valueOf(entity.getAmount()));
             // newSavingAccount.setHeirStatus(false);
             newSavingAccount.setInterestRate(selectedTerm.getInterestRateOfMonth());
             // newSavingAccount.setCreatedBy(userId);
@@ -113,8 +118,8 @@ public class UserSavingController {
         return user;
     }
 
-    private List<DebitAccount> getUserDebitAccounts(User user){
-        return user.getDebitAccounts();
+    private List<DebitWallet> getUserDebitWallets(User user){
+        return debitWalletDAO.findByUserId(user.getId());
     }
 
     private List<Term> getTerm(){
