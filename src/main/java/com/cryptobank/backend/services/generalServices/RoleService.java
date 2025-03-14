@@ -44,11 +44,7 @@ public class RoleService {
 
     public Role update(String id, RoleUpdateRequest request) {
         Role found = getById(id);
-        Role updated = roleMapper.fromUpdateRequest(request);
-        if (found.equals(updated)) {
-            return null;
-        }
-        updated.setDeleted(false);
+        Role updated = roleMapper.fromUpdateRequest(found, request);
         return dao.save(updated);
     }
 

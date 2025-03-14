@@ -7,7 +7,6 @@ import com.cryptobank.backend.model.ApiResponse;
 import com.cryptobank.backend.services.generalServices.RoleService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.web.PagedModel;
 import org.springframework.http.ResponseEntity;
