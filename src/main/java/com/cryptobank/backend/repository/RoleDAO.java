@@ -7,7 +7,4 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface RoleDAO extends JpaRepository<Role, String>, JpaSpecificationExecutor<Role> {
-
-    Role findByName(String name);
-
 }
