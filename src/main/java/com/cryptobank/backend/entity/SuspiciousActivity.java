@@ -32,6 +32,7 @@ public class SuspiciousActivity extends BaseEntity {
     @Column(name = "reason", columnDefinition = "TEXT")
     private String reason;
 
+    @Column(name = "detected_at")
     private OffsetDateTime detectedAt;
 
 }
