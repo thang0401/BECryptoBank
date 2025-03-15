@@ -1,7 +1,6 @@
 package com.cryptobank.backend.services.generalServices;
 
 import com.cryptobank.backend.entity.User;
-import com.cryptobank.backend.exception.AlreadyExistException;
 import com.cryptobank.backend.repository.UserDAO;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -46,7 +45,7 @@ public class UserService {
     public User save(User entity) {
         User user = repository.findByEmail(entity.getEmail());
         if (user != null) {
-            throw new AlreadyExistException("User with email " + entity.getEmail() + " already exists");
+            throw new RuntimeException("User with email " + entity.getEmail() + " already exists");
         } else {
             return repository.save(entity);
         }
@@ -115,4 +114,19 @@ public class UserService {
         save(userChangePass);
     }
 
+    public List<User> getUsersByRoleName(String roleName) {
+        return repository.findByRole(roleName);
+    }
+
+    public List<User> getUsersByRankingName(String rankingName) {
+        return repository.findByRanking_NameContaining(rankingName);
+    }
+
+    public List<User> getUsersByPhoneNumber(String phoneNum) {
+        return repository.findByPhoneNumberContaining(phoneNum);
+    }
+
+    public User getUsersByIdNumber(String idNumber) {
+        return repository.findByIdCardNumber(idNumber);
+    }
 }

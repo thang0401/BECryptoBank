@@ -4,7 +4,6 @@ DB_NAME: CryptoBank
 DB_USER: postgresql
 DB_PASS: CjZwTK1f03pY
 
-api-version: v1
 server:
   port: 8000
 springdoc:

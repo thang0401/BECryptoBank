@@ -6,6 +6,7 @@ import com.cryptobank.backend.entity.DebitWallet;
 import com.cryptobank.backend.entity.SavingAccount;
 import com.cryptobank.backend.entity.Term;
 import com.cryptobank.backend.entity.User;
+import com.cryptobank.backend.model.ApiResponse;
 import com.cryptobank.backend.repository.DebitWalletDAO;
 import com.cryptobank.backend.repository.SavingAccountDAO;
 import com.cryptobank.backend.repository.TermDAO;
@@ -22,7 +23,7 @@ import java.util.UUID;
 
 @RestController
 @AllArgsConstructor
-@RequestMapping("/user/saving")
+@RequestMapping("/api/user/saving")
 public class UserSavingController {
     TermDAO termDAO;
     UserDAO userDAO;
@@ -33,13 +34,13 @@ public class UserSavingController {
     
 
     @GetMapping("/add-saving-asset")
-    public ResponseEntity<InformationFormResponseDTO> getData(@RequestParam String userId) {
+    public ResponseEntity<ApiResponse<InformationFormResponseDTO>> getData(@RequestParam String userId) {
         List<Term> terms=getTerm();
         User user=getUserAccount(userId);
         List<DebitWallet> debitWallets=getUserDebitWallets(user);
         if(debitWallets!=null){
         InformationFormResponseDTO informationFormResponseDTO=new InformationFormResponseDTO(debitWallets,terms);
-        return ResponseEntity.ok(informationFormResponseDTO);}
+        return ResponseEntity.ok(new ApiResponse<>("", informationFormResponseDTO));}
         return ResponseEntity.notFound().build();
     }
 

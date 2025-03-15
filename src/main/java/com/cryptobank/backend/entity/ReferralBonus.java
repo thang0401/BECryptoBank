@@ -25,6 +25,6 @@ public class ReferralBonus extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "referral_user_id")
-    private User referralUser;
+    private User beReferralUser;
 
 }

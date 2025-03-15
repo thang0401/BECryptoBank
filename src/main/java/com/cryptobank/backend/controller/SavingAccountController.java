@@ -11,17 +11,18 @@ import java.util.List;
 
 @CrossOrigin("*")
 @RestController
+@RequestMapping("/api/customer-management")
 public class SavingAccountController {
 
     @Autowired
     SavingAccountService userPortfolioService;
 
-    @GetMapping("/customer-management")
+    @GetMapping
     public ResponseEntity<List<SavingAccount>> getAll() {
         return ResponseEntity.ok(userPortfolioService.findAll());
     }
 
-    @GetMapping("/customer-management/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<SavingAccount> getOne(@PathVariable("id") String id) {
         if (!userPortfolioService.existsById(id)) {
             return ResponseEntity.notFound().build();
@@ -29,7 +30,7 @@ public class SavingAccountController {
         return ResponseEntity.ok(userPortfolioService.findById(id));
     }
 
-    @PostMapping("/customer-management")
+    @PostMapping
     public ResponseEntity<SavingAccount> post(@RequestBody SavingAccount userPortfolio) {
         if (userPortfolioService.existsById(userPortfolio.getId())) {
             return ResponseEntity.badRequest().build();
@@ -38,7 +39,7 @@ public class SavingAccountController {
         return ResponseEntity.ok(userPortfolio);
     }
 
-    @PutMapping("/customer-management/{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<SavingAccount> put(@PathVariable("id") String id, @RequestBody SavingAccount userPortfolio) {
         if (!userPortfolioService.existsById(id)) {
             return ResponseEntity.notFound().build();
@@ -47,7 +48,7 @@ public class SavingAccountController {
         return ResponseEntity.ok(userPortfolio);
     }
 
-    @DeleteMapping("/customer-management/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable("id") String id) {
         if (!userPortfolioService.existsById(id)) {
             return ResponseEntity.notFound().build();
@@ -57,7 +58,7 @@ public class SavingAccountController {
     }
     
     // Tìm theo customer_id
-    @GetMapping("/customer-management/customer-id/{customerId}")
+    @GetMapping("/customer-id/{customerId}")
     public ResponseEntity<List<SavingAccount>> getUserPortfoliosByCustomerId(@PathVariable("customerId") String customerId) {
         List<SavingAccount> userPortfolios = userPortfolioService.getUserPortfoliosByCustomerId(customerId);
         return ResponseEntity.ok(userPortfolios);
@@ -78,14 +79,14 @@ public class SavingAccountController {
 //    }
 
     // Tìm theo số điện thoại
-    @GetMapping("/customer-management/phone/{phoneNum}")
+    @GetMapping("/phone/{phoneNum}")
     public ResponseEntity<List<SavingAccount>> getUserPortfoliosByPhoneNumber(@PathVariable("phoneNum") String phoneNum) {
         List<SavingAccount> userPortfolios = userPortfolioService.getUserPortfoliosByPhoneNumber(phoneNum);
         return ResponseEntity.ok(userPortfolios);
     }
 
     // Tìm theo tên User (first name hoặc last name)
-    @GetMapping("/customer-management/name/{name}")
+    @GetMapping("/name/{name}")
     public ResponseEntity<List<SavingAccount>> getUserPortfoliosByUserName(@PathVariable("name") String name) {
         List<SavingAccount> userPortfolios = userPortfolioService.getUserPortfoliosByUserName(name);
         return ResponseEntity.ok(userPortfolios);
