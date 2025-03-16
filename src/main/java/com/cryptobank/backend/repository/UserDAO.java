@@ -6,25 +6,32 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface UserDAO extends JpaRepository<User, String> {
 
-    Optional<User> findByEmail(String email);
-    
-    @Query("SELECT c FROM User c WHERE c.email=:email")
-    User getByEmail(String email);
+    User findByEmail(String email);
 
+    User findByPhoneNumber(String phone);
+
+    User findByIdCardNumber(String idNumber);
+
+    boolean existsByEmail(String email);
+
+    boolean existsByPhoneNumber(String phone);
+
+    boolean existsByIdCardNumber(String idNumber);
+
+    /**
+     * Lấy danh sách User chứa tên liên quan (bỏ qua hoa thường)
+     * @param name Tên cần tìm
+     * @return Danh sách user
+     */
     @Query("SELECT c FROM User c " +
             "WHERE LOWER(CONCAT(c.firstName, ' ', c.lastName)) LIKE LOWER(CONCAT('%', :name, '%'))")
     List<User> findByName(String name);
 
-    @Query("SELECT new com.cryptobank.backend.model.CustomerUserDetails(c.email, c.password, c.role.id) FROM User c WHERE c.email = :email")
-    Optional<CustomerUserDetails> authenticate(String email);
-    
-
-    Optional<User> findByPhone(String phone);
-    
-    Optional<User> findByIdNumber(String idNumber);
+    @Query("SELECT new com.cryptobank.backend.model.CustomerUserDetails(u.email, u.password, 'ROLE_USER') FROM User u " +
+            "WHERE u.email = :email")
+    CustomerUserDetails authenticate(String email);
 
 }

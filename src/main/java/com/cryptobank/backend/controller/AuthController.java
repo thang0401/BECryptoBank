@@ -1,5 +1,6 @@
 package com.cryptobank.backend.controller;
 
+
 import java.util.List;
 import java.util.Optional;
 
@@ -17,29 +18,33 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.cryptobank.backend.DTO.ForgotPasswordRequest;
 import com.cryptobank.backend.DTO.LoginRequest;
+=======
+import com.cryptobank.backend.DTO.AuthResponse;
+>>>>>>> 1dc3679127a9ebd69ba397065a0c251b767ed78b
 import com.cryptobank.backend.DTO.NameSplit;
 import com.cryptobank.backend.DTO.RegisterRequest;
 import com.cryptobank.backend.DTO.ResetPasswordRequest;
 import com.cryptobank.backend.entity.DeviceInfo;
 import com.cryptobank.backend.entity.User;
 import com.cryptobank.backend.services.generalServices.AuthService;
-import com.cryptobank.backend.services.user.UserService;
-
+import com.cryptobank.backend.services.generalServices.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
-
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/Auth")
+@RequestMapping("/api/auth")
 public class AuthController {
 	@Autowired
 	private AuthService authService;
 	@Autowired
 	private UserService userService;
 
-	@Autowired
 	private PasswordEncoder passwordEncoder;
 
 	// Constructor
@@ -54,13 +59,14 @@ public class AuthController {
 
 	// Đăng nhập
 	@PostMapping("/login")
-	public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest,
-	                               HttpServletRequest request, HttpSession session) {
-	    if (authService.login(loginRequest.getEmail(), loginRequest.getPassword(), request, session)) {
-	        return ResponseEntity.status(HttpStatus.ACCEPTED).body("Đăng nhập thành công");
-	    } else {
-	        return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body("Đăng nhập thất bại");
-	    }
+	public ResponseEntity<?> login(@RequestParam String email, @RequestParam String password,
+			HttpServletRequest request, HttpSession session) {
+		// Gọi phương thức login từ AuthService để xử lý logic đăng nhập
+		if (authService.login(email, password, request, session)) {
+			return ResponseEntity.status(HttpStatus.ACCEPTED).body("Đăng nhập thành công");
+		} else {
+			return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body("Đăng nhập thất bại");
+		}
 	}
 	
 	@PostMapping("/login/OTP")
@@ -75,7 +81,6 @@ public class AuthController {
 			return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body("Xác Thực OTP Thất bại");
 		}
 	}
-
 
 	// Đăng xuất
 	@PostMapping("/logout")
@@ -108,27 +113,26 @@ public class AuthController {
 		user.setEmail(registerRequest.getEmail());
 		user.setFirstName(getFirstAndLastName(registerRequest.getFullname()).getFirstName());
 		user.setLastName(getFirstAndLastName(registerRequest.getFullname()).getLastname());
-		user.setPhone(registerRequest.getPhoneNumber());
-		user.setIdNumber(registerRequest.getIdCardNumber());
+		user.setPhoneNumber(registerRequest.getPhoneNumber());
+		user.setIdCardNumber(registerRequest.getIdCardNumber());
 		user.setPassword(encodePassword(registerRequest.getPassword())); // Mã hóa mật khẩu
 
 		// Lưu người dùng vào cơ sở dữ liệu
-		userService.createUser(user);
+		userService.save(user);
 
 		return ResponseEntity.status(HttpStatus.CREATED).body("Đăng ký thành công");
 	}
 
 	// Yêu cầu quên mật khẩu
 	@PostMapping("/forgot-password")
-	public ResponseEntity<?> requestResetPassword(@RequestBody ForgotPasswordRequest request, HttpSession session) {
-	    try {
-	        userService.requestResetPassword(request.getEmail(), session);
-	        return ResponseEntity.ok("Mã xác thực đã được gửi đến email của bạn");
-	    } catch (Exception e) {
-	        return ResponseEntity.badRequest().body(e.getMessage());
-	    }
+	public ResponseEntity<?> requestResetPassword(@RequestBody String email, HttpSession session) {
+		try {
+			userService.requestResetPassword(email, session);
+			return ResponseEntity.ok("Mã xác thực đã được gửi đến email của bạn");
+		} catch (Exception e) {
+			return ResponseEntity.badRequest().body(e.getMessage());
+		}
 	}
-
 
 	// Đổi mật khẩu
 	@PostMapping("/reset-password")
@@ -161,6 +165,7 @@ public class AuthController {
 
 		return new NameSplit(firstName, lastName);
 	}
+
 	
 	@GetMapping("/getAllDevice/{userId}")
 	public ResponseEntity<List<Optional<DeviceInfo>>> getAllDeviceFromUser(@PathVariable String userId)
@@ -169,5 +174,13 @@ public class AuthController {
 		
 		return ResponseEntity.ok(lissDevice);
 	}
+
+
+	@PostMapping("/accesstoken")
+	public AuthResponse getAccessToken(@RequestParam String username, @RequestParam String password) {
+		return authService.authenticate(username, password);
+	}
+
+
 }
 

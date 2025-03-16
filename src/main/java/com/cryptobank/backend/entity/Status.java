@@ -1,48 +1,23 @@
 package com.cryptobank.backend.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
-import java.time.ZonedDateTime;
-
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Getter
+@Setter
 @Entity
 @Table(name = "status")
-public class Status {
+public class Status extends BaseEntity {
 
-    @Id
-    @Column(name = "id")
-    private String id;
-
-    @Column(name = "name")
+    @Column(name = "name", columnDefinition = "TEXT")
     private String name;
 
-    @Column(name = "note")
+    @Column(name = "note", columnDefinition = "TEXT")
     private String note;
 
-    @Column(name = "delete_yn")
-    private Boolean deleted;
-
-    @Column(name = "created_date")
-    private ZonedDateTime createdDate;
-
-    @Column(name = "created_by")
-    private String createdBy;
-
-    @Column(name = "modified_date")
-    private ZonedDateTime modifiedDate;
-
-    @Column(name = "modified_by")
-    private String modifiedBy;
-
-    @Column(name="group_id")
-    private String groupId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "group_status_id")
+    private GroupStatus groupStatus;
 
 }

@@ -1,132 +1,113 @@
 package com.cryptobank.backend.entity;
 
-
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 
-import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
-import java.util.List;
+import java.time.OffsetDateTime;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+/**
+ * Entity này được sử dụng trong chức năng Authentication.<br>
+ * Sẽ được tạo thành JWT.
+ */
+@Getter
+@Setter
 @Entity
-@Builder
 @Table(name = "users")
-public class User {
+public class User extends BaseEntity {
 
-    @Id
-    @Column(name = "id")
-    private String id;
-
-    @Column(name = "first_name")
-    private String firstName;
-
-    @Column(name="role_id")
-    private String roleId;
-
-    @Column(name = "phone_num")
-    private String phone;
-
-    @Column(name = "gender")
-    private String gender;
-
-    @Column(name = "email", nullable = false, unique = true)
-    private String email;
-
-    @Column(name = "avatar_url")
-    private String avatarURL;
-
-    @Column(name="status_id")
-    private String statusId;
-
-    @Column(name="ranking_id")
-    private String rankingId;
-
-    @Column(name = "password")
-    private String password;
-
-    @Column(name = "smart_otp")
-    private String smartOTP;
-
-    @Column(name = "id_number")
-    private String idNumber;
-
-    @Column(name = "google_id")
-    private String googleId;
-
-    @Column(name="address_id")
-    private String addressId;
-
-    @Column(name = "date_of_birth")
-    private LocalDateTime dateOfBirth;
-
-    @Column(name = "id_card_front_img_url")
-    private String idCardFrontImgURL;
-
-    @Column(name = "id_card_back_img_url")
-    private String idCardBackImgURL;
-
-    @Column(name = "is_activated")
-    private Boolean activated;
-
-    @Column(name = "created_date")
-    private ZonedDateTime createdDate;
-
-    @Column(name = "created_by")
-    private String createdBy;
-
-    @Column(name = "modified_date")
-    private ZonedDateTime modifiedDate;
-
-    @Column(name = "modified_by")
-    private String modifiedBy;
-
-    @Column(name = "type_sign_in")
-    private String type_sign_in;
-
-    @Column(name = "last_name")
-    private String lastName;
-
-    @Column(name = "user_name")
+    @Column(name = "username", columnDefinition = "TEXT", unique = true)
     private String username;
 
+    @Column(name = "email", columnDefinition = "TEXT", unique = true, nullable = false)
+    private String email;
+
+    @Column(name = "password", columnDefinition = "TEXT")
+    private String password;
+
+    @Column(name = "provider", columnDefinition = "TEXT")
+    private String provider;
+
+    @Column(name = "provider_id", columnDefinition = "TEXT")
+    private String providerId;
+
+    @Column(name = "full_name", columnDefinition = "TEXT")
+    private String fullName;
+
+    @Column(name = "avatar", columnDefinition = "TEXT")
+    private String avatar;
+
+    @Column(name = "last_login_at")
+    private OffsetDateTime lastLoginAt;
+
+    @Column(name = "first_name", columnDefinition = "TEXT")
+    private String firstName;
+
+    @Column(name = "middle_name", columnDefinition = "TEXT")
+    private String middleName;
+
+    @Column(name = "last_name", columnDefinition = "TEXT")
+    private String lastName;
+
+    @Column(name = "phone_number", columnDefinition = "TEXT")
+    private String phoneNumber;
+
+    @Column(name = "gender", columnDefinition = "TEXT")
+    private String gender;
+
+    @Column(name = "avatar_url", columnDefinition = "TEXT")
+    private String avatarUrl;
+
+    @Column(name = "smart_otp", columnDefinition = "TEXT")
+    private String smartOtp;
+
+    @Column(name = "date_of_birth")
+    private OffsetDateTime dateOfBirth;
+
+    @Column(name = "id_card_number", columnDefinition = "TEXT")
+    private String idCardNumber;
+
+    @Column(name = "id_card_front_img_url", columnDefinition = "TEXT")
+    private String idCardFrontImgUrl;
+
+    @Column(name = "id_card_back_img_url", columnDefinition = "TEXT")
+    private String idCardBackImgUrl;
+
     @Column(name = "kyc_status")
-    private Boolean kyc_status;
+    private Boolean kycStatus = false;
 
-    @Column(name="delete_yn")
-    private Boolean isDeleted;
+    @Column(name = "home_address", columnDefinition = "TEXT")
+    private String homeAddress;
 
-    @Column(name="ward")
+    @Column(name = "ward", columnDefinition = "TEXT")
     private String ward;
 
-    @Column(name="district")
+    @Column(name = "district", columnDefinition = "TEXT")
     private String district;
 
-    @Column(name="province")
+    @Column(name = "province", columnDefinition = "TEXT")
     private String province;
 
-    @Column(name="nation")
+    @Column(name = "nation", columnDefinition = "TEXT")
     private String nation;
 
-    @Column(name = "privy_id")
+    @Column(name = "privy_id", columnDefinition = "TEXT")
     private String privyId;
 
-    @Column(name = "wallet_address")
+    @Column(name = "wallet_address", columnDefinition = "TEXT")
     private String walletAddress;
 
     @Column(name = "has_accepted_terms")
-    private Boolean hasAcceptedTerms;
+    private Boolean hasAcceptedTerms = false;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    private List<AccountRole> roles;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "status_id")
+    private Status status;
 
-    @OneToMany(mappedBy= "user",cascade = CascadeType.ALL)
-    private List<DebitAccount> debitAccounts;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ranking_id")
+    private Ranking ranking;
+
 
     @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
     private List<DeviceInfo> devices;
@@ -145,4 +126,5 @@ public class User {
     
     @OneToOne(mappedBy = "user")
     private UserOtp userOtp;
+
 }
