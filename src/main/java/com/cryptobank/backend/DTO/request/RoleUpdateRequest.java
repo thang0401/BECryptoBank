@@ -1,4 +1,4 @@
-package com.cryptobank.backend.DTO;
+package com.cryptobank.backend.DTO.request;
 
 import lombok.Data;
 
