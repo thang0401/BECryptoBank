@@ -1,7 +1,9 @@
 package com.cryptobank.backend.services.generalServices;
 
-import com.cryptobank.backend.DTO.RoleUrlCreateRequest;
-import com.cryptobank.backend.DTO.RoleUrlUpdateRequest;
+import com.cryptobank.backend.DTO.RoleDTO;
+import com.cryptobank.backend.DTO.RoleUrlDTO;
+import com.cryptobank.backend.DTO.request.RoleUrlCreateRequest;
+import com.cryptobank.backend.DTO.request.RoleUrlUpdateRequest;
 import com.cryptobank.backend.entity.RoleUrl;
 import com.cryptobank.backend.mapper.RoleUrlMapper;
 import com.cryptobank.backend.repository.RoleUrlDAO;
@@ -18,8 +20,18 @@ public class RoleUrlService {
     private final RoleUrlDAO dao;
     private final RoleUrlMapper mapper;
 
-    public Page<RoleUrl> getAll(Pageable pageable) {
-        return dao.findAll(pageable);
+    public Page<RoleUrlDTO> getAll(Pageable pageable) {
+        return dao.findAll(ignoreDeleted(), pageable).map(mapper::toResponse);
+    }
+
+    public RoleUrlDTO toResponseFromId(String id) {
+        RoleUrl role = getById(id);
+        return role == null ? null : mapper.toResponse(role);
+    }
+
+    public RoleUrlDTO toResponseFromUrl(String url) {
+        RoleUrl role = getByUrl(url);
+        return role == null ? null : mapper.toResponse(role);
     }
 
     public RoleUrl getById(String id) {
@@ -29,30 +41,29 @@ public class RoleUrlService {
 
     public RoleUrl getByUrl(String url) {
         return dao.findOne(ignoreDeleted()
-                .and((root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("function_url"), url))).orElse(null);
+                .and((root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("functionUrl"), url))).orElse(null);
     }
 
     public RoleUrl getByRoleAndUrl(String role, String url) {
         return dao.findOne(ignoreDeleted()
-                .and((root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("role_id"), role))
-                .and((root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("function_url"), url))).orElse(null);
+                .and((root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("role").get("id"), role))
+                .and((root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("functionUrl"), url))).orElse(null);
     }
 
-    public RoleUrl save(RoleUrlCreateRequest request) {
-        RoleUrl found = getByRoleAndUrl(request.getRoleId(), request.getUrl());
-        if (found != null && found.getDeleted()) {
+    public RoleUrlDTO save(RoleUrlCreateRequest request) {
+        RoleUrl found = getByRoleAndUrl(request.getRole(), request.getUrl());
+        if (found != null) {
             found.setDeleted(false);
-            dao.save(found);
-            return found;
+            return mapper.toResponse(dao.save(found));
         }
         RoleUrl roleUrl = mapper.fromCreateRequest(request);
-        return dao.save(roleUrl);
+        return mapper.toResponse(dao.save(roleUrl));
     }
 
-    public RoleUrl update(String id, RoleUrlUpdateRequest request) {
+    public RoleUrlDTO update(String id, RoleUrlUpdateRequest request) {
         RoleUrl found = getById(id);
         RoleUrl updated = mapper.fromUpdateRequest(found, request);
-        return dao.save(updated);
+        return mapper.toResponse(dao.save(updated));
     }
 
     public boolean delete(String id) {
@@ -66,7 +77,7 @@ public class RoleUrlService {
     }
 
     private Specification<RoleUrl> ignoreDeleted() {
-        return (root, query, criteriaBuilder) -> criteriaBuilder.isFalse(root.get("delete_yn"));
+        return (root, query, criteriaBuilder) -> criteriaBuilder.notEqual(root.get("deleted"), true);
     }
 
 }
