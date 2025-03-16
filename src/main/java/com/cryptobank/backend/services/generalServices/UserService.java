@@ -26,7 +26,7 @@ public class UserService {
     public User get(String id) {
         return repository.findById(id)
                 .filter(user -> !user.getDeleted())
-                .orElseThrow(() -> new RuntimeException("User id " + id + " not found or deleted"));
+                .orElseThrow(() -> new RuntimeException("User id " + id + " not found "));
     }
 
     public List<User> getAll() {
@@ -127,7 +127,7 @@ public class UserService {
         // Tìm người dùng qua email
         User user = getEmail(email);
         if (user == null || user.getDeleted()) {
-            throw new RuntimeException("User with email " + email + " not found or deleted");
+            throw new RuntimeException("User with email " + email + " not found ");
         }
 
         // Kiểm tra mã resetCode có đúng không

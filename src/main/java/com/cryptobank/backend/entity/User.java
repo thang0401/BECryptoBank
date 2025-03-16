@@ -1,17 +1,17 @@
 package com.cryptobank.backend.entity;
 
 import jakarta.persistence.*;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 import java.time.OffsetDateTime;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * Entity này được sử dụng trong chức năng Authentication.<br>
@@ -20,9 +20,8 @@ import java.util.List;
 @Getter
 @Setter
 @Entity
-@Builder
 @Table(name = "users")
-public class User extends BaseEntity implements Serializable {
+public class User extends BaseEntity implements Serializable{
 
     @Column(name = "username", columnDefinition = "TEXT", unique = true)
     private String username;
@@ -30,98 +29,83 @@ public class User extends BaseEntity implements Serializable {
     @Column(name = "password", columnDefinition = "TEXT")
     private String password;
 
-    @Column(name = "first_name")
-    private String firstName;
-
-    @Column(name="role_id")
-    private String roleId;
-
-    @Column(name = "phone_num")
-    private String phone;
-
-    @Column(name = "gender")
-    private String gender;
-
-    @Column(name = "email", nullable = false, unique = true)
+    @Column(name = "email", columnDefinition = "TEXT", unique = true, nullable = false)
     private String email;
 
-    @Column(name = "avatar_url")
-    private String avatarURL;
+    @Column(name = "provider", columnDefinition = "TEXT")
+    private String provider;
 
-    @Column(name="status_id")
-    private String statusId;
+    @Column(name = "provider_id", columnDefinition = "TEXT")
+    private String providerId;
 
-    @Column(name="ranking_id")
-    private String rankingId;
+    @Column(name = "full_name", columnDefinition = "TEXT")
+    private String fullName;
 
-    @Column(name = "smart_otp")
-    private String smartOTP;
+    @Column(name = "avatar", columnDefinition = "TEXT")
+    private String avatar;
 
-    @Column(name = "id_number")
-    private String idNumber;
+    @Column(name = "last_login_at")
+    private OffsetDateTime lastLoginAt;
 
-    @Column(name = "google_id")
-    private String googleId;
+    @Column(name = "first_name", columnDefinition = "TEXT")
+    private String firstName;
 
-    @Column(name="address_id")
-    private String addressId;
+    @Column(name = "middle_name", columnDefinition = "TEXT")
+    private String middleName;
 
-    @Column(name = "date_of_birth")
-    private ZonedDateTime dateOfBirth;
-
-    @Column(name = "id_card_front_img_url")
-    private String idCardFrontImgURL;
-
-    @Column(name = "id_card_back_img_url")
-    private String idCardBackImgURL;
-
-    @Column(name = "is_activated")
-    private Boolean activated;
-
-    @Column(name = "created_date")
-    private ZonedDateTime createdDate;
-
-    @Column(name = "created_by")
-    private String createdBy;
-
-    @Column(name = "modified_date")
-    private ZonedDateTime modifiedDate;
-
-    @Column(name = "modified_by")
-    private String modifiedBy;
-
-    @Column(name = "type_sign_in")
-    private String type_sign_in;
-
-    @Column(name = "last_name")
+    @Column(name = "last_name", columnDefinition = "TEXT")
     private String lastName;
 
+    @Column(name = "phone_number", columnDefinition = "TEXT")
+    private String phoneNumber;
+
+    @Column(name = "gender", columnDefinition = "TEXT")
+    private String gender;
+
+    @Column(name = "avatar_url", columnDefinition = "TEXT")
+    private String avatarUrl;
+
+    @Column(name = "smart_otp", columnDefinition = "TEXT")
+    private String smartOtp;
+
+    @Column(name = "date_of_birth")
+    private OffsetDateTime dateOfBirth;
+
+    @Column(name = "id_card_number", columnDefinition = "TEXT")
+    private String idCardNumber;
+
+    @Column(name = "id_card_front_img_url", columnDefinition = "TEXT")
+    private String idCardFrontImgUrl;
+
+    @Column(name = "id_card_back_img_url", columnDefinition = "TEXT")
+    private String idCardBackImgUrl;
+
     @Column(name = "kyc_status")
-    private Boolean kyc_status;
+    private Boolean kycStatus = false;
 
-    @Column(name="delete_yn")
-    private Boolean isDeleted;
+    @Column(name = "home_address", columnDefinition = "TEXT")
+    private String homeAddress;
 
-    @Column(name="ward")
+    @Column(name = "ward", columnDefinition = "TEXT")
     private String ward;
 
-    @Column(name="district")
+    @Column(name = "district", columnDefinition = "TEXT")
     private String district;
 
-    @Column(name="province")
+    @Column(name = "province", columnDefinition = "TEXT")
     private String province;
 
-    @Column(name="nation")
+    @Column(name = "nation", columnDefinition = "TEXT")
     private String nation;
 
-    @Column(name = "privy_id")
+    @Column(name = "privy_id", columnDefinition = "TEXT")
     private String privyId;
 
-    @Column(name = "wallet_address")
+    @Column(name = "wallet_address", columnDefinition = "TEXT")
     private String walletAddress;
 
     @Column(name = "has_accepted_terms")
-    private Boolean hasAcceptedTerms;
+    private Boolean hasAcceptedTerms = false;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "status_id")
@@ -165,6 +149,6 @@ public class User extends BaseEntity implements Serializable {
     @OneToMany(mappedBy = "user")
     private List<SavingTransaction> savingTransactions = new ArrayList<>();
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    private List<SubWallet> subWallets;
+
+
 }

@@ -7,10 +7,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface UserDAO extends JpaRepository<User, String> {
-
 
 	// Tìm kiếm chỉ lấy user chưa bị xóa (delete_yn = false)
     @Query("SELECT u FROM User u WHERE u.email = :email AND u.deleted = false")
@@ -49,6 +47,5 @@ public interface UserDAO extends JpaRepository<User, String> {
     @Query("SELECT new com.cryptobank.backend.model.CustomerUserDetails(u.email, u.password, 'ROLE_USER') FROM User u " +
             "WHERE u.email = :email AND u.deleted = false")
     CustomerUserDetails authenticate(String email);
-
 
 }
