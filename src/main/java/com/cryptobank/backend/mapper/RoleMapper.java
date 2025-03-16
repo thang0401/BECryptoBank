@@ -5,6 +5,7 @@ import com.cryptobank.backend.DTO.request.RoleCreateRequest;
 import com.cryptobank.backend.DTO.request.RoleUpdateRequest;
 import com.cryptobank.backend.entity.Role;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
@@ -19,6 +20,7 @@ public interface RoleMapper {
 
     Role fromUpdateRequest(@MappingTarget Role role, RoleUpdateRequest request);
 
+    @Mapping(target = "statusName", source = "status")
     RoleDTO toResponse(Role role);
 
 }
