@@ -21,10 +21,11 @@ public class UserController {
         return ResponseEntity.ok(userService.getUserId(id));
     }
 
-    @GetMapping("/name/{name}")
-    public ResponseEntity<List<User>> getUserByName(@PathVariable String name) {
-        return ResponseEntity.ok(userService.getUserName(name));
-    }
+//    @GetMapping("/name/{name}")
+//    public ResponseEntity<ApiResponse<List<User>>> getUserByName(@PathVariable String name) {
+//        return ResponseEntity.ok(new ApiResponse<>("", userService.getName(name)));
+//    }
+
 
     @GetMapping("/email/{email}")
     public ResponseEntity<User> getUserByEmail(@PathVariable String email) {
@@ -49,14 +50,55 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<User> updateUser(@PathVariable String id, @RequestBody User user) {
-        return ResponseEntity.ok(userService.updateUser(id, user));
+    public ResponseEntity<ApiResponse<User>> updateUser(
+            @PathVariable String id, 
+            @RequestBody User user,
+            @RequestParam String modifiedBy) { // Thêm người cập nhật
+        userService.update(id, user, modifiedBy);
+        return ResponseEntity.ok(new ApiResponse<>("", user));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable String id) {
-    	userService.deleteUser(id);
+    public ResponseEntity<Void> deleteUser(
+            @PathVariable String id,
+            @RequestParam String deletedBy) { // Thêm người xóa
+        userService.delete(id, deletedBy);
         return ResponseEntity.noContent().build();
     }
+
+    // Tìm theo vai trò của User
+    @GetMapping("/role/{roleName}")
+    public ResponseEntity<List<User>> getUsersByRoleName(@PathVariable("roleName") String roleName) {
+        List<User> Users = userService.getUsersByRoleName(roleName);
+        return ResponseEntity.ok(Users);
+    }
+
+    // Tìm theo ranking ID
+    @GetMapping("/ranking/{rankingName}")
+    public ResponseEntity<List<User>> getUsersByRankingName(@PathVariable("rankingName") String rankingName) {
+        List<User> Users = userService.getUsersByRankingName(rankingName);
+        return ResponseEntity.ok(Users);
+    }
+
+    // Tìm theo số điện thoại
+    @GetMapping("/phone/{phoneNumber}")
+    public ResponseEntity<List<User>> getUsersByPhoneNumber(@PathVariable("phoneNumber") String phoneNum) {
+        List<User> Users = userService.getUsersByPhoneNumber(phoneNum);
+        return ResponseEntity.ok(Users);
+    }
+    
+ // Tìm theo số điện thoại
+    @GetMapping("/name/{name}")
+    public ResponseEntity<List<User>> getUsersByName(@PathVariable("name") String name) {
+        List<User> Users = userService.getUserByUserName(name);
+        return ResponseEntity.ok(Users);
+    }
+
+    // Tìm theo id_card number
+    @GetMapping("/id_number/{idNumber}")
+    public ResponseEntity<User> getUsersByIdNumber(@PathVariable("idNumber") String idNumber) {
+        return ResponseEntity.ok(userService.getUsersByIdNumber(idNumber));
+    }
+
 
 }

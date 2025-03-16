@@ -1,26 +1,34 @@
 package com.cryptobank.backend.entity;
 
-
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.io.Serializable;
+import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+/**
+ * Entity này được sử dụng trong chức năng Authentication.<br>
+ * Sẽ được tạo thành JWT.
+ */
+@Getter
+@Setter
 @Entity
 @Builder
 @Table(name = "users")
-public class User {
+public class User extends BaseEntity implements Serializable {
 
-    @Id
-    @Column(name = "id")
-    private String id;
+    @Column(name = "username", columnDefinition = "TEXT", unique = true)
+    private String username;
+    
+    @Column(name = "password", columnDefinition = "TEXT")
+    private String password;
 
     @Column(name = "first_name")
     private String firstName;
@@ -45,9 +53,6 @@ public class User {
 
     @Column(name="ranking_id")
     private String rankingId;
-
-    @Column(name = "password")
-    private String password;
 
     @Column(name = "smart_otp")
     private String smartOTP;
@@ -91,9 +96,6 @@ public class User {
     @Column(name = "last_name")
     private String lastName;
 
-    @Column(name = "user_name")
-    private String username;
-
     @Column(name = "kyc_status")
     private Boolean kyc_status;
 
@@ -121,24 +123,48 @@ public class User {
     @Column(name = "has_accepted_terms")
     private Boolean hasAcceptedTerms;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "status_id")
+    @JsonIgnore
+    private Status status;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ranking_id")
+    @JsonIgnore
+    private Ranking ranking;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "user")
+    private List<UserRole> userRoles = new ArrayList<>();
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "user")
+    private List<DebitWallet> debitWallets = new ArrayList<>();
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "user")
+    private List<DeviceInfo> deviceInfoes = new ArrayList<>();
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "user")
+    private List<Loan> loans = new ArrayList<>();
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "user")
+    private List<Passkey> passkeys = new ArrayList<>();
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "beReferralUser")
+    private List<ReferralBonus> beReferralBonuses = new ArrayList<>();
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "user")
+    private List<SavingAccount> savingAccounts = new ArrayList<>();
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "user")
+    private List<SavingTransaction> savingTransactions = new ArrayList<>();
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    private List<AccountRole> roles;
-
-    @OneToMany(mappedBy= "user",cascade = CascadeType.ALL)
-    private List<DebitAccount> debitAccounts;
-
-    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
-    private List<DeviceInfo> devices;
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    private List<Loan> loans;
-
-    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
-    private List<ReferralBonus> bonuses;
-
-    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
-    private List<SavingAccount> savings;
-
-    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
     private List<SubWallet> subWallets;
 }
