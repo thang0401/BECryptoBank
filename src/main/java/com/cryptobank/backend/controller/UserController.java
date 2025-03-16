@@ -2,7 +2,7 @@ package com.cryptobank.backend.controller;
 
 import com.cryptobank.backend.entity.User;
 import com.cryptobank.backend.model.ApiResponse;
-import com.cryptobank.backend.services.generalServices.UserService;
+import com.cryptobank.backend.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -87,6 +87,12 @@ public class UserController {
     @GetMapping("/id-card/{idNumber}")
     public ResponseEntity<User> getUsersByIdNumber(@PathVariable("idNumber") String idNumber) {
         return ResponseEntity.ok(userService.getUsersByIdNumber(idNumber));
+    }
+
+    @PostMapping("/{id}/role")
+    public ResponseEntity<ApiResponse<String>> addRoleToUser(@PathVariable String id, @RequestParam List<String> roles) {
+        userService.addRoleToUser(id, roles.toArray(new String[0]));
+        return ResponseEntity.ok(new ApiResponse<>("Ok", ""));
     }
 
 }

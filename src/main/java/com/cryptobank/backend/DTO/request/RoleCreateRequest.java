@@ -1,4 +1,4 @@
-package com.cryptobank.backend.DTO;
+package com.cryptobank.backend.DTO.request;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
