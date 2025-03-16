@@ -11,7 +11,6 @@ import java.time.OffsetDateTime;
 @Value
 public class RoleDTO implements Serializable {
     String id;
-    Boolean deleted;
     OffsetDateTime createdAt;
     String createdBy;
     OffsetDateTime modifiedAt;
