@@ -1,10 +1,30 @@
+DB_HOST: 14.225.206.68
+DB_PORT: 5555
+DB_NAME: CryptoBank
+DB_USER: postgresql
+DB_PASS: CjZwTK1f03pY
+
+api-version: v1
+server:
+  port: 8000
+springdoc:
+  api-docs:
+    path: "/api-docs"
+  swagger-ui:
+    path: "/swagger.html"
+
 spring:
   application:
     name: BE-Crypto-Bank
   datasource:
-    url: jdbc:postgresql://14.225.206.68:5432/CryptoBank
-    username: postgres
-    password: 74ZLdPPJab8zNRHh
+    url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+    username: ${DB_USER}
+    password: ${DB_PASS}
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 50MB
   mail:
     host: smtp.gmail.com
     port: 587

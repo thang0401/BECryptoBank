@@ -1,53 +1,23 @@
 package com.cryptobank.backend.entity;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
-import java.time.ZonedDateTime;
-import java.util.List;
-
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Getter
+@Setter
 @Entity
 @Table(name = "role")
-public class Role {
+public class Role extends BaseEntity {
 
-    @Id
-    @Column(name = "id")
-    private String id;
-
-    @Column(name = "name")
+    @Column(name = "name", columnDefinition = "TEXT")
     private String name;
 
-    @Column(name="status_id")
-    private String statusId;
-
-    @Column(name = "is_activated")
-    private Boolean activated;
-
-    @Column(name = "created_date")
-    private ZonedDateTime createdDate;
-
-    @Column(name = "created_by")
-    private String createdBy;
-
-    @Column(name = "modified_date")
-    private ZonedDateTime modifiedDate;
-
-    @Column(name = "modified_by")
-    private String modifiedBy;
-
-    @Column(name = "note")
+    @Column(name = "note", columnDefinition = "TEXT")
     private String note;
 
-    @OneToMany(mappedBy = "role", cascade = CascadeType.ALL)
-    private List<AccountRole> accounts;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "status_id")
+    private Status status;
+
 }

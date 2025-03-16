@@ -1,34 +1,29 @@
 package com.cryptobank.backend.entity;
 
-import java.time.ZonedDateTime;
-
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 
+import java.math.BigDecimal;
+
+@Getter
+@Setter
 @Entity
-@Data
-@Table(name="loan_repayment")
-@AllArgsConstructor
-@NoArgsConstructor
-public class LoanRepayment {
-    @Id
-    private String id;
+@Table(name = "loan_repayment")
+public class LoanRepayment extends BaseEntity {
 
-    @Column(name="tx_hash")
+    @Column(name = "tx_hash", columnDefinition = "TEXT")
     private String txHash;
 
-    @Column(name="amount")
-    private Double amount;
+    @Column(name = "amount")
+    private BigDecimal amount = BigDecimal.ZERO;
 
-    @Column(name="status")
-    private String status;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "status_id")
+    private Status status;
 
-    @ManyToOne
-    @JoinColumn(name="loan_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "loan_id")
     private Loan loan;
 
-    @Column(name="create_at")
-    private ZonedDateTime createAt;
 }

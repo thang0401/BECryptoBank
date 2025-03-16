@@ -1,46 +1,40 @@
 package com.cryptobank.backend.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 
-import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 @Entity
 @Table(name = "device_info")
-public class DeviceInfo {
+public class DeviceInfo extends BaseEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Column(name = "device_id", nullable = false)
-    private String deviceId; // Session ID hoặc mã thiết bị
+    @Column(name = "device_id", nullable = false, columnDefinition = "TEXT")
+    private String deviceId;
 
-    @Column(name = "device_name", nullable = false)
-    private String deviceName; // Model điện thoại hoặc máy tính
+    @Column(name = "device_name", columnDefinition = "TEXT")
+    private String deviceName;
 
-    @Column(name = "os", nullable = false)
-    private String os; // Hệ điều hành (Android, iOS, Windows)
+    @Column(name = "os", length = 100, columnDefinition = "TEXT")
+    private String os;
 
-    @Column(name = "browser", nullable = false)
-    private String browser; // Trình duyệt (Chrome, Firefox, Edge)
+    @Column(name = "browser", length = 100, columnDefinition = "TEXT")
+    private String browser;
 
-    @Column(name = "ip_address", nullable = false)
-    private String ipAddress; // Địa chỉ IP
+    @Column(name = "ip_address", length = 45, columnDefinition = "TEXT")
+    private String ipAddress;
 
-    @Column(name = "last_login", nullable = false)
-    private LocalDateTime lastLogin; // Thời gian đăng nhập cuối
+    @Column(name = "last_login_at")
+    private OffsetDateTime lastLoginAt;
+
 
     @Column(name = "uuid_id", unique = true, nullable = false)
     private String uuidId = UUID.randomUUID().toString(); // Mã UUID duy nhất cho từng thiết bị
@@ -51,3 +45,7 @@ public class DeviceInfo {
     @Column(name="otp")
     private String otp;
 }
+
+
+
+
