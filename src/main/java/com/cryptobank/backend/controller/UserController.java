@@ -89,4 +89,10 @@ public class UserController {
         return ResponseEntity.ok(userService.getUsersByIdNumber(idNumber));
     }
 
+    @PostMapping("/{id}/role")
+    public ResponseEntity<ApiResponse<String>> addRoleToUser(@PathVariable String id, @RequestParam List<String> roles) {
+        userService.addRoleToUser(id, roles.toArray(new String[0]));
+        return ResponseEntity.ok(new ApiResponse<>("Ok", ""));
+    }
+
 }

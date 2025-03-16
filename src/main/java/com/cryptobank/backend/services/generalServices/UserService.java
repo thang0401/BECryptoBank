@@ -1,7 +1,10 @@
 package com.cryptobank.backend.services.generalServices;
 
+import com.cryptobank.backend.entity.Role;
 import com.cryptobank.backend.entity.User;
+import com.cryptobank.backend.entity.UserRole;
 import com.cryptobank.backend.repository.UserDAO;
+import com.cryptobank.backend.repository.UserRoleDAO;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -18,6 +21,8 @@ public class UserService {
 
     private final UserDAO repository;
     private final EmailService emailService;
+    private final UserRoleDAO userRoleDAO;
+    private final RoleService roleService;
 
     public User get(String id) {
         return repository.findById(id).orElseThrow(() -> new RuntimeException("User id " + id + " not found"));
@@ -129,4 +134,13 @@ public class UserService {
     public User getUsersByIdNumber(String idNumber) {
         return repository.findByIdCardNumber(idNumber);
     }
+
+    public void addRoleToUser(String id, String... roles) {
+        User user = get(id);
+        for (String roleName : roles) {
+            Role role = roleService.getByName(roleName);
+            userRoleDAO.save(UserRole.builder().user(user).role(role).build());
+        }
+    }
+
 }
