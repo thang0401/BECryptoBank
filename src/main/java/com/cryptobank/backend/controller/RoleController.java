@@ -4,7 +4,7 @@ import com.cryptobank.backend.DTO.RoleDTO;
 import com.cryptobank.backend.DTO.request.RoleCreateRequest;
 import com.cryptobank.backend.DTO.request.RoleUpdateRequest;
 import com.cryptobank.backend.model.ApiResponse;
-import com.cryptobank.backend.services.generalServices.RoleService;
+import com.cryptobank.backend.services.RoleService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;

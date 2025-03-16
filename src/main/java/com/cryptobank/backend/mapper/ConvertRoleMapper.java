@@ -1,7 +1,7 @@
 package com.cryptobank.backend.mapper;
 
 import com.cryptobank.backend.entity.Role;
-import com.cryptobank.backend.services.generalServices.RoleService;
+import com.cryptobank.backend.services.RoleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
