@@ -26,6 +26,11 @@ public class RoleController {
         return ResponseEntity.ok(new ApiResponse<>("", new PagedModel<>(roleService.getAll(PageRequest.of(page - 1, size)))));
     }
 
+    @GetMapping("/{id}/count")
+    public ResponseEntity<ApiResponse<Integer>> getRoleCount(@PathVariable String id) {
+        return ResponseEntity.ok(new ApiResponse<>("", roleService.count(id)));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<RoleDTO>> getRoleById(@PathVariable String id) {
         return ResponseEntity.ok(new ApiResponse<>("", roleService.toResponseFromId(id)));

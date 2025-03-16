@@ -4,20 +4,34 @@ import com.cryptobank.backend.DTO.RoleDTO;
 import com.cryptobank.backend.DTO.request.RoleCreateRequest;
 import com.cryptobank.backend.DTO.request.RoleUpdateRequest;
 import com.cryptobank.backend.entity.Role;
+import com.cryptobank.backend.entity.UserRole;
 import com.cryptobank.backend.mapper.RoleMapper;
 import com.cryptobank.backend.repository.RoleDAO;
+import com.cryptobank.backend.repository.UserRoleDAO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @RequiredArgsConstructor
 @Service
 public class RoleService {
 
     private final RoleDAO dao;
+    private final UserRoleDAO userRoleDAO;
     private final RoleMapper mapper;
+
+    public int count(String id) {
+        List<UserRole> userRoles = userRoleDAO.findAll(
+                (root, query, criteriaBuilder) -> criteriaBuilder.and(
+                        criteriaBuilder.equal(root.get("role").get("id"), id),
+                        criteriaBuilder.notEqual(root.get("deleted"), true)
+                ));
+        return userRoles.size();
+    }
 
     public Page<RoleDTO> getAll(Pageable pageable) {
         Page<Role> roles = dao.findAll(ignoreDeleted(), pageable);
