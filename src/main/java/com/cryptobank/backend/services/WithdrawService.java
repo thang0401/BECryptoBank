@@ -1,4 +1,4 @@
-package com.cryptobank.backend.services.generalServices;
+package com.cryptobank.backend.services;
 
 import com.cryptobank.backend.entity.DebitWallet;
 import com.cryptobank.backend.repository.DebitWalletDAO;

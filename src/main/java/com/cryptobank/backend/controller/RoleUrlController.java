@@ -1,10 +1,10 @@
 package com.cryptobank.backend.controller;
 
-import com.cryptobank.backend.DTO.RoleUrlCreateRequest;
-import com.cryptobank.backend.DTO.RoleUrlUpdateRequest;
-import com.cryptobank.backend.entity.RoleUrl;
+import com.cryptobank.backend.DTO.RoleUrlDTO;
+import com.cryptobank.backend.DTO.request.RoleUrlCreateRequest;
+import com.cryptobank.backend.DTO.request.RoleUrlUpdateRequest;
 import com.cryptobank.backend.model.ApiResponse;
-import com.cryptobank.backend.services.generalServices.RoleUrlService;
+import com.cryptobank.backend.services.RoleUrlService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -20,29 +20,29 @@ public class RoleUrlController {
     private final RoleUrlService roleUrlService;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<PagedModel<RoleUrl>>> getAllRoleRoleUrls(
+    public ResponseEntity<ApiResponse<PagedModel<RoleUrlDTO>>> getAllRoleRoleUrls(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size) {
-        return ResponseEntity.ok(new ApiResponse<>("", new PagedModel<>(roleUrlService.getAll(PageRequest.of(page, size)))));
+        return ResponseEntity.ok(new ApiResponse<>("", new PagedModel<>(roleUrlService.getAll(PageRequest.of(page - 1, size)))));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<RoleUrl>> getRoleRoleUrlById(@PathVariable String id) {
-        return ResponseEntity.ok(new ApiResponse<>("", roleUrlService.getById(id)));
+    public ResponseEntity<ApiResponse<RoleUrlDTO>> getRoleRoleUrlById(@PathVariable String id) {
+        return ResponseEntity.ok(new ApiResponse<>("", roleUrlService.toResponseFromId(id)));
     }
 
-    @GetMapping("/name/{name}")
-    public ResponseEntity<ApiResponse<RoleUrl>> getRoleByUrl(@PathVariable String name) {
-        return ResponseEntity.ok(new ApiResponse<>("", roleUrlService.getByUrl(name)));
+    @GetMapping("/url/{url}")
+    public ResponseEntity<ApiResponse<RoleUrlDTO>> getRoleByUrl(@PathVariable String url) {
+        return ResponseEntity.ok(new ApiResponse<>("", roleUrlService.toResponseFromUrl(url)));
     }
 
     @PostMapping
-    public ResponseEntity<ApiResponse<RoleUrl>> addRoleUrl(@Valid @RequestBody RoleUrlCreateRequest request) {
+    public ResponseEntity<ApiResponse<RoleUrlDTO>> addRoleUrl(@Valid @RequestBody RoleUrlCreateRequest request) {
         return ResponseEntity.ok(new ApiResponse<>("", roleUrlService.save(request)));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<RoleUrl>> updateRoleUrl(@PathVariable String id, @Valid @RequestBody RoleUrlUpdateRequest request) {
+    public ResponseEntity<ApiResponse<RoleUrlDTO>> updateRoleUrl(@PathVariable String id, @Valid @RequestBody RoleUrlUpdateRequest request) {
         return ResponseEntity.ok(new ApiResponse<>("", roleUrlService.update(id, request)));
     }
 
