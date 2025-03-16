@@ -4,11 +4,14 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serializable;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * Entity này được sử dụng trong chức năng Authentication.<br>
@@ -18,10 +21,13 @@ import java.util.Set;
 @Setter
 @Entity
 @Table(name = "users")
-public class User extends BaseEntity {
+public class User extends BaseEntity implements Serializable{
 
     @Column(name = "username", columnDefinition = "TEXT", unique = true)
     private String username;
+    
+    @Column(name = "password", columnDefinition = "TEXT")
+    private String password;
 
     @Column(name = "email", columnDefinition = "TEXT", unique = true, nullable = false)
     private String email;
@@ -103,37 +109,46 @@ public class User extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "status_id")
+    @JsonIgnore
     private Status status;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ranking_id")
+    @JsonIgnore
     private Ranking ranking;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "user")
     private List<UserRole> userRoles = new ArrayList<>();
 
+    @JsonIgnore
     @OneToMany(mappedBy = "user")
     private List<DebitWallet> debitWallets = new ArrayList<>();
 
+    @JsonIgnore
     @OneToMany(mappedBy = "user")
     private List<DeviceInfo> deviceInfoes = new ArrayList<>();
 
+    @JsonIgnore
     @OneToMany(mappedBy = "user")
     private List<Loan> loans = new ArrayList<>();
 
+    @JsonIgnore
     @OneToMany(mappedBy = "user")
     private List<Passkey> passkeys = new ArrayList<>();
 
+    @JsonIgnore
     @OneToMany(mappedBy = "beReferralUser")
     private List<ReferralBonus> beReferralBonuses = new ArrayList<>();
 
+    @JsonIgnore
     @OneToMany(mappedBy = "user")
     private List<SavingAccount> savingAccounts = new ArrayList<>();
 
+    @JsonIgnore
     @OneToMany(mappedBy = "user")
     private List<SavingTransaction> savingTransactions = new ArrayList<>();
 
-    @OneToMany(mappedBy = "beReferralUser", orphanRemoval = true)
-    private List<ReferralBonus> referralBonuses = new ArrayList<>();
+
 
 }
