@@ -1,4 +1,4 @@
-package com.cryptobank.backend.services.generalServices;
+package com.cryptobank.backend.services;
 
 import com.cryptobank.backend.entity.Role;
 import com.cryptobank.backend.entity.User;

@@ -1,4 +1,4 @@
-package com.cryptobank.backend.services.generalServices;
+package com.cryptobank.backend.services;
 
 import org.springframework.stereotype.Service;
 

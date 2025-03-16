@@ -2,7 +2,7 @@ package com.cryptobank.backend.controller;
 
 import com.cryptobank.backend.entity.User;
 import com.cryptobank.backend.model.ApiResponse;
-import com.cryptobank.backend.services.generalServices.UserService;
+import com.cryptobank.backend.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;

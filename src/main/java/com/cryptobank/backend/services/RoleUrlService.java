@@ -1,4 +1,4 @@
-package com.cryptobank.backend.services.generalServices;
+package com.cryptobank.backend.services;
 
 import com.cryptobank.backend.DTO.RoleDTO;
 import com.cryptobank.backend.DTO.RoleUrlDTO;
