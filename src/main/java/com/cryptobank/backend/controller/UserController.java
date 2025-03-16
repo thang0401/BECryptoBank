@@ -23,10 +23,10 @@ public class UserController {
         return ResponseEntity.ok(new ApiResponse<>("", userService.get(id)));
     }
 
-    @GetMapping("/name/{name}")
-    public ResponseEntity<ApiResponse<List<User>>> getUserByName(@PathVariable String name) {
-        return ResponseEntity.ok(new ApiResponse<>("", userService.getName(name)));
-    }
+//    @GetMapping("/name/{name}")
+//    public ResponseEntity<ApiResponse<List<User>>> getUserByName(@PathVariable String name) {
+//        return ResponseEntity.ok(new ApiResponse<>("", userService.getName(name)));
+//    }
 
     @GetMapping("/email/{email}")
     public ResponseEntity<ApiResponse<User>> getUserByEmail(@PathVariable String email) {
@@ -51,14 +51,19 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<User>> updateUser(@PathVariable String id, @RequestBody User user) {
-        userService.update(id, user);
+    public ResponseEntity<ApiResponse<User>> updateUser(
+            @PathVariable String id, 
+            @RequestBody User user,
+            @RequestParam String modifiedBy) { // Thêm người cập nhật
+        userService.update(id, user, modifiedBy);
         return ResponseEntity.ok(new ApiResponse<>("", user));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable String id) {
-    	userService.delete(id);
+    public ResponseEntity<Void> deleteUser(
+            @PathVariable String id,
+            @RequestParam String deletedBy) { // Thêm người xóa
+        userService.delete(id, deletedBy);
         return ResponseEntity.noContent().build();
     }
 
@@ -82,9 +87,16 @@ public class UserController {
         List<User> Users = userService.getUsersByPhoneNumber(phoneNum);
         return ResponseEntity.ok(Users);
     }
+    
+ // Tìm theo số điện thoại
+    @GetMapping("/name/{name}")
+    public ResponseEntity<List<User>> getUsersByName(@PathVariable("name") String name) {
+        List<User> Users = userService.getUserByUserName(name);
+        return ResponseEntity.ok(Users);
+    }
 
-    // Tìm theo id_number của Heir
-    @GetMapping("/id-card/{idNumber}")
+    // Tìm theo id_card number
+    @GetMapping("/id_number/{idNumber}")
     public ResponseEntity<User> getUsersByIdNumber(@PathVariable("idNumber") String idNumber) {
         return ResponseEntity.ok(userService.getUsersByIdNumber(idNumber));
     }
