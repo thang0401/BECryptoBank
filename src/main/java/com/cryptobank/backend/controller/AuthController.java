@@ -2,6 +2,7 @@ package com.cryptobank.backend.controller;
 
 
 import java.util.List;
+
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,23 +17,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.cryptobank.backend.DTO.ForgotPasswordRequest;
-import com.cryptobank.backend.DTO.LoginRequest;
-=======
-import com.cryptobank.backend.DTO.AuthResponse;
->>>>>>> 1dc3679127a9ebd69ba397065a0c251b767ed78b
-import com.cryptobank.backend.DTO.NameSplit;
-import com.cryptobank.backend.DTO.RegisterRequest;
-import com.cryptobank.backend.DTO.ResetPasswordRequest;
+import com.cryptobank.backend.DTO.*;
+
 import com.cryptobank.backend.entity.DeviceInfo;
 import com.cryptobank.backend.entity.User;
 import com.cryptobank.backend.services.generalServices.AuthService;
 import com.cryptobank.backend.services.generalServices.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -62,17 +54,25 @@ public class AuthController {
 	public ResponseEntity<?> login(@RequestParam String email, @RequestParam String password,
 			HttpServletRequest request, HttpSession session) {
 		// Gọi phương thức login từ AuthService để xử lý logic đăng nhập
-		if (authService.login(email, password, request, session)) {
+		int result=authService.login(email, password, request, session);
+		if (result==0) 
+		{
 			return ResponseEntity.status(HttpStatus.ACCEPTED).body("Đăng nhập thành công");
-		} else {
+		} 
+		else if(result==1)
+		{
+			return ResponseEntity.status(HttpStatus.ACCEPTED).body("Đưa đến trang nhập mã otp xác thực");
+		}
+		else 
+		{
 			return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body("Đăng nhập thất bại");
 		}
 	}
 	
 	@PostMapping("/login/OTP")
-	public ResponseEntity<String> verifyOtp(@RequestParam String otp, HttpSession session)
+	public ResponseEntity<String> verifyOtp(@RequestParam String otp,@RequestParam String user_id, HttpSession session,HttpServletRequest request)
 	{
-		if(authService.saveDeviceInforToDB())
+		if(authService.saveDeviceInforToDB(otp,request,session,user_id))
 		{
 			return ResponseEntity.status(HttpStatus.ACCEPTED).body("Xác Thực OTP Thành công");
 		}

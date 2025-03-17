@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
@@ -13,6 +14,11 @@ import java.util.UUID;
 @Table(name = "device_info")
 public class DeviceInfo extends BaseEntity {
 
+	
+	@Id
+	@Column(name="id")
+	private String id;
+	
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
@@ -33,7 +39,7 @@ public class DeviceInfo extends BaseEntity {
     private String ipAddress;
 
     @Column(name = "last_login_at")
-    private OffsetDateTime lastLoginAt;
+    private LocalDateTime lastLoginAt;
 
 
     @Column(name = "uuid_id", unique = true, nullable = false)
