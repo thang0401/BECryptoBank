@@ -1,11 +1,17 @@
 package com.cryptobank.backend.controller;
 
-import com.cryptobank.backend.entity.User;
+import com.cryptobank.backend.DTO.UserCreateRequest;
+import com.cryptobank.backend.DTO.UserInformation;
+import com.cryptobank.backend.DTO.UserUpdateRequest;
 import com.cryptobank.backend.model.ApiResponse;
 import com.cryptobank.backend.services.generalServices.UserService;
+
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,89 +22,118 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserController {
 
-    private final UserService userService;
+	private final UserService userService;
 
-    @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<User>> getUserById(@PathVariable String id) {
-        return ResponseEntity.ok(new ApiResponse<>("", userService.get(id)));
-    }
+	@GetMapping("/{id}")
+	public ResponseEntity<ApiResponse<UserInformation>> getUserById(@PathVariable String id) {
+		UserInformation user = userService.get(id);
+		return ResponseEntity.ok(new ApiResponse<>("User retrieved successfully", user));
+	}
 
-//    @GetMapping("/name/{name}")
-//    public ResponseEntity<ApiResponse<List<User>>> getUserByName(@PathVariable String name) {
-//        return ResponseEntity.ok(new ApiResponse<>("", userService.getName(name)));
-//    }
+	@GetMapping("/email/{email}")
+	public ResponseEntity<ApiResponse<UserInformation>> getUserByEmail(@PathVariable String email) {
+		UserInformation user = userService.getEmail(email);
+		if (user == null) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND)
+					.body(new ApiResponse<>("User with email " + email + " not found", null));
+		}
+		return ResponseEntity.ok(new ApiResponse<>("User retrieved successfully", user));
+	}
 
-    @GetMapping("/email/{email}")
-    public ResponseEntity<ApiResponse<User>> getUserByEmail(@PathVariable String email) {
-        return ResponseEntity.ok(new ApiResponse<>("", userService.getEmail(email)));
-    }
+	@GetMapping
+	public ResponseEntity<ApiResponse<List<UserInformation>>> getAllUsers() {
+		List<UserInformation> users = userService.getAll();
+		return ResponseEntity.ok(new ApiResponse<>("Users retrieved successfully", users));
+	}
 
-    @GetMapping
-    public ResponseEntity<ApiResponse<List<User>>> getAllUsers() {
-        return ResponseEntity.ok(new ApiResponse<>("", userService.getAll()));
-    }
+	@GetMapping("/page")
+	public ResponseEntity<ApiResponse<Page<UserInformation>>> getAllUsers(@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "10") int size) {
+		Page<UserInformation> users = userService.getAll(page, size);
+		return ResponseEntity.ok(new ApiResponse<>("Users retrieved successfully", users));
+	}
 
-    @GetMapping("/page")
-    public ResponseEntity<ApiResponse<Page<User>>> getAllUsers(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        return ResponseEntity.ok(new ApiResponse<>("", userService.getAll(page, size)));
-    }
+	@PostMapping
+    public ResponseEntity<ApiResponse<UserInformation>> createUser(
+            @Valid @RequestBody UserCreateRequest request, 
+            BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            String errorMessage = bindingResult.getAllErrors()
+                    .stream()
+                    .map(error -> error.getDefaultMessage())
+                    .reduce((msg1, msg2) -> msg1 + "; " + msg2)
+                    .orElse("Validation failed");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(errorMessage, null));
+        }
 
-    @PostMapping
-    public ResponseEntity<ApiResponse<User>> creatUser(@RequestBody User user) {
-        return ResponseEntity.ok(new ApiResponse<>("", userService.save(user)));
+        UserInformation createdUser = userService.save(request);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(new ApiResponse<>("User created successfully", createdUser));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<User>> updateUser(
-            @PathVariable String id, 
-            @RequestBody User user,
-            @RequestParam String modifiedBy) { // Thêm người cập nhật
-        userService.update(id, user, modifiedBy);
-        return ResponseEntity.ok(new ApiResponse<>("", user));
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(
+    public ResponseEntity<ApiResponse<UserInformation>> updateUser(
             @PathVariable String id,
-            @RequestParam String deletedBy) { // Thêm người xóa
-        userService.delete(id, deletedBy);
-        return ResponseEntity.noContent().build();
+            @Valid @RequestBody UserUpdateRequest request, 
+            BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            String errorMessage = bindingResult.getAllErrors()
+                    .stream()
+                    .map(error -> error.getDefaultMessage())
+                    .reduce((msg1, msg2) -> msg1 + "; " + msg2)
+                    .orElse("Validation failed");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(errorMessage, null));
+        }
+
+        UserInformation updatedUser = userService.update(id, request, "system");
+        return ResponseEntity.ok(new ApiResponse<>("User updated successfully", updatedUser));
     }
 
-    // Tìm theo vai trò của User
-    @GetMapping("/role/{roleName}")
-    public ResponseEntity<List<User>> getUsersByRoleName(@PathVariable("roleName") String roleName) {
-        List<User> Users = userService.getUsersByRoleName(roleName);
-        return ResponseEntity.ok(Users);
-    }
+	@DeleteMapping("/{id}")
+	public ResponseEntity<Void> deleteUser(@PathVariable String id) {
+		try {
+			userService.delete(id, null);
+			return ResponseEntity.noContent().build();
+		} catch (RuntimeException e) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+		}
+	}
 
-    // Tìm theo ranking ID
-    @GetMapping("/ranking/{rankingName}")
-    public ResponseEntity<List<User>> getUsersByRankingName(@PathVariable("rankingName") String rankingName) {
-        List<User> Users = userService.getUsersByRankingName(rankingName);
-        return ResponseEntity.ok(Users);
-    }
+	@GetMapping("/role/{roleName}")
+	public ResponseEntity<ApiResponse<List<UserInformation>>> getUsersByRoleName(
+			@PathVariable("roleName") String roleName) {
+		List<UserInformation> users = userService.getUsersByRoleName(roleName);
+		return ResponseEntity.ok(new ApiResponse<>("Users retrieved successfully", users));
+	}
 
-    // Tìm theo số điện thoại
-    @GetMapping("/phone/{phoneNumber}")
-    public ResponseEntity<List<User>> getUsersByPhoneNumber(@PathVariable("phoneNumber") String phoneNum) {
-        List<User> Users = userService.getUsersByPhoneNumber(phoneNum);
-        return ResponseEntity.ok(Users);
-    }
-    
- // Tìm theo số điện thoại
-    @GetMapping("/name/{name}")
-    public ResponseEntity<List<User>> getUsersByName(@PathVariable("name") String name) {
-        List<User> Users = userService.getUserByUserName(name);
-        return ResponseEntity.ok(Users);
-    }
+	@GetMapping("/ranking/{rankingName}")
+	public ResponseEntity<ApiResponse<List<UserInformation>>> getUsersByRankingName(
+			@PathVariable("rankingName") String rankingName) {
+		List<UserInformation> users = userService.getUsersByRankingName(rankingName);
+		return ResponseEntity.ok(new ApiResponse<>("Users retrieved successfully", users));
+	}
 
-    // Tìm theo id_card number
-    @GetMapping("/id_number/{idNumber}")
-    public ResponseEntity<User> getUsersByIdNumber(@PathVariable("idNumber") String idNumber) {
-        return ResponseEntity.ok(userService.getUsersByIdNumber(idNumber));
-    }
+	@GetMapping("/phone/{phoneNumber}")
+	public ResponseEntity<ApiResponse<List<UserInformation>>> getUsersByPhoneNumber(
+			@PathVariable("phoneNumber") String phoneNum) {
+		List<UserInformation> users = userService.getUsersByPhoneNumber(phoneNum);
+		return ResponseEntity.ok(new ApiResponse<>("Users retrieved successfully", users));
+	}
 
+	@GetMapping("/name/{name}")
+	public ResponseEntity<ApiResponse<List<UserInformation>>> getUsersByName(@PathVariable("name") String name) {
+		List<UserInformation> users = userService.getUserByUserName(name);
+		return ResponseEntity.ok(new ApiResponse<>("Users retrieved successfully", users));
+	}
+
+	@GetMapping("/id_number/{idNumber}")
+	public ResponseEntity<ApiResponse<UserInformation>> getUsersByIdNumber(@PathVariable("idNumber") String idNumber) {
+		UserInformation user = userService.getUsersByIdNumber(idNumber);
+		if (user == null) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>("User not found", null));
+		}
+		return ResponseEntity.ok(new ApiResponse<>("User retrieved successfully", user));
+	}
 }

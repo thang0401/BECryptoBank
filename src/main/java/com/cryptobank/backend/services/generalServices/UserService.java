@@ -1,10 +1,12 @@
 package com.cryptobank.backend.services.generalServices;
 
+import com.cryptobank.backend.DTO.UserCreateRequest;
+import com.cryptobank.backend.DTO.UserInformation;
+import com.cryptobank.backend.DTO.UserUpdateRequest;
 import com.cryptobank.backend.entity.User;
 import com.cryptobank.backend.repository.UserDAO;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -19,79 +21,134 @@ import java.util.List;
 @Service
 public class UserService {
 
-	private final UserDAO repository;
+    private final UserDAO repository;
     private final EmailService emailService;
 
-    // Tìm kiếm user chưa bị xóa
-    public User get(String id) {
+    private UserInformation convertToUserInformation(User user) {
+        UserInformation dto = new UserInformation();
+        BeanUtils.copyProperties(user, dto);
+        return dto;
+    }
+
+    public User getUserEntity(String id) {
         return repository.findById(id)
-                .filter(user -> !user.getDeleted())
+                .filter(u -> !u.getDeleted())
                 .orElseThrow(() -> new RuntimeException("User id " + id + " not found or deleted"));
     }
 
-    public List<User> getAll() {
-        return repository.findAll().stream()
-                .filter(user -> !user.getDeleted())
-                .toList();
-    }
-    
-    public Page<User> getAll(int page, int size) {
-        return (Page<User>) repository.findAll(PageRequest.of(page, size))
-                .filter(user -> !user.getDeleted());
+    public UserInformation get(String id) {
+        User user = getUserEntity(id);
+        return convertToUserInformation(user);
     }
 
- // Xóa mềm: Cập nhật delete_yn, modified_at, modified_by
+    public List<UserInformation> getAll() {
+        return repository.findAll().stream()
+                .filter(user -> !user.getDeleted())
+                .map(this::convertToUserInformation)
+                .toList();
+    }
+
+    public Page<UserInformation> getAll(int page, int size) {
+        return repository.findAllNotDeleted(PageRequest.of(page, size))
+                .map(this::convertToUserInformation);
+    }
+
     public void delete(String id, String deletedBy) {
-        User user = get(id);
+        User user = getUserEntity(id);
         user.setDeleted(true);
         user.setModifiedAt(OffsetDateTime.now());
         user.setModifiedBy(deletedBy);
         repository.save(user);
     }
 
-    public void update(String id, User user, String modifiedBy) {
-        User existingUser = get(id); // Chỉ lấy user chưa xóa
-        BeanUtils.copyProperties(user, existingUser, "id", "deleted", "createdAt", "createdBy"); // Sao chép, bỏ qua các trường không muốn cập nhật
-        existingUser.setModifiedAt(OffsetDateTime.now());
-        existingUser.setModifiedBy(modifiedBy);
-        repository.save(existingUser);
+    public UserInformation update(String id, UserUpdateRequest request, String modifiedBy) {
+        User user = getUserEntity(id);
+        if (request.getUsername() != null) user.setUsername(request.getUsername());
+        if (request.getPassword() != null) user.setPassword(new BCryptPasswordEncoder().encode(request.getPassword()));
+        if (request.getEmail() != null) user.setEmail(request.getEmail());
+        if (request.getFirstName() != null) user.setFirstName(request.getFirstName());
+        if (request.getLastName() != null) user.setLastName(request.getLastName());
+        if (request.getPhoneNumber() != null) user.setPhoneNumber(request.getPhoneNumber());
+        if (request.getGender() != null) user.setGender(request.getGender());
+        if (request.getDateOfBirth() != null) user.setDateOfBirth(request.getDateOfBirth());
+        if (request.getHomeAddress() != null) user.setHomeAddress(request.getHomeAddress());
+        if (request.getWard() != null) user.setWard(request.getWard());
+        if (request.getDistrict() != null) user.setDistrict(request.getDistrict());
+        if (request.getProvince() != null) user.setProvince(request.getProvince());
+        if (request.getNation() != null) user.setNation(request.getNation());
+        user.setModifiedAt(OffsetDateTime.now());
+        user.setModifiedBy(modifiedBy);
+        User updatedUser = repository.save(user);
+        return convertToUserInformation(updatedUser);
     }
 
-    public User save(User entity) {
-        if (repository.existsByEmail(entity.getEmail())) {
-            throw new RuntimeException("User with email " + entity.getEmail() + " already exists");
-        }
-        entity.setDeleted(false); // Đảm bảo user mới không bị xóa
-        entity.setCreatedAt(OffsetDateTime.now());
-        return repository.save(entity);
+    public User save(User user) {
+        return repository.save(user);
     }
     
-    public List<User> getUsersByRoleName(String roleName) {
-        return repository.findByRole(roleName);
+    
+    public UserInformation save(UserCreateRequest request) {
+        if (repository.existsByEmail(request.getEmail())) {
+            throw new RuntimeException("User with email " + request.getEmail() + " already exists");
+        }
+        User user = new User();
+        user.setUsername(request.getUsername());
+        user.setPassword(new BCryptPasswordEncoder().encode(request.getPassword()));
+        user.setEmail(request.getEmail());
+        user.setFirstName(request.getFirstName());
+        user.setLastName(request.getLastName());
+        user.setPhoneNumber(request.getPhoneNumber());
+        user.setGender(request.getGender());
+        user.setDateOfBirth(request.getDateOfBirth());
+        user.setHomeAddress(request.getHomeAddress());
+        user.setWard(request.getWard());
+        user.setDistrict(request.getDistrict());
+        user.setProvince(request.getProvince());
+        user.setNation(request.getNation());
+        user.setDeleted(false);
+        user.setCreatedAt(OffsetDateTime.now());
+        User savedUser = repository.save(user);
+        return convertToUserInformation(savedUser);
     }
 
-    public List<User> getUsersByRankingName(String rankingName) {
-        return repository.findByRanking_NameContaining(rankingName);
+    public List<UserInformation> getUsersByRoleName(String roleName) {
+        return repository.findByRole(roleName).stream()
+                .map(this::convertToUserInformation)
+                .toList();
     }
 
-    public List<User> getUsersByPhoneNumber(String phoneNum) {
-        return repository.findByPhoneNumberContaining(phoneNum);
+    public List<UserInformation> getUsersByRankingName(String rankingName) {
+        return repository.findByRanking_NameContaining(rankingName).stream()
+                .map(this::convertToUserInformation)
+                .toList();
     }
 
-    public User getUsersByIdNumber(String idNumber) {
-        return repository.findByIdCardNumber(idNumber);
+    public List<UserInformation> getUsersByPhoneNumber(String phoneNum) {
+        return repository.findByPhoneNumberContaining(phoneNum).stream()
+                .map(this::convertToUserInformation)
+                .toList();
     }
 
-    public List<User> getUserByUserName(String name) {
-        return repository.findByName(name);
+    public UserInformation getUsersByIdNumber(String idNumber) {
+        User user = repository.findByIdCardNumber(idNumber);
+        return user != null ? convertToUserInformation(user) : null;
     }
 
-    public User getEmail(String email) {
-        return repository.findByEmail(email);
+    public List<UserInformation> getUserByUserName(String name) {
+        return repository.findByName(name).stream()
+                .map(this::convertToUserInformation)
+                .toList();
     }
 
-    public List<User> getName(String name) {
-        return repository.findByName(name);
+    public UserInformation getEmail(String email) {
+        User user = repository.findByEmail(email);
+        return user != null ? convertToUserInformation(user) : null;
+    }
+
+    public List<UserInformation> getName(String name) {
+        return repository.findByName(name).stream()
+                .map(this::convertToUserInformation)
+                .toList();
     }
 
     public boolean existsByEmail(String email) {
@@ -107,49 +164,36 @@ public class UserService {
     }
 
     private String generateResetCode() {
-        int randomCode = (int) (Math.random() * 900000) + 100000;  // Tạo mã 6 chữ số
+        int randomCode = (int) (Math.random() * 900000) + 100000;
         return String.valueOf(randomCode);
     }
 
     public void requestResetPassword(String email, HttpSession session) {
-        getEmail(email);
-
-        // Tạo mã xác thực ngẫu nhiên 6 chữ số
+        User user = repository.findByEmail(email);
+        if (user == null) {
+            throw new RuntimeException("User with email " + email + " not found");
+        }
         String resetCode = generateResetCode();
         session.setAttribute("OTP", resetCode);
-        session.setAttribute("time", LocalDateTime.now().plusMinutes(15));// Mã hết hạn sau 15 phút
-
-        // Gửi email với mã xác thực
+        session.setAttribute("time", LocalDateTime.now().plusMinutes(15));
         emailService.sendResetPasswordEmail(email, resetCode);
     }
 
     public void resetPassword(String email, String resetCode, String newPassword, HttpSession session) {
-        // Tìm người dùng qua email
-        User user = getEmail(email);
+        User user = repository.findByEmail(email);
         if (user == null || user.getDeleted()) {
             throw new RuntimeException("User with email " + email + " not found or deleted");
         }
-
-        // Kiểm tra mã resetCode có đúng không
         String OTP = (String) session.getAttribute("OTP");
         if (!OTP.equals(resetCode)) {
             throw new RuntimeException("Mã xác thực không hợp lệ");
         }
-
-        // Kiểm tra mã resetCode có hết hạn hay không
-        LocalDateTime timeLimit = (LocalDateTime)session.getAttribute("time");
+        LocalDateTime timeLimit = (LocalDateTime) session.getAttribute("time");
         if (!timeLimit.isBefore(LocalDateTime.now())) {
             throw new RuntimeException("Mã xác thực đã hết hạn");
         }
-
-        // Mã xác thực hợp lệ, tiến hành thay đổi mật khẩu
-        // Mã hóa mật khẩu mới
         String encodedPassword = new BCryptPasswordEncoder().encode(newPassword);
-        User userChangePass=repository.findByEmail(email);
-//        userChangePass.setPassword(encodedPassword);
-
-        // Lưu thông tin người dùng mới với mật khẩu đã thay đổi vào database
-        save(userChangePass);
+        user.setPassword(encodedPassword);
+        repository.save(user);
     }
-
 }
