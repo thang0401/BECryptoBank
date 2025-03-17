@@ -1,37 +1,6 @@
 package com.cryptobank.backend.services.generalServices;
 
 import com.cryptobank.backend.entity.User;
-<<<<<<< HEAD
-import com.cryptobank.backend.repository.UserDAO;
-
-import org.springframework.stereotype.Service;
-
-import java.util.Optional;
-
-@Service
-public class UserService {
-
-    private final UserDAO userRepository;
-
-    public UserService(UserDAO userRepository) {
-        this.userRepository = userRepository;
-    }
-
-    // Lấy số dư USDC của user
-    public Double getUserBalance(String userId) {
-        Optional<User> user = userRepository.findById(userId);
-        return user.map(User::getUsdcBalance).orElse(0.0);
-    }
-
-    // Giảm số dư USDC sau khi rút tiền thành công
-    public void decreaseUserBalance(String userId, Double amount) {
-        Optional<User> userOpt = userRepository.findById(userId);
-        userOpt.ifPresent(user -> {
-            user.setUsdcBalance(user.getUsdcBalance() - amount);
-            userRepository.save(user);
-        });
-    }
-=======
 import com.cryptobank.backend.exception.AlreadyExistException;
 import com.cryptobank.backend.repository.UserDAO;
 import jakarta.servlet.http.HttpSession;
@@ -44,11 +13,10 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@RequiredArgsConstructor
 @Service
 public class UserService {
 
-    private final UserDAO repository;
+    private final UserDAO ;
     private final EmailService emailService;
 
     public User get(String id) {
@@ -146,5 +114,4 @@ public class UserService {
         save(userChangePass);
     }
 
->>>>>>> 1dc3679127a9ebd69ba397065a0c251b767ed78b
 }
