@@ -3,6 +3,7 @@ package com.cryptobank.backend.controller;
 
 import java.util.List;
 
+
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,8 +22,8 @@ import com.cryptobank.backend.DTO.*;
 
 import com.cryptobank.backend.entity.DeviceInfo;
 import com.cryptobank.backend.entity.User;
-import com.cryptobank.backend.services.generalServices.AuthService;
-import com.cryptobank.backend.services.generalServices.UserService;
+import com.cryptobank.backend.services.AuthService;
+import com.cryptobank.backend.services.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
