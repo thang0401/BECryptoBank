@@ -6,8 +6,6 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Getter
 @Setter
@@ -47,8 +45,5 @@ public class SavingAccount extends BaseEntity {
 
     @Column(name = "heir_name", columnDefinition = "TEXT")
     private String heirName;
-
-    @OneToMany(mappedBy = "savingAccount")
-    private List<SavingTransaction> savingTransactions = new ArrayList<>();
 
 }

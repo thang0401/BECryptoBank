@@ -1,7 +1,7 @@
 package com.cryptobank.backend.controller;
 
 import com.cryptobank.backend.entity.SavingAccount;
-import com.cryptobank.backend.services.SavingAccountService;
+import com.cryptobank.backend.services.generalServices.SavingAccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,18 +11,17 @@ import java.util.List;
 
 @CrossOrigin("*")
 @RestController
-@RequestMapping("/api/customer-management")
 public class SavingAccountController {
 
     @Autowired
     SavingAccountService userPortfolioService;
 
-    @GetMapping
+    @GetMapping("/customer-management")
     public ResponseEntity<List<SavingAccount>> getAll() {
         return ResponseEntity.ok(userPortfolioService.findAll());
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/customer-management/{id}")
     public ResponseEntity<SavingAccount> getOne(@PathVariable("id") String id) {
         if (!userPortfolioService.existsById(id)) {
             return ResponseEntity.notFound().build();
@@ -30,7 +29,7 @@ public class SavingAccountController {
         return ResponseEntity.ok(userPortfolioService.findById(id));
     }
 
-    @PostMapping
+    @PostMapping("/customer-management")
     public ResponseEntity<SavingAccount> post(@RequestBody SavingAccount userPortfolio) {
         if (userPortfolioService.existsById(userPortfolio.getId())) {
             return ResponseEntity.badRequest().build();
@@ -39,7 +38,7 @@ public class SavingAccountController {
         return ResponseEntity.ok(userPortfolio);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/customer-management/{id}")
     public ResponseEntity<SavingAccount> put(@PathVariable("id") String id, @RequestBody SavingAccount userPortfolio) {
         if (!userPortfolioService.existsById(id)) {
             return ResponseEntity.notFound().build();
@@ -48,7 +47,7 @@ public class SavingAccountController {
         return ResponseEntity.ok(userPortfolio);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/customer-management/{id}")
     public ResponseEntity<Void> delete(@PathVariable("id") String id) {
         if (!userPortfolioService.existsById(id)) {
             return ResponseEntity.notFound().build();
@@ -58,7 +57,7 @@ public class SavingAccountController {
     }
     
     // Tìm theo customer_id
-    @GetMapping("/customer-id/{customerId}")
+    @GetMapping("/customer-management/customer-id/{customerId}")
     public ResponseEntity<List<SavingAccount>> getUserPortfoliosByCustomerId(@PathVariable("customerId") String customerId) {
         List<SavingAccount> userPortfolios = userPortfolioService.getUserPortfoliosByCustomerId(customerId);
         return ResponseEntity.ok(userPortfolios);
@@ -79,14 +78,14 @@ public class SavingAccountController {
 //    }
 
     // Tìm theo số điện thoại
-    @GetMapping("/phone/{phoneNum}")
+    @GetMapping("/customer-management/phone/{phoneNum}")
     public ResponseEntity<List<SavingAccount>> getUserPortfoliosByPhoneNumber(@PathVariable("phoneNum") String phoneNum) {
         List<SavingAccount> userPortfolios = userPortfolioService.getUserPortfoliosByPhoneNumber(phoneNum);
         return ResponseEntity.ok(userPortfolios);
     }
 
     // Tìm theo tên User (first name hoặc last name)
-    @GetMapping("/name/{name}")
+    @GetMapping("/customer-management/name/{name}")
     public ResponseEntity<List<SavingAccount>> getUserPortfoliosByUserName(@PathVariable("name") String name) {
         List<SavingAccount> userPortfolios = userPortfolioService.getUserPortfoliosByUserName(name);
         return ResponseEntity.ok(userPortfolios);
