@@ -1,4 +1,4 @@
-package com.cryptobank.backend.services.generalServices;
+package com.cryptobank.backend.services;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;

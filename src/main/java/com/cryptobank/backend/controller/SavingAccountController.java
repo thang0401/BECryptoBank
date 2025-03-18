@@ -1,7 +1,8 @@
 package com.cryptobank.backend.controller;
 
 import com.cryptobank.backend.entity.SavingAccount;
-import com.cryptobank.backend.services.generalServices.SavingAccountService;
+
+import com.cryptobank.backend.services.SavingAccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

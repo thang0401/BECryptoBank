@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
@@ -118,6 +119,23 @@ public class UserService {
         // Lưu thông tin người dùng mới với mật khẩu đã thay đổi vào database
         save(userChangePass);
     }
+
+ // Lấy số dư USDC của user
+ 	public Double getUserBalance(String userId) {
+ 		Optional<User> user = repository.findById(userId);
+ 		// return user.map(User::getUsdcBalance).orElse(0.0);
+ 		return 0.0;
+ 	}
+
+ 	// Giảm số dư USDC sau khi rút tiền thành công
+ 	public void decreaseUserBalance(String userId, Double amount) 
+ 	{
+ 		Optional<User> userOpt = repository.findById(userId);
+// 		userOpt.ifPresent(user -> {
+// 			user.setUsdcBalance(user.getUsdcBalance() - amount);
+// 			repository.save(user);
+// 		});
+ 	}
 
     public List<User> getUsersByRoleName(String roleName) {
         return repository.findByRole(roleName);
