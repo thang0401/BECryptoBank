@@ -13,12 +13,8 @@ import java.math.BigDecimal;
 public class UsdcVndTransaction extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "debit_wallet_id")
-    private DebitWallet debitWallet;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "status_id")
-    private Status status;
+    @JoinColumn(name = "debit_account_id")
+    private DebitWallet debitAccount;
 
     @Column(name = "VND_amount")
     private BigDecimal vndAmount;
@@ -31,5 +27,9 @@ public class UsdcVndTransaction extends BaseEntity {
 
     @Column(name = "type", columnDefinition = "TEXT")
     private String type;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "status_id")
+    private Status status;
 
 }

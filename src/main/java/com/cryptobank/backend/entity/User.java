@@ -1,21 +1,18 @@
 package com.cryptobank.backend.entity;
 
 import jakarta.persistence.*;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Entity này được sử dụng trong chức năng Authentication.<br>
  * Sẽ được tạo thành JWT.
  */
-@Getter
-@Setter
+@Data
 @Entity
 @Table(name = "users")
 public class User extends BaseEntity {
@@ -26,7 +23,7 @@ public class User extends BaseEntity {
     @Column(name = "email", columnDefinition = "TEXT", unique = true, nullable = false)
     private String email;
 
-    @Column(name = "password")
+    @Column(name = "password", columnDefinition = "TEXT")
     private String password;
 
     @Column(name = "provider", columnDefinition = "TEXT")
@@ -112,31 +109,23 @@ public class User extends BaseEntity {
     @JoinColumn(name = "ranking_id")
     private Ranking ranking;
 
-    @OneToMany(mappedBy = "user")
-    private List<UserRole> userRoles = new ArrayList<>();
 
-    @OneToMany(mappedBy = "user")
-    private List<DebitWallet> debitWallets = new ArrayList<>();
+    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
+    private List<DeviceInfo> devices;
 
-    @OneToMany(mappedBy = "user")
-    private List<DeviceInfo> deviceInfoes = new ArrayList<>();
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Loan> loans;
 
-    @OneToMany(mappedBy = "user")
-    private List<Loan> loans = new ArrayList<>();
+    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
+    private List<ReferralBonus> bonuses;
 
-    @OneToMany(mappedBy = "user")
-    private List<Passkey> passkeys = new ArrayList<>();
+    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
+    private List<SavingAccount> savings;
 
-    @OneToMany(mappedBy = "beReferralUser")
-    private List<ReferralBonus> beReferralBonuses = new ArrayList<>();
-
-    @OneToMany(mappedBy = "user")
-    private List<SavingAccount> savingAccounts = new ArrayList<>();
-
-    @OneToMany(mappedBy = "user")
-    private List<SavingTransaction> savingTransactions = new ArrayList<>();
-
-    @OneToMany(mappedBy = "beReferralUser", orphanRemoval = true)
-    private List<ReferralBonus> referralBonuses = new ArrayList<>();
+//    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
+//    private List<SubWallet> subWallets;
+    
+    @OneToOne(mappedBy = "user")
+    private UserOtp userOtp;
 
 }

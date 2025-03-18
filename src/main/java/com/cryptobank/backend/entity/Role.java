@@ -1,16 +1,11 @@
 package com.cryptobank.backend.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
-
-import java.util.ArrayList;
-import java.util.List;
+import lombok.Getter;
+import lombok.Setter;
 
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "role")
 public class Role extends BaseEntity {
@@ -24,11 +19,5 @@ public class Role extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "status_id")
     private Status status;
-
-    @OneToMany(mappedBy = "role")
-    private List<RoleUrl> roleUrls = new ArrayList<>();
-
-    @OneToMany(mappedBy = "role")
-    private List<UserRole> userRoles = new ArrayList<>();
 
 }
