@@ -1,8 +1,6 @@
-package com.cryptobank.backend.controllers;
+package com.cryptobank.backend.controller;
 
 import com.cryptobank.backend.services.BankTransferService2;
-
-import com.cryptobank.backend.services.BankTransferService;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
