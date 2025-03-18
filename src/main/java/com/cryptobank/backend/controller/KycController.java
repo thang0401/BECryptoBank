@@ -13,7 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/kyc")
+@RequestMapping("/api/Kyc")
 public class KycController {
 	
 	@Autowired
