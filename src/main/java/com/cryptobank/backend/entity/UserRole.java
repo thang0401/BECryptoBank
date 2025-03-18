@@ -8,10 +8,10 @@ import lombok.Setter;
 @Setter
 @Entity
 @Table(
-    name = "user_role",
-    uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"role_id", "user_id"})
-    }
+        name = "user_role",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"role_id", "user_id"})
+        }
 )
 public class UserRole extends BaseEntity {
 

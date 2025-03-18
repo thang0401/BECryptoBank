@@ -6,14 +6,14 @@ import com.cryptobank.backend.entity.Status;
 import jakarta.persistence.EntityManager;
 import com.cryptobank.backend.entity.User;
 import com.cryptobank.backend.repository.UserDAO;
-import com.cryptobank.backend.services.UserService;
+import com.cryptobank.backend.services.generalServices.UserService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/kyc")
+@RequestMapping("/api/Kyc")
 public class KycController {
 	
 	@Autowired
