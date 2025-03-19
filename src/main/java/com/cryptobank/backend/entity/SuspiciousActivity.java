@@ -27,11 +27,13 @@ public class SuspiciousActivity extends BaseEntity {
     @Column(name = "threshold_value")
     private BigDecimal thresholdValue = BigDecimal.ZERO;
 
+    @Column(name = "time_window")
     private Integer timeWindow;
 
     @Column(name = "reason", columnDefinition = "TEXT")
     private String reason;
 
+    @Column(name = "detected_at")
     private OffsetDateTime detectedAt;
 
 }

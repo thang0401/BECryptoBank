@@ -6,6 +6,8 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -17,6 +19,14 @@ public class Loan extends BaseEntity {
     @JoinColumn(name = "user_id")
     private User user;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "status_id")
+    private Status status;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "term_id")
+    private Term term;
+
     @Column(name = "loan_amount")
     private BigDecimal loanAmount = BigDecimal.ZERO;
 
@@ -26,11 +36,7 @@ public class Loan extends BaseEntity {
     @Column(name = "due_day")
     private OffsetDateTime dueDay;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "status_id")
-    private Status status;
+    @OneToMany(mappedBy = "loan")
+    private List<LoanRepayment> loanRepayments = new ArrayList<>();
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "term_id")
-    private Term term;
 }

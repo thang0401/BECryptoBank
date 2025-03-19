@@ -6,6 +6,8 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -13,7 +15,7 @@ import java.time.OffsetDateTime;
 @Table(name = "debit_account")
 public class DebitWallet extends BaseEntity {
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
 
@@ -58,5 +60,11 @@ public class DebitWallet extends BaseEntity {
 
     @Column(name = "custom_metadata", columnDefinition = "TEXT")
     private String customMetadata;
+
+    @OneToMany(mappedBy = "debitWallet")
+    private List<DebitTransaction> debitTransactions = new ArrayList<>();
+
+    @OneToMany(mappedBy = "debitWallet")
+    private List<UsdcVndTransaction> usdcVndTransactions = new ArrayList<>();
 
 }
