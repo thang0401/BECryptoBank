@@ -279,7 +279,7 @@ public class AuthService {
 		newDevice.setOs(client.os.family + " " + client.os.major);
 		newDevice.setBrowser(client.userAgent.family + " " + client.userAgent.major);
 		newDevice.setIpAddress(request.getRemoteAddr());
-		newDevice.setLastLoginAt(LocalDateTime.now());
+		newDevice.setLastLoginAt(OffsetDateTime.now());
 		newDevice.setUser(user);
 		newDevice.setInUse(true);
 		return newDevice;

@@ -157,7 +157,10 @@ public class UserService {
         User user = get(id);
         for (String roleName : roles) {
             Role role = roleService.getByName(roleName);
-            userRoleDAO.save(UserRole.builder().user(user).role(role).build());
+            UserRole userRole = new UserRole();
+            userRole.setUser(user);
+            userRole.setRole(role);
+            userRoleDAO.save(userRole);
         }
     }
 
