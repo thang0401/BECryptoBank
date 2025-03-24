@@ -1,7 +1,7 @@
 package com.cryptobank.backend.controller;
 
 import com.cryptobank.backend.entity.User;
-
+// import com.cryptobank.backend.services.user.IUserService;
 import com.cryptobank.backend.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@CrossOrigin("*")
+
 @RestController
 @RequestMapping("/api/${api-version}/users")
 @RequiredArgsConstructor
@@ -42,7 +42,7 @@ public class UserController {
 	public ResponseEntity<Page<User>> getAllUsers(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "10") int size) {
-		return ResponseEntity.ok(userService.getAll(page, size));
+		return ResponseEntity.ok(userService.getAllUsers(page, size));
 	}
 
 	@PostMapping
