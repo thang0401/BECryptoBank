@@ -24,7 +24,7 @@ public class KycController {
 	public ResponseEntity<String> ventifyKYC(@RequestBody KycRequest request,@PathVariable String id,HttpSession session,@PathVariable String nation)
 	{
 		try {
-			User userKYC=userService.get(id);
+			User userKYC = userService.getUserKYC(id);
 			userKYC.setFirstName(request.getFirstName());
 			userKYC.setLastName(request.getLastName());
 			userKYC.setGender(request.getGender());
