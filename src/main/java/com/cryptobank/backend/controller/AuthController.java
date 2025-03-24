@@ -92,37 +92,37 @@ public class AuthController {
 	}
 
 	// Đăng ký
-	@PostMapping("/register")
-	public ResponseEntity<?> register(@RequestBody RegisterRequest registerRequest) {
-		// Kiểm tra xem email đã tồn tại chưa
-		if (userService.existsByEmail(registerRequest.getEmail())) {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Email đã được đăng ký");
-		}
-
-		// Kiểm tra xem số điện thoại đã tồn tại chưa
-		if (userService.existsByPhoneNumber(registerRequest.getPhoneNumber())) {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Số điện thoại đã được đăng ký");
-		}
-
-		// Kiểm tra xem số CCCD đã tồn tại chưa
-		if (userService.existsByIdCardNumber(registerRequest.getIdCardNumber())) {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Số CCCD đã được đăng ký");
-		}
-
-		// Tạo đối tượng người dùng và lưu vào cơ sở dữ liệu
-		User user = new User();
-		user.setEmail(registerRequest.getEmail());
-		user.setFirstName(getFirstAndLastName(registerRequest.getFullname()).getFirstName());
-		user.setLastName(getFirstAndLastName(registerRequest.getFullname()).getLastname());
-		user.setPhoneNumber(registerRequest.getPhoneNumber());
-		user.setIdCardNumber(registerRequest.getIdCardNumber());
-		user.setPassword(encodePassword(registerRequest.getPassword())); // Mã hóa mật khẩu
-
-		// Lưu người dùng vào cơ sở dữ liệu
-		userService.save(user);
-
-		return ResponseEntity.status(HttpStatus.CREATED).body("Đăng ký thành công");
-	}
+//	@PostMapping("/register")
+//	public ResponseEntity<?> register(@RequestBody RegisterRequest registerRequest) {
+//		// Kiểm tra xem email đã tồn tại chưa
+//		if (userService.existsByEmail(registerRequest.getEmail())) {
+//			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Email đã được đăng ký");
+//		}
+//
+//		// Kiểm tra xem số điện thoại đã tồn tại chưa
+//		if (userService.existsByPhoneNumber(registerRequest.getPhoneNumber())) {
+//			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Số điện thoại đã được đăng ký");
+//		}
+//
+//		// Kiểm tra xem số CCCD đã tồn tại chưa
+//		if (userService.existsByIdCardNumber(registerRequest.getIdCardNumber())) {
+//			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Số CCCD đã được đăng ký");
+//		}
+//
+//		// Tạo đối tượng người dùng và lưu vào cơ sở dữ liệu
+//		User user = new User();
+//		user.setEmail(registerRequest.getEmail());
+//		user.setFirstName(getFirstAndLastName(registerRequest.getFullname()).getFirstName());
+//		user.setLastName(getFirstAndLastName(registerRequest.getFullname()).getLastname());
+//		user.setPhoneNumber(registerRequest.getPhoneNumber());
+//		user.setIdCardNumber(registerRequest.getIdCardNumber());
+//		user.setPassword(encodePassword(registerRequest.getPassword())); // Mã hóa mật khẩu
+//
+//		// Lưu người dùng vào cơ sở dữ liệu
+//		userService.save(user);
+//
+//		return ResponseEntity.status(HttpStatus.CREATED).body("Đăng ký thành công");
+//	}
 
 	// Yêu cầu quên mật khẩu
 	@PostMapping("/forgot-password")

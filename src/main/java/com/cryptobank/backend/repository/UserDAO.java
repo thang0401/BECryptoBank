@@ -2,6 +2,9 @@ package com.cryptobank.backend.repository;
 
 import com.cryptobank.backend.entity.User;
 import com.cryptobank.backend.model.CustomerUserDetails;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -17,8 +20,10 @@ public interface UserDAO extends JpaRepository<User, String> {
     @Query("SELECT u FROM User u WHERE u.phoneNumber LIKE %:phone% AND u.deleted = false")
     List<User> findByPhoneNumberContaining(String phone);
 
-    @Query("SELECT ur.user FROM UserRole ur " +
-            "WHERE ur.role.name = :role AND ur.deleted = false")
+    @Query("SELECT u FROM User u " +
+            "JOIN u.userRoles ur " +
+            "JOIN ur.role r " +
+            "WHERE r.name = :role AND u.deleted = false")
     List<User> findByRole(String role);
 
     @Query("SELECT u FROM User u WHERE u.ranking.name LIKE %:rankingName% AND u.deleted = false")
@@ -45,5 +50,8 @@ public interface UserDAO extends JpaRepository<User, String> {
     @Query("SELECT new com.cryptobank.backend.model.CustomerUserDetails(u.email, u.password, 'ROLE_USER') FROM User u " +
             "WHERE u.email = :email AND u.deleted = false")
     CustomerUserDetails authenticate(String email);
+
+    @Query("SELECT u FROM User u WHERE u.deleted = false")
+    Page<User> findAllNotDeleted(Pageable pageable);
 
 }
