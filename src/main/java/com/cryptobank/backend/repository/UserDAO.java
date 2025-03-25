@@ -20,8 +20,8 @@ public interface UserDAO extends JpaRepository<User, String> {
     @Query("SELECT u FROM User u WHERE u.phoneNumber LIKE %:phone% AND u.deleted = false")
     List<User> findByPhoneNumberContaining(String phone);
 
-    @Query("SELECT u FROM User u " +
-            "JOIN u.userRoles ur " +
+    @Query("SELECT u FROM UserRole ur " +
+            "JOIN ur.user u " +
             "JOIN ur.role r " +
             "WHERE r.name = :role AND u.deleted = false")
     List<User> findByRole(String role);
