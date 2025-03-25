@@ -11,10 +11,8 @@ import java.util.List;
 
 
 @CrossOrigin("*")
-@RestController
 public class SavingAccountController {
 
-    @Autowired
     SavingAccountService userPortfolioService;
 
     @GetMapping("/customer-management")
