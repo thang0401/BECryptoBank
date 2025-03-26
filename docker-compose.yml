@@ -1,4 +1,22 @@
 services:
+  postgres_database:
+    image: postgres:16.8
+    container_name: postgres_db_development
+    environment:
+      POSTGRES_USER: postgresql
+      POSTGRES_PASSWORD: CjZwTK1f03pY
+      POSTGRES_DB: CryptoBank
+    ports:
+      - 5555:5432
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - backend-development
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres_db", "d", "CryptoBank"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   app:
     container_name: BECryptoBank
@@ -7,5 +25,20 @@ services:
       dockerfile: Dockerfile
     ports:
       - 8000:8000
-    env_file:
-      - .env
+    environment:
+      DB_HOST: postgres_database
+      DB_PORT: 5555
+      DB_NAME: CryptoBank
+      DB_USER: postgresql
+      DB_PASS: CjZwTK1f03pY
+    depends_on:
+      - postgres_database
+    networks:
+      - backend-development
+
+networks:
+  backend-development:
+    driver: bridge
+
+volumes:
+  postgres_data:
