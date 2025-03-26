@@ -60,7 +60,7 @@ public class TermController {
 
         Term term=new Term();
         term.setId(entity.getId());
-        term.setAmount_month(entity.getAmountMonth());
+        term.setAmountMonth(entity.getAmountMonth());
         term.setType(entity.getType());
         term.setInterestRateOfMonth(entity.getInterestRate());
         //Save term

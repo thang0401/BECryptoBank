@@ -1,5 +1,7 @@
 package com.cryptobank.backend.DTO;
 
+import java.math.BigDecimal;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,5 +14,5 @@ public class TermAddDTO {
     private Long amountMonth;
     private String type;
     private String createdBy="system";
-    private Double interestRate;
+    private BigDecimal interestRate;
 }
