@@ -23,7 +23,7 @@ public abstract class BaseEntity {
 
     @Id
     @Column(name = "id", length = 50, nullable = false)
-    private String id = "";
+    private String id = IdGenerator.generate();
     @Column(name = "delete_yn")
     private Boolean deleted = false;
 
