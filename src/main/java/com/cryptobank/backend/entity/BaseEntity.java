@@ -1,6 +1,8 @@
 package com.cryptobank.backend.entity;
 
 
+
+import com.cryptobank.backend.utils.IdGenerator;
 import jakarta.persistence.Column;
 import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
@@ -9,9 +11,6 @@ import lombok.Setter;
 import lombok.ToString;
 
 import java.time.OffsetDateTime;
-import java.util.UUID;
-
-import org.springframework.util.IdGenerator;
 
 /**
  * Chứa thuộc tính cần thiết trong mỗi entity.

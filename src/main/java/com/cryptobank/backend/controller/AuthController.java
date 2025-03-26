@@ -81,6 +81,9 @@ public class AuthController {
 		user.setLastName(getFirstAndLastName(registerRequest.getFullname()).getLastname());
 		user.setPhoneNumber(registerRequest.getPhoneNumber());
 		user.setIdCardNumber(registerRequest.getIdCardNumber());
+		user.setPassword(encodePassword(registerRequest.getPassword())); // Mã hóa mật khẩu
+		user.setPhoneNumber(registerRequest.getPhoneNumber());
+		user.setIdCardNumber(registerRequest.getIdCardNumber());
 		// user.setPassword(encodePassword(registerRequest.getPassword())); // Mã hóa mật khẩu
 
 		// Lưu người dùng vào cơ sở dữ liệu

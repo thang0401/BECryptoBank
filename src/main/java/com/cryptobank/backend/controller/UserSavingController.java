@@ -159,6 +159,9 @@ public class UserSavingController {
         return user;
     }
 
+    private DebitWallet getUserDebitWalletAddress(User user){
+        return debitWalletDAO.findByWalletAddress(user.getWalletAddress());
+    }
     private String getUserWalletAddress(User user){
         return user.getWalletAddress();
     }

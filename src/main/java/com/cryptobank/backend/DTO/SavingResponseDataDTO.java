@@ -8,8 +8,10 @@ import lombok.Data;
 
 import java.util.List;
 
+import java.util.List;
+
 @Data
 public class SavingResponseDataDTO {
     private List<Term> terms;
-    private List<DebitWallet> userDebitAccounts;
+    private List<DebitWallet> userDebitWallets;
 }

@@ -7,15 +7,6 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.cryptobank.backend.DTO.AdminSavingAccountDTO;
-import com.cryptobank.backend.entity.SavingAccount;
-import com.cryptobank.backend.entity.Term;
-import com.cryptobank.backend.entity.User;
-import com.cryptobank.backend.repository.SavingAccountDAO;
-import com.cryptobank.backend.repository.TermDAO;
-
-import lombok.AllArgsConstructor;
-
 import java.util.List;
 
 
