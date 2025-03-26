@@ -7,16 +7,17 @@ services:
       POSTGRES_PASSWORD: CjZwTK1f03pY
       POSTGRES_DB: CryptoBank
     ports:
-      - 5555:5432
+      - "5555:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - backend-development
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "postgres_db", "d", "CryptoBank"]
+      test: ["CMD", "pg_isready", "-U", "postgresql", "d", "CryptoBank"]
       interval: 10s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
 
   app:
     container_name: BECryptoBank
@@ -24,10 +25,10 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - 8000:8000
+      - "8000:8000"
     environment:
-      DB_HOST: postgres_database
-      DB_PORT: 5555
+      DB_HOST: localhost
+      DB_PORT: 5432
       DB_NAME: CryptoBank
       DB_USER: postgresql
       DB_PASS: CjZwTK1f03pY
