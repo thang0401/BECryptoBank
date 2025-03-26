@@ -21,7 +21,7 @@ public class Term extends BaseEntity {
     private String type;
 
     @Column(name = "interest_rate_of_month")
-    private BigDecimal interestRateOfMonth = BigDecimal.ZERO;
+    private BigDecimal interestRateOfMonth;
 
     @Column(name="deleted_yn")
     private Boolean deletedYN=false;
