@@ -1,9 +1,10 @@
 package com.cryptobank.backend.controller;
 
 import com.cryptobank.backend.DTO.KycRequest;
+
 import com.cryptobank.backend.entity.User;
 import com.cryptobank.backend.repository.UserDAO;
-import com.cryptobank.backend.services.generalServices.UserService;
+import com.cryptobank.backend.services.UserService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -23,7 +24,7 @@ public class KycController {
 	public ResponseEntity<String> ventifyKYC(@RequestBody KycRequest request,@PathVariable String id,HttpSession session,@PathVariable String nation)
 	{
 		try {
-			User userKYC=userService.get(id);
+			User userKYC = userService.getUserKYC(id);
 			userKYC.setFirstName(request.getFirstName());
 			userKYC.setLastName(request.getLastName());
 			userKYC.setGender(request.getGender());

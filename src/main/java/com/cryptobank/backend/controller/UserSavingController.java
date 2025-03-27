@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.cryptobank.backend.DTO.UserSavingAccountDTO.InformationFormPostRequestDTO;
+
 import com.cryptobank.backend.DTO.UserSavingAccountDTO.InformationFormResponseDTO;
 import com.cryptobank.backend.entity.DebitWallet;
 import com.cryptobank.backend.entity.SavingAccount;
@@ -20,8 +21,9 @@ import com.cryptobank.backend.repository.DebitWalletDAO;
 import com.cryptobank.backend.repository.SavingAccountDAO;
 import com.cryptobank.backend.repository.TermDAO;
 import com.cryptobank.backend.repository.UserDAO;
-import com.cryptobank.backend.services.generalServices.AccruedInterestService;
-import com.cryptobank.backend.services.generalServices.WithdrawService;
+import com.cryptobank.backend.services.WithdrawService;
+import com.cryptobank.backend.services.AccruedInterestService;
+
 
 import jakarta.servlet.http.HttpSession;
 import lombok.AllArgsConstructor;

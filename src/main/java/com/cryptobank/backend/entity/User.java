@@ -1,17 +1,18 @@
 package com.cryptobank.backend.entity;
 
 import jakarta.persistence.*;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 
 /**
  * Entity này được sử dụng trong chức năng Authentication.<br>
  * Sẽ được tạo thành JWT.
  */
-@Getter
-@Setter
+@Data
 @Entity
 @Table(name = "users")
 public class User extends BaseEntity {
@@ -107,5 +108,24 @@ public class User extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ranking_id")
     private Ranking ranking;
+
+
+    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
+    private List<DeviceInfo> devices;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Loan> loans;
+
+    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
+    private List<ReferralBonus> bonuses;
+
+    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
+    private List<SavingAccount> savings;
+
+//    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
+//    private List<SubWallet> subWallets;
+    
+    @OneToOne(mappedBy = "user")
+    private UserOtp userOtp;
 
 }
