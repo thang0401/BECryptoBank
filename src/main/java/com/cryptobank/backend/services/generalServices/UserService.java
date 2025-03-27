@@ -3,6 +3,8 @@ package com.cryptobank.backend.services.generalServices;
 import com.cryptobank.backend.entity.User;
 import com.cryptobank.backend.exception.AlreadyExistException;
 import com.cryptobank.backend.repository.UserDAO;
+import com.cryptobank.backend.services.EmailService;
+
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
