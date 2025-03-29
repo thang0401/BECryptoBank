@@ -1,5 +1,7 @@
 package com.cryptobank.backend.DTO;
 
+import com.cryptobank.backend.entity.Status;
+
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
@@ -10,6 +12,6 @@ public class RoleCreateRequest {
     private String name;
     private String note;
     @NotBlank
-    private String status;
+    private Status status;
 
 }
