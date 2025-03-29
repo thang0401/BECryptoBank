@@ -9,6 +9,8 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Getter
 @Setter
 @Entity
@@ -36,6 +38,7 @@ public class Loan extends BaseEntity {
     @Column(name = "due_day")
     private OffsetDateTime dueDay;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "loan")
     private List<LoanRepayment> loanRepayments = new ArrayList<>();
 

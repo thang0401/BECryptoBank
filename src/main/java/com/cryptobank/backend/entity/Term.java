@@ -11,6 +11,8 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Getter
 @Setter
 @Entity
@@ -26,9 +28,11 @@ public class Term extends BaseEntity {
     @Column(name = "interest_rate_of_month")
     private BigDecimal interestRateOfMonth = BigDecimal.ZERO;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "term")
     private List<Loan> loans = new ArrayList<>();
 
+    @JsonIgnore
     @OneToMany(mappedBy = "term")
     private List<SavingAccount> savingAccounts = new ArrayList<>();
 

@@ -7,7 +7,9 @@ import org.springdoc.core.converters.models.Pageable;
 import org.springdoc.core.converters.models.Sort;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
+@EnableJpaRepositories
 public interface ReadOnlyRepository<T,ID> extends JpaRepository<T,ID> {
 
     List<T> findAll();
