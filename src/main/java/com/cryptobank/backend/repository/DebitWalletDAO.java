@@ -9,6 +9,6 @@ import java.util.List;
 @Repository
 public interface DebitWalletDAO extends JpaRepository<DebitWallet,String>{
 
-    List<DebitWallet> findByUserId(String userId);
+    DebitWallet findByWalletAddress(String walletAddress);
 
 }

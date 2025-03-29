@@ -9,6 +9,8 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Getter
 @Setter
 @Entity
@@ -61,9 +63,11 @@ public class DebitWallet extends BaseEntity {
     @Column(name = "custom_metadata", columnDefinition = "TEXT")
     private String customMetadata;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "debitWallet")
     private List<DebitTransaction> debitTransactions = new ArrayList<>();
 
+    @JsonIgnore
     @OneToMany(mappedBy = "debitWallet")
     private List<UsdcVndTransaction> usdcVndTransactions = new ArrayList<>();
 
