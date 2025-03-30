@@ -12,6 +12,7 @@ springdoc:
   swagger-ui:
     path: "/swagger.html"
 
+
 spring:
   application:
     name: BE-Crypto-Bank
@@ -57,3 +58,24 @@ payos:
   api-key: 43460806-5853-4ea8-982b-dec5c15d9b10              # API Key từ PayOS
   checksum-key: fa3e160e48bed97941cd9a41598477d1e88f2c12f06d06c4da314355be53b8f3    # Checksum Key để xác thực
   base-url: https://api.payos.vn     # URL của PayOS API
+
+# Web3j Configuration
+web3j:
+  network:
+    url: https://sepolia-rollup.arbitrum.io/rpc
+  contract:
+    address: 0x9c3a3d7ea8e322b6630fd990b5e54bbc7242b36d
+  usdc:
+    token:
+      address: 0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d
+# Privy Configuration
+privy:
+  secret: ""
+# Wallet Configuration
+wallet:
+  private-key: a35a31d78a0876d062615bc1da2f2b0dbfc37f8c229fc78c2fceff45904eb4e8
+# Circle API Configuration
+circle:
+  api:
+    key: d7901c3a144a2ccffd1a519c0051afaf:7c822faa243beaa9490566b04fbbb3d0
+    base-url: https://api.circle.com/v1
