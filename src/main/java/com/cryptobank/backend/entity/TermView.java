@@ -8,11 +8,12 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Getter;
 
+
 @Entity
 @Table(name="term_deleted_false")
 @Immutable
 @Getter
-public class TermView {
+public class TermView extends BaseEntity {
 
     @Id
     private String id;
