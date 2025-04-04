@@ -27,7 +27,7 @@ public class BankTransferService2 {
         this.userService = userService;
     }
 
-    // 1️⃣ API nạp tiền - Trả về mã QR
+    // 1️ API nạp tiền - Trả về mã QR
     public Map<String, String> depositToPayOS(String orderId, Double amount, String description, String returnUrl, String cancelUrl) {
         String url = payosBaseUrl + "/v2/payment-requests";
 
@@ -57,7 +57,7 @@ public class BankTransferService2 {
         return responseBody;
     }
 
-    // 2️⃣ API rút tiền - Xử lý yêu cầu rút tiền
+    // 2️ API rút tiền - Xử lý yêu cầu rút tiền
     public Map<String, String> withdrawFromPayOS(String userId, Double amount, String bankAccount, String bankCode) {
         // Kiểm tra số dư USDC của user
         Double userBalance = userService.getUserBalance(userId);
