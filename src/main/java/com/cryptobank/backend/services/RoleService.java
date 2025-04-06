@@ -5,6 +5,8 @@ import com.cryptobank.backend.DTO.request.RoleCreateRequest;
 import com.cryptobank.backend.DTO.request.RoleUpdateRequest;
 import com.cryptobank.backend.entity.Role;
 import com.cryptobank.backend.entity.UserRole;
+import com.cryptobank.backend.exception.AlreadyExistException;
+import com.cryptobank.backend.exception.ResourceNotFoundException;
 import com.cryptobank.backend.mapper.RoleMapper;
 import com.cryptobank.backend.repository.RoleDAO;
 import com.cryptobank.backend.repository.UserRoleDAO;
@@ -26,10 +28,10 @@ public class RoleService {
 
     public int count(String id) {
         List<UserRole> userRoles = userRoleDAO.findAll(
-                (root, query, criteriaBuilder) -> criteriaBuilder.and(
-                        criteriaBuilder.equal(root.get("role").get("id"), id),
-                        criteriaBuilder.notEqual(root.get("deleted"), true)
-                ));
+            (root, query, criteriaBuilder) -> criteriaBuilder.and(
+                criteriaBuilder.equal(root.get("role").get("id"), id),
+                criteriaBuilder.notEqual(root.get("deleted"), true)
+            ));
         return userRoles.size();
     }
 
@@ -50,19 +52,20 @@ public class RoleService {
 
     public Role getById(String id) {
         return dao.findOne(ignoreDeleted()
-                .and((root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("id"), id))).orElse(null);
+                .and((root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("id"), id)))
+            .orElseThrow(() -> new ResourceNotFoundException("Role with id " + id + " not found"));
     }
 
     public Role getByName(String roleName) {
         return dao.findOne(ignoreDeleted()
-                .and((root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("name"), roleName))).orElse(null);
+                .and((root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("name"), roleName)))
+            .orElseThrow(() -> new ResourceNotFoundException("Role with name " + roleName + " not found"));
     }
 
     public RoleDTO save(RoleCreateRequest request) {
         Role found = getByName(request.getName());
-        if (found != null) {
-            found.setDeleted(false);
-            return mapper.toResponse(dao.save(found));
+        if (found != null && !found.getDeleted()) {
+            throw new AlreadyExistException("Role with name " + request.getName() + " already exist");
         }
         Role created = mapper.fromCreateRequest(request);
         return mapper.toResponse(dao.save(created));
