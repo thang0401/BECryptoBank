@@ -7,4 +7,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface RoleUrlDAO extends JpaRepository<RoleUrl, String>, JpaSpecificationExecutor<RoleUrl> {
+
+    RoleUrl findByRoleIdAndFunctionUrl(String role, String functionUrl);
+
 }
