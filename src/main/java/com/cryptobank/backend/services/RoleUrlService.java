@@ -5,6 +5,7 @@ import com.cryptobank.backend.DTO.request.RoleUrlCreateRequest;
 import com.cryptobank.backend.DTO.request.RoleUrlUpdateRequest;
 import com.cryptobank.backend.entity.RoleUrl;
 import com.cryptobank.backend.exception.AlreadyExistException;
+import com.cryptobank.backend.exception.ResourceNotFoundException;
 import com.cryptobank.backend.mapper.RoleUrlMapper;
 import com.cryptobank.backend.repository.RoleUrlDAO;
 import lombok.RequiredArgsConstructor;
@@ -30,19 +31,10 @@ public class RoleUrlService {
         return role == null ? null : mapper.toResponse(role);
     }
 
-    public RoleUrlDTO toResponseFromUrl(String url) {
-        RoleUrl role = getByUrl(url);
-        return role == null ? null : mapper.toResponse(role);
-    }
-
     public RoleUrl getById(String id) {
         return dao.findOne(ignoreDeleted()
-                .and((root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("id"), id))).orElse(null);
-    }
-
-    public RoleUrl getByUrl(String url) {
-        return dao.findOne(ignoreDeleted()
-                .and((root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("functionUrl"), url))).orElse(null);
+                .and((root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("id"), id)))
+            .orElseThrow(() -> new ResourceNotFoundException("Role url with id " + id + " not found"));
     }
 
     public RoleUrl getByRoleAndUrl(String role, String url) {

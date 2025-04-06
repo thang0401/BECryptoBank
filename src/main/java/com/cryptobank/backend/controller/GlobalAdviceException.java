@@ -12,22 +12,22 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class GlobalAdviceException {
 
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ResourceNotFoundException> handleResourceNotFound(ResourceNotFoundException ex) {
-        return new ResponseEntity<>(ex, HttpStatus.NOT_FOUND);
+    public ResponseEntity<String> handleResourceNotFound(ResourceNotFoundException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(AlreadyExistException.class)
-    public ResponseEntity<AlreadyExistException> handleResourceNotFound(AlreadyExistException ex) {
-        return new ResponseEntity<>(ex, HttpStatus.CONFLICT);
+    public ResponseEntity<String> handleResourceNotFound(AlreadyExistException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.CONFLICT);
     }
 
     @ExceptionHandler(UsernameNotFoundException.class)
-    public ResponseEntity<UsernameNotFoundException> handleUsernameNotFound(UsernameNotFoundException ex) {
-        return new ResponseEntity<>(ex, HttpStatus.UNAUTHORIZED);
+    public ResponseEntity<String> handleUsernameNotFound(UsernameNotFoundException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.UNAUTHORIZED);
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<Exception> handleAnyException(Exception ex) {
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<Exception> handleAnyException(RuntimeException ex) {
         return new ResponseEntity<>(ex, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
