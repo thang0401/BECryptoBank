@@ -161,5 +161,6 @@ public class User extends BaseEntity {
     
     @OneToOne(mappedBy = "user")
     private UserOtp userOtp;
+    
 
 }
