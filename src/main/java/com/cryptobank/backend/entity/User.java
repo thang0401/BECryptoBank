@@ -162,7 +162,5 @@ public class User extends BaseEntity {
     @OneToOne(mappedBy = "user")
     private UserOtp userOtp;
     
-    @OneToOne(mappedBy = "userDebit")
-    private DebitAccount debitUser;
 
 }

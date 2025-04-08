@@ -2,9 +2,10 @@ package com.cryptobank.backend.services;
 
 import java.math.BigDecimal;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.cryptobank.backend.repository.DebitAccountRepository;
+import com.cryptobank.backend.repository.DebitWalletDAO;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -13,16 +14,17 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class DebitAccountService {
+public class DebitWalletService {
     
-    private final DebitAccountRepository debitAccountRepository;
+	@Autowired
+    private final DebitWalletDAO debitWalletRepository;
 
     @PersistenceContext
     private EntityManager entityManager;
 
     @Transactional
     public void updateBalance(String userId, BigDecimal newBalance) {
-        debitAccountRepository.increaseBalanceByUserId(userId, newBalance);
+    	debitWalletRepository.increaseBalanceByUserId(userId, newBalance);
         entityManager.flush();
         entityManager.clear();
     }
