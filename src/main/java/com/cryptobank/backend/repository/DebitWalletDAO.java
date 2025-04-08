@@ -1,6 +1,5 @@
 package com.cryptobank.backend.repository;
 
-import com.cryptobank.backend.entity.DebitAccount;
 import com.cryptobank.backend.entity.DebitWallet;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -17,14 +16,14 @@ public interface DebitWalletDAO extends JpaRepository<DebitWallet,String>{
 
     List<DebitWallet> findByUserId(String userId);
     
-    Optional<DebitAccount> findByUserDebitId(String userId);
+    //Optional<DebitWallet> findByUserDebitId(String userId);
 	
 	@Modifying
-	@Query("UPDATE DebitAccount d SET d.balance = d.balance + :balance WHERE d.userDebit.id = :userId")
+	@Query("UPDATE DebitWallet d SET d.balance = d.balance + :balance WHERE d.user.id = :userId")
 	void increaseBalanceByUserId(@Param("userId") String userId, @Param("balance") BigDecimal balance);
 
 	@Modifying
-	@Query("UPDATE DebitAccount d SET d.balance = d.balance - :amount WHERE d.userDebit.id = :userId AND d.balance >= :amount")
+	@Query("UPDATE DebitWallet d SET d.balance = d.balance - :amount WHERE d.user.id = :userId AND d.balance >= :amount")
 	void decreaseBalanceByUserId(@Param("userId") String userId, @Param("amount") BigDecimal amount);
 
 }
