@@ -155,6 +155,9 @@ public class User extends BaseEntity {
 
     @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
     private List<SavingAccount> savings;
+    
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<UserBankAccount> bankAccounts;
 
 //    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
 //    private List<SubWallet> subWallets;

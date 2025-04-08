@@ -51,19 +51,18 @@ public class PaymentController {
 	private StatusDAO statusRepository;
 
 	
-    //API nạp tiền - Trả về mã QR để thanh toán
-    @PostMapping("/deposit")
-    public ResponseEntity<Map<String, String>> deposit(
-    		// FE chỉ đưa xuống amount 
-            @RequestParam String orderId,
-            @RequestParam Double amount,
-            @RequestParam String description,
-            @RequestParam String returnUrl,
-            @RequestParam String cancelUrl) {
+	@PostMapping("/deposit")
+	public ResponseEntity<Map<String, String>> deposit(@RequestBody Map<String, Object> requestBody) {
+	    String orderId = (String) requestBody.get("orderId");
+	    Double amount = Double.valueOf(requestBody.get("amount").toString());
+	    String description = (String) requestBody.get("description");
+	    String returnUrl = (String) requestBody.get("returnUrl");
+	    String cancelUrl = (String) requestBody.get("cancelUrl");
 
-        Map<String, String> response = bankTransferService.depositToPayOS(orderId, amount, description, returnUrl, cancelUrl);
-        return ResponseEntity.ok(response);
-    }
+	    Map<String, String> response = bankTransferService.depositToPayOS(orderId, amount, description, returnUrl, cancelUrl);
+	    return ResponseEntity.ok(response);
+	}
+
 
     
     //API rút tiền - Xử lý yêu cầu rút tiền
@@ -81,9 +80,10 @@ public class PaymentController {
     @PostMapping("/transactions/update-status")
     public ResponseEntity<Map<String, String>> updateTransactionStatus(
             @RequestParam String transactionId, 
-            @RequestParam String newStatus) {
+            @RequestParam String newStatus,
+            @RequestParam(required = false) Long bankAccountId) {
 
-        Map<String, String> response = bankTransferService.updateTransactionStatus(transactionId, newStatus);
+        Map<String, String> response = bankTransferService.updateTransactionStatus(transactionId, newStatus,bankAccountId);
         return ResponseEntity.ok(response);
     }
 
