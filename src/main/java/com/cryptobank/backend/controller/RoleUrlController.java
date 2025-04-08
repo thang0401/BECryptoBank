@@ -31,11 +31,6 @@ public class RoleUrlController {
         return ResponseEntity.ok(new ApiResponse<>("", roleUrlService.toResponseFromId(id)));
     }
 
-    @GetMapping("/url/{url}")
-    public ResponseEntity<ApiResponse<RoleUrlDTO>> getRoleByUrl(@PathVariable String url) {
-        return ResponseEntity.ok(new ApiResponse<>("", roleUrlService.toResponseFromUrl(url)));
-    }
-
     @PostMapping
     public ResponseEntity<ApiResponse<RoleUrlDTO>> addRoleUrl(@Valid @RequestBody RoleUrlCreateRequest request) {
         return ResponseEntity.ok(new ApiResponse<>("", roleUrlService.save(request)));
