@@ -1,5 +1,5 @@
 FROM eclipse-temurin:21-jre AS builder
-COPY ./target/iam-service.jar ./app.jar
+COPY ./target/BECryptoBank.jar ./app.jar
 RUN java -Djarmode=tools -jar ./app.jar extract --layers --launcher
 
 FROM eclipse-temurin:21-jre
