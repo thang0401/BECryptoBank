@@ -9,10 +9,12 @@ import org.springframework.web.client.RestTemplate;
 import com.cryptobank.backend.entity.DebitWallet;
 import com.cryptobank.backend.entity.Status;
 import com.cryptobank.backend.entity.UsdcVndTransaction;
+import com.cryptobank.backend.entity.UserBankAccount;
 import com.cryptobank.backend.repository.DebitWalletDAO;
 import com.cryptobank.backend.repository.StatusDAO;
 import com.cryptobank.backend.repository.UsdcVndTransactionRepository;
 import com.cryptobank.backend.repository.UserDAO;
+import com.cryptobank.backend.repository.userBankAccountRepository;
 
 import jakarta.transaction.Transactional;
 
@@ -33,8 +35,6 @@ public class BankTransferService2 {
     @Value("${payos.api-key}")
     private String payosApiKey;
     
-    @Autowired
-    private BankTransferService2 bankTransferService;
 	
 	@Autowired
 	private PaymentService paymentService;
@@ -59,6 +59,9 @@ public class BankTransferService2 {
 	
 	@Autowired 
 	private UsdcVndTransactionRepository transactionRepository;
+	
+	@Autowired
+	private userBankAccountRepository userBankAccountRepository;
 
     private final RestTemplate restTemplate;
     private final UserService userService; // Service để kiểm tra số dư USDC
@@ -148,21 +151,22 @@ public class BankTransferService2 {
     
     
     @Transactional
-    public Map<String, String> updateTransactionStatus(String transactionId, String newStatus) {
+    public Map<String, String> updateTransactionStatus(String transactionId, String newStatus, Long bankAccountId) {
         Map<String, String> responseBody = new HashMap<>();
 
-        // Tìm giao dịch
+        // 🔍 Tìm giao dịch
         UsdcVndTransaction transaction = transactionRepository.findById(transactionId)
             .orElseThrow(() -> new RuntimeException("Không tìm thấy giao dịch với ID: " + transactionId));
 
-        // Lấy trạng thái mới từ DB
-        Status status = Optional.ofNullable( statusRepository.findByName(newStatus))
+        // 🔍 Lấy trạng thái mới từ DB
+        Status status = Optional.ofNullable(statusRepository.findByName(newStatus))
             .orElseThrow(() -> new RuntimeException("Không tìm thấy trạng thái: " + newStatus));
 
+        // ✅ Cập nhật trạng thái giao dịch
         transaction.setStatus(status);
         transactionRepository.save(transaction);
 
-        // Nếu giao dịch được duyệt thành công, trừ số dư và thực hiện rút tiền
+        // 🔥 Nếu giao dịch được duyệt, thực hiện rút tiền
         if ("SUCCESS".equals(newStatus)) {
             DebitWallet debitWallet = transaction.getDebitWallet();
             BigDecimal usdcAmount = transaction.getUsdcAmount();
@@ -172,14 +176,23 @@ public class BankTransferService2 {
                 return responseBody;
             }
 
-            // Trừ số dư USDC trong ví
+            // 🔍 Nếu không chọn bankAccountId, lấy tài khoản ngân hàng mới nhất
+            UserBankAccount bankAccount = userBankAccountRepository.findById(bankAccountId)
+            	    .orElseGet(() -> userBankAccountRepository.findFirstByUserIdOrderByUpdatedAtDescCreatedAtDesc(
+            	        debitWallet.getUser().getId()
+            	    ).orElseThrow(() -> new RuntimeException("Người dùng chưa có tài khoản ngân hàng nào!")));
+
+
+            // 💰 Trừ số dư USDC trong ví
             debitWallet.setBalance(debitWallet.getBalance().subtract(usdcAmount));
             debitWalletRepository.save(debitWallet);
 
-            // Gửi yêu cầu rút tiền đến PayOS
-            Map<String, String> payosResponse = payosService.withdraw(transaction.getVndAmount(), 
-                                                                      transaction.getDebitWallet().getUser().getBankAccount(), 
-                                                                      transaction.getDebitWallet().getUser().getBankCode());
+            // 💳 Gửi yêu cầu rút tiền đến PayOS
+            Map<String, String> payosResponse = payosService.withdraw(
+                transaction.getVndAmount(), 
+                bankAccount.getAccountNumber(), 
+                bankAccount.getBankCode()
+            );
 
             if (payosResponse.containsKey("error")) {
                 responseBody.put("error", "Lỗi khi gửi yêu cầu rút tiền: " + payosResponse.get("error"));
@@ -193,6 +206,8 @@ public class BankTransferService2 {
 
         return responseBody;
     }
+
+
 
 
 }
