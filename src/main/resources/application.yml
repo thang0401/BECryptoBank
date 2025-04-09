@@ -6,11 +6,10 @@ DB_PASS: CjZwTK1f03pY
 
 server:
   port: 8000
-springdoc:
-  api-docs:
-    path: "/api-docs"
-  swagger-ui:
-    path: "/swagger.html"
+
+logging:
+  pattern:
+    dateformat: yyyy-MM-dd HH:mm:ss.SSS
 
 spring:
   application:
