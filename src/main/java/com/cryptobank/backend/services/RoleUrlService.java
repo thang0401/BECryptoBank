@@ -42,10 +42,10 @@ public class RoleUrlService {
     }
 
     public RoleUrlDTO save(RoleUrlCreateRequest request) {
-        roleService.getById(request.getRole());
-        RoleUrl found = getByRoleAndUrl(request.getRole(), request.getUrl());
+        roleService.getById(request.getRoleId());
+        RoleUrl found = getByRoleAndUrl(request.getRoleId(), request.getUrl());
         if (found != null && !found.getDeleted()) {
-            throw new AlreadyExistException("Role " + request.getRole() + " with url " + request.getUrl() + " already exist");
+            throw new AlreadyExistException("Role " + request.getRoleId() + " with url " + request.getUrl() + " already exist");
         }
         RoleUrl roleUrl = mapper.fromCreateRequest(request);
         return mapper.toResponse(dao.save(roleUrl));
