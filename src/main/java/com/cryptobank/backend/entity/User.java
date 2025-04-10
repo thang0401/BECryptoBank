@@ -165,5 +165,8 @@ public class User extends BaseEntity {
     @OneToOne(mappedBy = "user")
     private UserOtp userOtp;
     
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, optional = true)
+    private GoogleAuth googleAuth; 
+    
 
 }
