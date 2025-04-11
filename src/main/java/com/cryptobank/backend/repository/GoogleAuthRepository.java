@@ -7,5 +7,6 @@ import java.util.Optional;
 
 public interface GoogleAuthRepository extends JpaRepository<GoogleAuth, Long> {
     Optional<GoogleAuth> findByGoogleId(String googleId);
-    Optional<GoogleAuth> findByUserId(Long userId);
+    Optional<GoogleAuth> findByUser_Id(String userId);
+
 }
