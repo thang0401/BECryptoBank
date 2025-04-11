@@ -41,10 +41,9 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestParam String email, @RequestParam String password,
-            @RequestParam(defaultValue = "false") boolean rememberMe, HttpServletRequest request, HttpSession session) {
+    public ResponseEntity<?> login(@RequestBody LoginRequestAuth login, HttpServletRequest request, HttpSession session) {
         try {
-            AuthResponse response = authService.loginWithEmail(email, password, rememberMe, request, session);
+            AuthResponse response = authService.loginWithEmail(login.getEmail(), login.getPassword(), login.isRememberMe(), request, session);
             return ResponseEntity.ok(response);
         } catch (com.cryptobank.backend.exception.AuthException e) {
             if ("OTP verification required".equals(e.getMessage())) {
@@ -73,17 +72,16 @@ public class AuthController {
     }
 
     @PostMapping("/login/OTP")
-    public ResponseEntity<?> verifyOtp(@RequestParam String otp, @RequestParam String user_id,
-            @RequestParam(defaultValue = "false") boolean rememberMe, HttpSession session, HttpServletRequest request) {
+    public ResponseEntity<?> verifyOtp(@RequestBody OtpRequest request, HttpSession session, HttpServletRequest servletRequest) {
         try {
-            if (authService.saveDeviceInforToDB(otp, request, session, user_id)) {
-                User user = authService.getUserById(user_id);
+            if (authService.saveDeviceAfterOtp(request.getOtp(), servletRequest, session,request.getUser_id())) {
+                User user = authService.getUserById(request.getUser_id());
                 if (user == null) {
                     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User not found");
                 }
                 String email = user.getEmail();
                 String accessToken = authService.getJwtUtil().generateAccessToken(email);
-                String refreshToken = rememberMe ? 
+                String refreshToken = request.isRememberMe() ? 
                     authService.getJwtUtil().generateRefreshToken(email, 30 * 24 * 60 * 60) : 
                     authService.getJwtUtil().generateRefreshToken(email);
                 AuthResponse response = new AuthResponse(email, accessToken, refreshToken);
