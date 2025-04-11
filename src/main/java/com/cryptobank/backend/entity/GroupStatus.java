@@ -16,10 +16,6 @@ public class GroupStatus extends BaseEntity {
     @Column(name = "name", columnDefinition = "TEXT")
     private String name;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "status_id")
-    private Status status;
-
     @OneToMany(mappedBy = "groupStatus")
     private List<Status> statuses = new ArrayList<>();
 
