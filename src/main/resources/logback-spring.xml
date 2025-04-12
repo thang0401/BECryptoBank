@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <conversionRule conversionWord="clr" class="org.springframework.boot.logging.logback.ColorConverter"/>
+    <conversionRule conversionWord="clrLevel" class="com.cryptobank.backend.logback.ColorLogLevel"/>
+    <conversionRule conversionWord="clrLevelText" class="com.cryptobank.backend.logback.ColorLogLevelText"/>
+    <conversionRule conversionWord="wEx" class="org.springframework.boot.logging.logback.ExtendedWhitespaceThrowableProxyConverter" />
+
+    <property name="LOG_PATTERN" value="%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){green} %clr(|){faint} %clrLevel(%-5p) %clr(| %-15.15t |){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %clrLevelText(%m%n%wEx)"/>
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE" />
+    </root>
+</configuration>
