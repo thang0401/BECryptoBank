@@ -6,6 +6,7 @@ import com.cryptobank.backend.DTO.UserUpdateRequest;
 import com.cryptobank.backend.entity.Role;
 import com.cryptobank.backend.entity.User;
 import com.cryptobank.backend.entity.UserRole;
+import com.cryptobank.backend.exception.ResourceNotFoundException;
 import com.cryptobank.backend.repository.UserDAO;
 import com.cryptobank.backend.repository.UserRoleDAO;
 import jakarta.servlet.http.HttpSession;
@@ -38,13 +39,13 @@ public class UserService {
     }
     public User getUserKYC(String id) {
         return repository.findById(id)
-            .orElseThrow(() -> new RuntimeException("User with id " + id + " not found or deleted"));
+            .orElseThrow(() -> new ResourceNotFoundException("User with id " + id + " not found or deleted"));
     }
 
     private User getUserEntity(String id) {
         return repository.findById(id)
             .filter(u -> !u.getDeleted())
-            .orElseThrow(() -> new RuntimeException("User with id " + id + " not found or deleted"));
+            .orElseThrow(() -> new ResourceNotFoundException("User with id " + id + " not found or deleted"));
     }
 
     public UserInformation get(String id) {
@@ -91,7 +92,7 @@ public class UserService {
 
     public UserInformation save(UserCreateRequest request) {
         if (repository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("User with email " + request.getEmail() + " already exists");
+            throw new ResourceNotFoundException("User with email " + request.getEmail() + " already exists");
         }
         User user = new User();
         user.setUsername(request.getUsername());
@@ -114,7 +115,7 @@ public class UserService {
         if (user != null && !user.getDeleted()) {
             return convertToUserInformation(user);
         }
-        throw new RuntimeException("User with email " + email + " not found or deleted");
+        throw new ResourceNotFoundException("User with email " + email + " not found or deleted");
     }
 
     public List<UserInformation> getName(String name) {
@@ -144,7 +145,7 @@ public class UserService {
     public void requestResetPassword(String email, HttpSession session) {
         User user = repository.findByEmail(email);
         if (user == null || user.getDeleted()) {
-            throw new RuntimeException("User with email " + email + " not found or deleted");
+            throw new ResourceNotFoundException("User with email " + email + " not found or deleted");
         }
         String resetCode = generateResetCode();
         session.setAttribute("OTP", resetCode);
@@ -156,7 +157,7 @@ public class UserService {
     public void resetPassword(String email, String resetCode, String newPassword, HttpSession session) {
         User user = repository.findByEmail(email);
         if (user == null || user.getDeleted()) {
-            throw new RuntimeException("User with email " + email + " not found or deleted");
+            throw new ResourceNotFoundException("User with email " + email + " not found or deleted");
         }
         String OTP = (String) session.getAttribute("OTP");
         if (!OTP.equals(resetCode)) {
@@ -206,7 +207,7 @@ public class UserService {
         if (user != null && !user.getDeleted()) {
             return convertToUserInformation(user);
         }
-        throw new RuntimeException("User with id number " + idNumber + " not found or deleted");
+        throw new ResourceNotFoundException("User with id number " + idNumber + " not found or deleted");
     }
 
     public void addRoleToUser(String id, String... roles) {
