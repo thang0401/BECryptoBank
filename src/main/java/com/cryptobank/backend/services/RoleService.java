@@ -50,8 +50,9 @@ public class RoleService {
     }
 
     public RoleDTO save(RoleCreateRequest request) {
-        Role found = getByName(request.getName());
-        if (found != null && !found.getDeleted()) {
+        boolean found = dao.exists(ignoreDeleted()
+                .and((root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("name"), request.getName())));
+        if (found) {
             throw new AlreadyExistException("Role with name " + request.getName() + " already exist");
         }
         Role created = mapper.fromCreateRequest(request);
