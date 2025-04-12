@@ -28,6 +28,7 @@ public class KycController {
 	@PutMapping("/ventify/{userId}")
 	public ResponseEntity<String> ventifyKYC(@RequestBody KycRequest request,@PathVariable("userId") String userId,HttpSession session)
 	{
+		// lưu thông tin user kyc
 		try {
 			User userKYC = userService.getUserKYC(userId);
 			userKYC.setFirstName(request.getFirstName());
