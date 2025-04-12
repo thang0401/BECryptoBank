@@ -27,8 +27,10 @@ public class GlobalAdviceException {
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Exception> handleAnyException(Exception ex) {
-        return new ResponseEntity<>(ex, HttpStatus.INTERNAL_SERVER_ERROR);
+    public ResponseEntity<String> handleAnyException(Exception ex) {
+        String errorMessage = "An error occurred: " + ex.getMessage();
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorMessage);
+   
     }
 
 }

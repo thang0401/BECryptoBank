@@ -1,0 +1,62 @@
+DB_HOST: 14.225.206.68
+DB_PORT: 5555
+DB_NAME: CryptoBank
+DB_USER: postgresql
+DB_PASS: CjZwTK1f03pY
+
+server:
+  port: 8000
+
+springdoc:
+  api-docs:
+    path: "/api-docs"
+  swagger-ui:
+    path: "/swagger.html"
+
+spring:
+  application:
+    name: BE-Crypto-Bank
+  datasource:
+    url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+    username: ${DB_USER}
+    password: ${DB_PASS}
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 50MB
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: phongpvps36848@fpt.edu.vn         
+    password: uvqx ojcn zlvw fziq            
+    protocol: smtp
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+        debug: true                            
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+banking-api:
+  base-url: https://api.nganhang.com           
+  api-key: your-api-key-here                   
+  transfer-endpoint: /v1/transfer               
+  withdraw-endpoint: /v1/withdraw              
+
+payos:
+  client-id: f0522096-3074-4461-a2d1-7e84ea714d06
+  api-key: 43460806-5853-4ea8-982b-dec5c15d9b10
+  checksum-key: fa3e160e48bed97941cd9a41598477d1e88f2c12f06d06c4da314355be53b8f3
+  base-url: https://api-merchant.payos.vn

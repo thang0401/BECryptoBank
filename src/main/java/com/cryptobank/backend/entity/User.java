@@ -101,40 +101,40 @@ public class User extends BaseEntity {
     @Column(name = "wallet_address", columnDefinition = "TEXT")
     private String walletAddress;
 
-    @Column(name = "has_accepted_terms")
-    private Boolean hasAcceptedTerms = false;
+//    @Column(name = "has_accepted_terms")
+//    private Boolean hasAcceptedTerms = false;
 
-    @Column(name = "hire_date")
-    private OffsetDateTime hireDate;
+//    @Column(name = "hire_date")
+//    private OffsetDateTime hireDate;
 
-    @Column(name = "termination_date")
-    private OffsetDateTime terminationDate;
+//    @Column(name = "termination_date")
+//    private OffsetDateTime terminationDate;
 
-    @Column(name = "salary", nullable = false)
-    @DecimalMin(value = "0")
-    @Digits(integer = 8, fraction = 2)
-    private BigDecimal salary = BigDecimal.ZERO;
+//    @Column(name = "salary", nullable = false)
+//    @DecimalMin(value = "0")
+//    @Digits(integer = 8, fraction = 2)
+//    private BigDecimal salary = BigDecimal.ZERO;
 
-    @Column(name = "bonus")
-    @DecimalMin(value = "0")
-    @Digits(integer = 10, fraction = 2)
-    private BigDecimal bonus = BigDecimal.ZERO;
+//    @Column(name = "bonus")
+//    @DecimalMin(value = "0")
+//    @Digits(integer = 10, fraction = 2)
+//    private BigDecimal bonus = BigDecimal.ZERO;
 
-    @Column(name = "insurance_number", columnDefinition = "text", unique = true)
-    private String insuranceNumber;
+//    @Column(name = "insurance_number", columnDefinition = "text", unique = true)
+//    private String insuranceNumber;
 
-    @Column(name = "tax_code", columnDefinition = "text", unique = true)
-    private String taxCode;
+//    @Column(name = "tax_code", columnDefinition = "text", unique = true)
+//    private String taxCode;
 
-    @Column(name = "emergency_contact_name")
-    private String emergencyContactName;
+//    @Column(name = "emergency_contact_name")
+//    private String emergencyContactName;
+//
+//    @Column(name = "emergency_contact_phone")
+//    private String emergencyContactPhone;
 
-    @Column(name = "emergency_contact_phone")
-    private String emergencyContactPhone;
-
-    @ManyToOne
-    @JoinColumn(name = "marital_status")
-    private Status maritalStatus;
+//    @ManyToOne
+//    @JoinColumn(name = "marital_status")
+//    private Status maritalStatus;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "status_id", nullable = false)

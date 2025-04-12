@@ -1,6 +1,7 @@
 package com.cryptobank.backend.services;
 
 import com.cryptobank.backend.DTO.AuthResponse;
+import com.cryptobank.backend.DTO.UserAuthResponse;
 import com.cryptobank.backend.entity.*;
 import com.cryptobank.backend.exception.AuthException;
 import com.cryptobank.backend.repository.*;
@@ -41,6 +42,7 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
     private final GoogleIdTokenVerifier googleTokenVerifier;
+    private UserService userService;
 
     public JwtUtil getJwtUtil() {
         return jwtUtil;
@@ -100,8 +102,7 @@ public class AuthService {
     }
 
     // ---------------- LOGIN with Google ------------------
-    public AuthResponse loginWithGoogle(String idToken,
-                                        HttpServletRequest request, HttpSession session) {
+    public UserAuthResponse loginWithGoogle(String idToken, boolean rememberMe, HttpServletRequest request, HttpSession session) {
         try {
             GoogleIdToken token = googleTokenVerifier.verify(idToken);
             if (token == null) throw new AuthException("Invalid Google ID Token");
@@ -111,6 +112,8 @@ public class AuthService {
             String googleId = token.getPayload().getSubject();
 
             User user = getOrCreateGoogleUser(payload, googleId);
+            user.setLastLoginAt(OffsetDateTime.now());
+            userRepository.save(user);
 
             String userAgent = request.getHeader("User-Agent");
             UserAgent ua = UserAgent.parseUserAgentString(userAgent);
@@ -122,6 +125,10 @@ public class AuthService {
                 if (!isDeviceInUse(user, deviceOpt.get())) {
                     sendDeviceNotification(user, deviceOpt.get());
                     throw new AuthException("OTP verification required");
+                } else {
+                    DeviceInfo device = deviceOpt.get();
+                    device.setLastLoginAt(OffsetDateTime.now());
+                    deviceInfoRepository.save(device);
                 }
             } else {
                 DeviceInfo newDevice = createDeviceInfo(session, browser, os, user, request);
@@ -129,9 +136,24 @@ public class AuthService {
                 throw new AuthException("OTP verification required");
             }
 
-            String accessToken = jwtUtil.generateAccessToken(email);
-            String refreshToken = jwtUtil.generateRefreshToken(email);
-            return new AuthResponse(email, accessToken, refreshToken);
+            String role = userService.getUserRole(user.getId())
+                .map(userRole -> userRole.getRole().getName())
+                .orElse("USER");
+
+            UserAuthResponse response = new UserAuthResponse();
+            response.setId(user.getId());
+            response.setRole(role);
+            response.setEmail(user.getEmail());
+            response.setFullName(user.getFullName());
+            response.setUsername(user.getUsername());
+            response.setPassword(user.getPassword());
+            response.setAvatar(user.getAvatar());
+            response.setKycStatus(user.getKycStatus());
+            response.setWalletAddress(user.getWalletAddress());
+            response.setFirstName(user.getFirstName());
+            response.setRememberMe(rememberMe);
+
+            return response;
         } catch (Exception e) {
             throw new AuthException("Google login failed: " + e.getMessage());
         }
@@ -166,36 +188,48 @@ public class AuthService {
                 .orElse(false);
     }
 
-    public boolean saveDeviceAfterOtp(String otp, HttpServletRequest request,
-                                      HttpSession session, String userId) {
+    public boolean saveDeviceAfterOtp(String otp, HttpServletRequest request, HttpSession session, String userId) {
         UserOtp userOtp = userOtpRepository.findByUserId(userId);
-        if (userOtp == null || userOtp.getTimeEnd().isBefore(LocalDateTime.now())) return false;
+        if (userOtp == null || userOtp.getTimeEnd().isBefore(LocalDateTime.now())) {
+            System.out.println("OTP invalid or expired for userId: " + userId);
+            return false;
+        }
 
-        if (!otp.equals(userOtp.getOtpCode())) return false;
+        if (!otp.equals(userOtp.getOtpCode())) {
+            System.out.println("OTP mismatch for userId: " + userId);
+            return false;
+        }
 
         User user = userRepository.findById(userId).orElse(null);
-        if (user == null) return false;
+        if (user == null) {
+            System.out.println("User not found for userId: " + userId);
+            return false;
+        }
 
         UserAgent ua = UserAgent.parseUserAgentString(request.getHeader("User-Agent"));
         DeviceInfo device = createDeviceInfo(session, ua.getBrowser(), ua.getOperatingSystem(), user, request);
-        deviceInfoRepository.save(device);
-        return true;
+        try {
+            deviceInfoRepository.save(device);
+            System.out.println("Device saved for userId: " + userId + ", deviceId: " + device.getDeviceId());
+            return true;
+        } catch (Exception e) {
+            System.err.println("Failed to save device for userId: " + userId + ": " + e.getMessage());
+            return false;
+        }
     }
 
-    private DeviceInfo createDeviceInfo(HttpSession session, Browser browser,
-                                        OperatingSystem os, User user, HttpServletRequest request) {
+    private DeviceInfo createDeviceInfo(HttpSession session, Browser browser, OperatingSystem os, User user, HttpServletRequest request) {
         DeviceInfo device = new DeviceInfo();
         device.setDeviceId(session.getId());
-        device.setDeviceName(os.getName());
-        device.setOs(os.getName());
-        device.setBrowser(browser.getName());
+        device.setDeviceName(os != null && !os.getName().equals("Unknown") ? os.getName() : "Unknown Device");
+        device.setOs(os != null && !os.getName().equals("Unknown") ? os.getName() : "Unknown OS");
+        device.setBrowser(browser != null && !browser.getName().equals("Unknown") ? browser.getName() : "Unknown Browser");
         device.setIpAddress(request.getRemoteAddr());
         device.setLastLoginAt(OffsetDateTime.now());
         device.setUser(user);
         device.setInUse(true);
         return device;
     }
-
     private String createOtp(User user) {
         int otpCode = 100000 + new Random().nextInt(900000);
         UserOtp userOtp = Optional.ofNullable(userOtpRepository.findByUserId(user.getId()))

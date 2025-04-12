@@ -56,11 +56,24 @@ public class AuthController {
     }
 
     @PostMapping("/login/google")
-    public ResponseEntity<?> loginWithGoogle(@RequestParam String idToken, HttpServletRequest request,
+    public ResponseEntity<?> loginWithGoogle(
+            @RequestBody GoogleLoginRequest request,
+            HttpServletRequest servletRequest,
             HttpSession session) {
+        if (request.getIdToken() == null || request.getIdToken().isBlank()) {
+            return ResponseEntity.badRequest().body("Missing required parameter: idToken");
+        }
         try {
-            AuthResponse response = authService.loginWithGoogle(idToken, request, session);
-            return ResponseEntity.ok(response);
+            UserAuthResponse response = authService.loginWithGoogle(
+                    request.getIdToken(),
+                    request.isRememberMe(),
+                    servletRequest,
+                    session
+            );
+			return ResponseEntity.ok(response);
+
+
+
         } catch (com.cryptobank.backend.exception.AuthException e) {
             if ("OTP verification required".equals(e.getMessage())) {
                 return ResponseEntity.status(HttpStatus.ACCEPTED).body("Đưa đến trang nhập mã OTP xác thực");
@@ -74,23 +87,35 @@ public class AuthController {
     @PostMapping("/login/OTP")
     public ResponseEntity<?> verifyOtp(@RequestBody OtpRequest request, HttpSession session, HttpServletRequest servletRequest) {
         try {
-            if (authService.saveDeviceAfterOtp(request.getOtp(), servletRequest, session,request.getUser_id())) {
+            if (authService.saveDeviceAfterOtp(request.getOtp(), servletRequest, session, request.getUser_id())) {
                 User user = authService.getUserById(request.getUser_id());
                 if (user == null) {
                     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User not found");
                 }
-                String email = user.getEmail();
-                String accessToken = authService.getJwtUtil().generateAccessToken(email);
-                String refreshToken = request.isRememberMe() ? 
-                    authService.getJwtUtil().generateRefreshToken(email, 30 * 24 * 60 * 60) : 
-                    authService.getJwtUtil().generateRefreshToken(email);
-                AuthResponse response = new AuthResponse(email, accessToken, refreshToken);
+
+                String role = userService.getUserRole(user.getId())
+                    .map(userRole -> userRole.getRole().getName())
+                    .orElse("USER");
+
+                UserAuthResponse response = new UserAuthResponse();
+                response.setId(user.getId());
+                response.setRole(role);
+                response.setEmail(user.getEmail());
+                response.setFullName(user.getFullName());
+                response.setUsername(user.getUsername());
+                response.setPassword(user.getPassword());
+                response.setAvatar(user.getAvatar());
+                response.setKycStatus(user.getKycStatus());
+                response.setWalletAddress(user.getWalletAddress());
+                response.setFirstName(user.getFirstName());
+                response.setRememberMe(request.isRememberMe());
+
                 return ResponseEntity.ok(response);
             } else {
-                return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body("Xác Thực OTP Thất bại");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Xác thực OTP thất bại: OTP không hợp lệ hoặc đã hết hạn");
             }
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("OTP verification failed: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("OTP verification failed: " + e.getMessage());
         }
     }
 

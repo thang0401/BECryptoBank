@@ -31,6 +31,7 @@ public class UserService {
     private final UserRoleDAO userRoleDAO;
     private final RoleService roleService;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private final UserRoleDAO userRoleRepository;
 
     private UserInformation convertToUserInformation(User user) {
         UserInformation dto = new UserInformation();
@@ -212,5 +213,8 @@ public class UserService {
             userRole.setRole(role);
             userRoleDAO.save(userRole);
         }
+    }
+    public Optional<UserRole> getUserRole(String userId) {
+        return userRoleRepository.findByUserId(userId).stream().findFirst();
     }
 }
