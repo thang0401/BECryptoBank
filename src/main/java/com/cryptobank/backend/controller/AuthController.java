@@ -1,15 +1,20 @@
 package com.cryptobank.backend.controller;
 
 
+import com.cryptobank.backend.DTO.AuthResponse;
+import com.cryptobank.backend.DTO.NameSplit;
+import com.cryptobank.backend.DTO.ResetPasswordRequest;
+import com.cryptobank.backend.entity.DeviceInfo;
+import com.cryptobank.backend.services.AuthService;
+import com.cryptobank.backend.services.UserService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import java.util.List;
-
-
 import java.util.Optional;
-
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,18 +23,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.cryptobank.backend.DTO.*;
-
-import com.cryptobank.backend.entity.DeviceInfo;
-import com.cryptobank.backend.entity.User;
-import com.cryptobank.backend.services.AuthService;
-import com.cryptobank.backend.services.UserService;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.*;
-
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -37,13 +30,8 @@ public class AuthController {
 	private AuthService authService;
 	@Autowired
 	private UserService userService;
-
-	private PasswordEncoder passwordEncoder;
-
-	// Constructor
-	public AuthController() {
-		this.passwordEncoder = new BCryptPasswordEncoder();
-	}
+    @Autowired
+	private BCryptPasswordEncoder passwordEncoder;
 
 	// Phương thức mã hóa mật khẩu
 	public String encodePassword(String password) {
