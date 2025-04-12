@@ -33,7 +33,7 @@ public class MinioService {
             .contentType(contentType)
             .stream(inputStream, inputStream.available(), -1)
             .build());
-        return minioConfig.getEndpoint() + "/" + minioConfig.getEndpoint() + "/" + filename;
+        return filename;
     }
 
     public void deleteFile(String object) {
