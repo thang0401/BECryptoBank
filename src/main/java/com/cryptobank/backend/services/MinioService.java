@@ -2,10 +2,12 @@ package com.cryptobank.backend.services;
 
 import com.cryptobank.backend.configuration.MinioConfig;
 import io.minio.BucketExistsArgs;
+import io.minio.GetPresignedObjectUrlArgs;
 import io.minio.MakeBucketArgs;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
 import io.minio.RemoveObjectArgs;
+import io.minio.http.Method;
 import java.io.InputStream;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -17,10 +19,15 @@ import org.springframework.stereotype.Service;
 public class MinioService {
 
     private final MinioClient minioClient;
-    private final MinioConfig minioConfig;
 
-    public String uploadFile(String object, InputStream inputStream, String contentType) {
-        return uploadFile(object, minioConfig.getBucket(), inputStream, contentType);
+    @SneakyThrows(Exception.class)
+    public String getUrl(String object, String bucket) {
+        GetPresignedObjectUrlArgs args = GetPresignedObjectUrlArgs.builder()
+            .bucket(bucket)
+            .object(object)
+            .method(Method.GET)
+            .build();
+        return minioClient.getPresignedObjectUrl(args);
     }
 
     @SneakyThrows(Exception.class)
@@ -36,13 +43,9 @@ public class MinioService {
         return filename;
     }
 
-    public void deleteFile(String object) {
-        deleteFile(object, minioConfig.getBucket());
-    }
-
     @SneakyThrows(Exception.class)
     public void deleteFile(String object, String bucket) {
-        createBucket(bucket);
+        isBucketExists(bucket);
         minioClient.removeObject(RemoveObjectArgs.builder().bucket(bucket).object(object).build());
     }
 

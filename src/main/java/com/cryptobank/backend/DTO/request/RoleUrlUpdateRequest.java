@@ -5,7 +5,7 @@ import lombok.Data;
 @Data
 public class RoleUrlUpdateRequest {
 
-    private String role;
+    private String roleId;
     private String url;
 
 }

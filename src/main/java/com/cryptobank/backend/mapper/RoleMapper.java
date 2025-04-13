@@ -12,15 +12,17 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 @Mapper(
     componentModel = "spring",
     nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
-    uses = ConvertStatusMapper.class
+    uses = ConvertStringStrip.class
 )
 public interface RoleMapper {
 
+    @Mapping(target = "status.id", source = "statusId")
     Role fromCreateRequest(RoleCreateRequest request);
 
+    @Mapping(target = "status.id", source = "statusId")
     Role fromUpdateRequest(@MappingTarget Role role, RoleUpdateRequest request);
 
-    @Mapping(target = "statusName", source = "status")
-    RoleDTO toResponse(Role role);
+    @Mapping(target = "status", source = "status.name")
+    RoleDTO toDTO(Role role);
 
 }
