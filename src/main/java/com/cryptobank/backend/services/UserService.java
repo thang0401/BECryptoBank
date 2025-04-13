@@ -9,18 +9,17 @@ import com.cryptobank.backend.entity.UserRole;
 import com.cryptobank.backend.repository.UserDAO;
 import com.cryptobank.backend.repository.UserRoleDAO;
 import jakarta.servlet.http.HttpSession;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -30,7 +29,7 @@ public class UserService {
     private final EmailService emailService;
     private final UserRoleDAO userRoleDAO;
     private final RoleService roleService;
-    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private final BCryptPasswordEncoder passwordEncoder;
 
     private UserInformation convertToUserInformation(User user) {
         UserInformation dto = new UserInformation();
@@ -38,13 +37,14 @@ public class UserService {
         return dto;
     }
     public User getUserKYC(String id) {
-        return repository.findById(id).orElseThrow(() -> new RuntimeException("User id " + id + " not found"));
+        return repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("User with id " + id + " not found or deleted"));
     }
 
     private User getUserEntity(String id) {
         return repository.findById(id)
-                .filter(u -> !u.getDeleted())
-                .orElseThrow(() -> new RuntimeException("User id " + id + " not found or deleted"));
+            .filter(u -> !u.getDeleted())
+            .orElseThrow(() -> new RuntimeException("User with id " + id + " not found or deleted"));
     }
 
     public UserInformation get(String id) {
@@ -111,7 +111,10 @@ public class UserService {
 
     public UserInformation getEmail(String email) {
         User user = repository.findByEmail(email);
-        return user != null && !user.getDeleted() ? convertToUserInformation(user) : null;
+        if (user != null && !user.getDeleted()) {
+            return convertToUserInformation(user);
+        }
+        throw new RuntimeException("User with email " + email + " not found or deleted");
     }
 
     public List<UserInformation> getName(String name) {
@@ -200,7 +203,10 @@ public class UserService {
 
     public UserInformation getUsersByIdNumber(String idNumber) {
         User user = repository.findByIdCardNumber(idNumber);
-        return user != null && !user.getDeleted() ? convertToUserInformation(user) : null;
+        if (user != null && !user.getDeleted()) {
+            return convertToUserInformation(user);
+        }
+        throw new RuntimeException("User with id number " + idNumber + " not found or deleted");
     }
 
     public void addRoleToUser(String id, String... roles) {

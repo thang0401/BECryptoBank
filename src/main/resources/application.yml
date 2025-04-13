@@ -1,16 +1,5 @@
-DB_HOST: 14.225.206.68
-DB_PORT: 5555
-DB_NAME: CryptoBank
-DB_USER: postgresql
-DB_PASS: CjZwTK1f03pY
-
 server:
   port: 8000
-springdoc:
-  api-docs:
-    path: "/api-docs"
-  swagger-ui:
-    path: "/swagger.html"
 
 spring:
   application:
