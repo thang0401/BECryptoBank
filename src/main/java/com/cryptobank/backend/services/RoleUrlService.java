@@ -22,13 +22,16 @@ public class RoleUrlService {
     private final RoleService roleService;
     private final RoleUrlMapper mapper;
 
-    public Page<RoleUrlDTO> getAll(Pageable pageable) {
-        return dao.findAll(ignoreDeleted(), pageable).map(mapper::toResponse);
+    public Page<RoleUrlDTO> getAll(String roleId, Pageable pageable) {
+        Specification<RoleUrl> spec = ignoreDeleted();
+        if (roleId != null && !roleId.isBlank())
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("role").get("id"), roleId));
+        return dao.findAll(spec, pageable).map(mapper::toDTO);
     }
 
     public RoleUrlDTO toResponseFromId(String id) {
         RoleUrl role = getById(id);
-        return role == null ? null : mapper.toResponse(role);
+        return role == null ? null : mapper.toDTO(role);
     }
 
     public RoleUrl getById(String id) {
@@ -48,14 +51,14 @@ public class RoleUrlService {
             throw new AlreadyExistException("Role " + request.getRoleId() + " with url " + request.getUrl() + " already exist");
         }
         RoleUrl roleUrl = mapper.fromCreateRequest(request);
-        return mapper.toResponse(dao.save(roleUrl));
+        return mapper.toDTO(dao.save(roleUrl));
     }
 
     public RoleUrlDTO update(String id, RoleUrlUpdateRequest request) {
-        roleService.getById(request.getRole());
+        roleService.getById(request.getRoleId());
         RoleUrl found = getById(id);
         RoleUrl updated = mapper.fromUpdateRequest(found, request);
-        return mapper.toResponse(dao.save(updated));
+        return mapper.toDTO(dao.save(updated));
     }
 
     public boolean delete(String id) {

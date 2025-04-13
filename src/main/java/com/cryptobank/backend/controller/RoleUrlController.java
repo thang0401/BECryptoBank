@@ -1,56 +1,64 @@
 package com.cryptobank.backend.controller;
 
 import com.cryptobank.backend.DTO.RoleUrlDTO;
+import com.cryptobank.backend.DTO.request.RequestPageParam;
 import com.cryptobank.backend.DTO.request.RoleUrlCreateRequest;
 import com.cryptobank.backend.DTO.request.RoleUrlUpdateRequest;
 import com.cryptobank.backend.services.RoleUrlService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.web.PagedModel;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/role/url")
+@RequestMapping(value = "/api/role/url", produces = MediaType.APPLICATION_JSON_VALUE)
+@Tag(name = "Role Url", description = "Đường dẫn url cho từng vai trò tương ứng")
 public class RoleUrlController {
 
     private final RoleUrlService roleUrlService;
 
     @GetMapping
-    public ResponseEntity<PagedModel<RoleUrlDTO>> getAllRoleRoleUrls(
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        return ResponseEntity.ok(new PagedModel<>(roleUrlService.getAll(PageRequest.of(page - 1, size))));
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(
+        summary = "Lấy danh sách role url",
+        description = "Trả về danh sách các role url được phân trang với tham số page và size, có thể tìm kiếm cụ thể theo role id"
+    )
+    public PagedModel<RoleUrlDTO> getAllRoleRoleUrls(
+        @Parameter(description = "ID role") @RequestParam(required = false) String roleId,
+        @Valid @ParameterObject RequestPageParam request
+    ) {
+        return new PagedModel<>(roleUrlService.getAll(roleId, request.toPageable()));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<RoleUrlDTO> getRoleRoleUrlById(@PathVariable String id) {
-        return ResponseEntity.ok(roleUrlService.toResponseFromId(id));
+    @ResponseStatus(HttpStatus.OK)
+    public RoleUrlDTO getRoleRoleUrlById(@PathVariable String id) {
+        return roleUrlService.toResponseFromId(id);
     }
 
     @PostMapping
-    public ResponseEntity<RoleUrlDTO> addRoleUrl(@Valid @RequestBody RoleUrlCreateRequest request) {
-        return ResponseEntity.ok(roleUrlService.save(request));
+    @ResponseStatus(HttpStatus.OK)
+    public RoleUrlDTO addRoleUrl(@Valid @RequestBody RoleUrlCreateRequest request) {
+        return roleUrlService.save(request);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<RoleUrlDTO> updateRoleUrl(@PathVariable String id, @Valid @RequestBody RoleUrlUpdateRequest request) {
-        return ResponseEntity.ok(roleUrlService.update(id, request));
+    @ResponseStatus(HttpStatus.OK)
+    public RoleUrlDTO updateRoleUrl(@PathVariable String id, @Valid @RequestBody RoleUrlUpdateRequest request) {
+        return roleUrlService.update(id, request);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Boolean> deleteRoleUrl(@PathVariable String id) {
-        return ResponseEntity.ok(roleUrlService.delete(id));
+    @ResponseStatus(HttpStatus.OK)
+    public Boolean deleteRoleUrl(@PathVariable String id) {
+        return roleUrlService.delete(id);
     }
 
 }

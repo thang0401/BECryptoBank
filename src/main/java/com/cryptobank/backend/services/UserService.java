@@ -32,7 +32,7 @@ public class UserService {
     private final RoleService roleService;
     private final BCryptPasswordEncoder passwordEncoder;
 
-    private UserInformation convertToUserInformation(User user) {
+    public UserInformation convertToUserInformation(User user) {
         UserInformation dto = new UserInformation();
         BeanUtils.copyProperties(user, dto);
         return dto;

@@ -9,6 +9,6 @@ public class RoleCreateRequest {
     @NotBlank
     private String name;
     private String note;
-    private String status;
+    private String statusId;
 
 }

@@ -1,61 +1,94 @@
 package com.cryptobank.backend.controller;
 
 import com.cryptobank.backend.DTO.RoleDTO;
+import com.cryptobank.backend.DTO.request.RequestPageParam;
 import com.cryptobank.backend.DTO.request.RoleCreateRequest;
 import com.cryptobank.backend.DTO.request.RoleUpdateRequest;
 import com.cryptobank.backend.services.RoleService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.web.PagedModel;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/role")
+@RequestMapping(value = "/api/role", produces = MediaType.APPLICATION_JSON_VALUE)
+@Tag(name = "Role", description = "Vai trò")
 public class RoleController {
 
     private final RoleService roleService;
 
     @GetMapping
-    public ResponseEntity<PagedModel<RoleDTO>> getAllRoles(
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        return ResponseEntity.ok(new PagedModel<>(roleService.getAll(PageRequest.of(page - 1, size))));
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(
+        summary = "Lấy danh sách role",
+        description = "Trả về danh sách các role được phân trang với tham số page và size, có thể tìm kiếm cụ thể theo status id"
+    )
+    public PagedModel<RoleDTO> getAllRoles(
+        @Parameter(description = "ID status") @RequestParam(required = false) String statusId,
+        @Valid @ParameterObject RequestPageParam request
+    ) {
+        return new PagedModel<>(roleService.getAll(statusId, request.toPageable()));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<RoleDTO> getRoleById(@PathVariable String id) {
-        return ResponseEntity.ok(roleService.toResponseFromId(id));
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(
+        summary = "Lấy thông tin role theo id"
+    )
+    public RoleDTO getRoleById(
+        @Parameter(description = "ID role") @PathVariable String id
+    ) {
+        return roleService.toDTOFromId(id);
     }
 
     @GetMapping("/name/{name}")
-    public ResponseEntity<RoleDTO> getRoleByName(@PathVariable String name) {
-        return ResponseEntity.ok(roleService.toResponseFromName(name));
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(
+        summary = "Lấy thông tin role theo tên"
+    )
+    public RoleDTO getRoleByName(
+        @Parameter(description = "Tên role") @PathVariable String name
+    ) {
+        return roleService.toResponseFromName(name);
     }
 
     @PostMapping
-    public ResponseEntity<RoleDTO> addRole(@Valid @RequestBody RoleCreateRequest request) {
-        return ResponseEntity.ok(roleService.save(request));
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(
+        summary = "Tạo mới một role"
+    )
+    public RoleDTO addRole(@Valid @RequestBody RoleCreateRequest request) {
+        return roleService.save(request);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<RoleDTO> updateRole(@PathVariable String id, @Valid @RequestBody RoleUpdateRequest request) {
-        return ResponseEntity.ok(roleService.update(id, request));
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(
+        summary = "Cập nhật thông tin role theo id"
+    )
+    public RoleDTO updateRole(
+        @Parameter(description = "ID role") @PathVariable String id,
+        @Valid @RequestBody RoleUpdateRequest request
+    ) {
+        return roleService.update(id, request);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Boolean> deleteRole(@PathVariable String id) {
-        return ResponseEntity.ok(roleService.deleteById(id));
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(
+        summary = "Xóa một role theo id"
+    )
+    public Boolean deleteRole(
+        @Parameter(description = "ID role") @PathVariable String id
+    ) {
+        return roleService.deleteById(id);
     }
 
 }
