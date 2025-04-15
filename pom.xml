@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.4.3</version>
+		<version>3.4.4</version>
 		<relativePath />
 	</parent>
 	<groupId>com.crytobank</groupId>
@@ -22,6 +22,10 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-validation</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -82,7 +86,7 @@
 		<dependency>
 			<groupId>org.springdoc</groupId>
 			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-			<version>2.8.5</version>
+			<version>2.8.6</version>
 		</dependency>
 		<dependency>
 			<groupId>com.github.ua-parser</groupId>
@@ -96,10 +100,9 @@
 			<version>${org.mapstruct.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.mapstruct</groupId>
-			<artifactId>mapstruct-processor</artifactId>
-			<version>${org.mapstruct.version}</version>
-			<scope>provided</scope>
+			<groupId>io.minio</groupId>
+			<artifactId>minio</artifactId>
+			<version>8.5.17</version>
 		</dependency>
 		<!-- Google API Client -->
 		<dependency>
@@ -130,8 +133,6 @@
 		    <artifactId>UserAgentUtils</artifactId>
 		    <version>1.21</version>
 		</dependency>
-
-
 	</dependencies>
 
 	<build>
@@ -169,11 +170,11 @@
 		</plugins>
 		<finalName>BECryptoBank</finalName>
 	</build>
+
 	<repositories>
 		<repository>
 			<id>basjes-artifactory</id>
 			<url>https://artifactory.basjes.nl/artifactory/public-releases/</url>
 		</repository>
 	</repositories>
-
 </project>

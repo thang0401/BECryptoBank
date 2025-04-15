@@ -7,6 +7,6 @@ public class RoleUpdateRequest {
 
     private String name;
     private String note;
-    private String status;
+    private String statusId;
 
 }

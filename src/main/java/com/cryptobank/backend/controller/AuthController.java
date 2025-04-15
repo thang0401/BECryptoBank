@@ -8,6 +8,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import com.cryptobank.backend.DTO.*;
@@ -20,11 +21,8 @@ import com.cryptobank.backend.repository.UserOtpRepository;
 import com.cryptobank.backend.services.AuthService;
 import com.cryptobank.backend.services.UserService;
 
-import jakarta.security.auth.message.AuthException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 import eu.bitwalker.useragentutils.UserAgent;
 import eu.bitwalker.useragentutils.Browser;
@@ -54,6 +52,8 @@ public class AuthController {
     public AuthController() {
         this.passwordEncoder = new BCryptPasswordEncoder();
     }
+
+    private BCryptPasswordEncoder passwordEncoder;
 
     public String encodePassword(String password) {
         return passwordEncoder.encode(password);
@@ -85,18 +85,18 @@ public class AuthController {
 
     @PostMapping("/login/google")
     public ResponseEntity<?> loginWithGoogle(
-            @RequestBody GoogleLoginRequest request,
-            HttpServletRequest servletRequest,
-            HttpSession session) {
+        @RequestBody GoogleLoginRequest request,
+        HttpServletRequest servletRequest,
+        HttpSession session) {
         if (request.getIdToken() == null || request.getIdToken().isBlank()) {
             return ResponseEntity.badRequest().body("Missing required parameter: idToken");
         }
         try {
             UserAuthResponse response = authService.loginWithGoogle(
-                    request.getIdToken(),
-                    request.isRememberMe(),
-                    servletRequest,
-                    session
+                request.getIdToken(),
+                request.isRememberMe(),
+                servletRequest,
+                session
             );
             return ResponseEntity.ok(response);
         } catch (com.cryptobank.backend.exception.AuthException e) {

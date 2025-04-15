@@ -12,16 +12,18 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 @Mapper(
     componentModel = "spring",
     nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
-    uses = ConvertRoleMapper.class
+    uses = ConvertStringStrip.class
 )
 public interface RoleUrlMapper {
 
-    @Mapping(target = "functionUrl", source = "url")
+    @Mapping(target = "role.id", source = "roleId")
     RoleUrl fromCreateRequest(RoleUrlCreateRequest request);
 
+    @Mapping(target = "role.id", source = "roleId")
     RoleUrl fromUpdateRequest(@MappingTarget RoleUrl roleUrl, RoleUrlUpdateRequest request);
 
-    @Mapping(target = "roleName", source = "role")
-    RoleUrlDTO toResponse(RoleUrl roleUrl);
+    @Mapping(target = "role", source = "role.name")
+    @Mapping(target = "url", source = "functionUrl")
+    RoleUrlDTO toDTO(RoleUrl roleUrl);
 
 }

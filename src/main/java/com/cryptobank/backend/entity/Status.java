@@ -29,9 +29,6 @@ public class Status extends BaseEntity {
     @OneToMany(mappedBy = "status")
     private List<DebitTransaction> debitTransactions = new ArrayList<>();
 
-    @OneToMany(mappedBy = "status", orphanRemoval = true)
-    private List<GroupStatus> groupStatuses = new ArrayList<>();
-
     @OneToMany(mappedBy = "status")
     private List<Loan> loans = new ArrayList<>();
 

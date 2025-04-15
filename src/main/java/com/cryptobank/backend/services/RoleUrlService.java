@@ -1,10 +1,11 @@
 package com.cryptobank.backend.services;
 
-import com.cryptobank.backend.DTO.RoleDTO;
 import com.cryptobank.backend.DTO.RoleUrlDTO;
 import com.cryptobank.backend.DTO.request.RoleUrlCreateRequest;
 import com.cryptobank.backend.DTO.request.RoleUrlUpdateRequest;
 import com.cryptobank.backend.entity.RoleUrl;
+import com.cryptobank.backend.exception.AlreadyExistException;
+import com.cryptobank.backend.exception.ResourceNotFoundException;
 import com.cryptobank.backend.mapper.RoleUrlMapper;
 import com.cryptobank.backend.repository.RoleUrlDAO;
 import lombok.RequiredArgsConstructor;
@@ -18,52 +19,46 @@ import org.springframework.stereotype.Service;
 public class RoleUrlService {
 
     private final RoleUrlDAO dao;
+    private final RoleService roleService;
     private final RoleUrlMapper mapper;
 
-    public Page<RoleUrlDTO> getAll(Pageable pageable) {
-        return dao.findAll(ignoreDeleted(), pageable).map(mapper::toResponse);
+    public Page<RoleUrlDTO> getAll(String roleId, Pageable pageable) {
+        Specification<RoleUrl> spec = ignoreDeleted();
+        if (roleId != null && !roleId.isBlank())
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("role").get("id"), roleId));
+        return dao.findAll(spec, pageable).map(mapper::toDTO);
     }
 
     public RoleUrlDTO toResponseFromId(String id) {
         RoleUrl role = getById(id);
-        return role == null ? null : mapper.toResponse(role);
-    }
-
-    public RoleUrlDTO toResponseFromUrl(String url) {
-        RoleUrl role = getByUrl(url);
-        return role == null ? null : mapper.toResponse(role);
+        return role == null ? null : mapper.toDTO(role);
     }
 
     public RoleUrl getById(String id) {
         return dao.findOne(ignoreDeleted()
-                .and((root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("id"), id))).orElse(null);
-    }
-
-    public RoleUrl getByUrl(String url) {
-        return dao.findOne(ignoreDeleted()
-                .and((root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("functionUrl"), url))).orElse(null);
+                .and((root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("id"), id)))
+            .orElseThrow(() -> new ResourceNotFoundException("Role url with id " + id + " not found"));
     }
 
     public RoleUrl getByRoleAndUrl(String role, String url) {
-        return dao.findOne(ignoreDeleted()
-                .and((root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("role").get("id"), role))
-                .and((root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("functionUrl"), url))).orElse(null);
+        return dao.findByRoleIdAndFunctionUrl(role, url);
     }
 
     public RoleUrlDTO save(RoleUrlCreateRequest request) {
-        RoleUrl found = getByRoleAndUrl(request.getRole(), request.getUrl());
-        if (found != null) {
-            found.setDeleted(false);
-            return mapper.toResponse(dao.save(found));
+        roleService.getById(request.getRoleId());
+        RoleUrl found = getByRoleAndUrl(request.getRoleId(), request.getUrl());
+        if (found != null && !found.getDeleted()) {
+            throw new AlreadyExistException("Role " + request.getRoleId() + " with url " + request.getUrl() + " already exist");
         }
         RoleUrl roleUrl = mapper.fromCreateRequest(request);
-        return mapper.toResponse(dao.save(roleUrl));
+        return mapper.toDTO(dao.save(roleUrl));
     }
 
     public RoleUrlDTO update(String id, RoleUrlUpdateRequest request) {
+        roleService.getById(request.getRoleId());
         RoleUrl found = getById(id);
         RoleUrl updated = mapper.fromUpdateRequest(found, request);
-        return mapper.toResponse(dao.save(updated));
+        return mapper.toDTO(dao.save(updated));
     }
 
     public boolean delete(String id) {
