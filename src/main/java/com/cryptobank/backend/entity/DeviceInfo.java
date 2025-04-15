@@ -39,7 +39,7 @@ public class DeviceInfo extends BaseEntity {
     private String ipAddress;
 
     @Column(name = "last_login_at")
-    private LocalDateTime lastLoginAt;
+    private OffsetDateTime lastLoginAt;
 
 
     @Column(name = "uuid_id", unique = true, nullable = false)

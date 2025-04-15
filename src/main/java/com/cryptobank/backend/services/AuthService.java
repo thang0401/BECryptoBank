@@ -18,12 +18,12 @@ import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
 import org.apache.commons.lang3.RandomStringUtils;
+
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.io.Console;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
@@ -43,10 +43,6 @@ public class AuthService {
     private final JwtUtil jwtUtil;
     private final GoogleIdTokenVerifier googleTokenVerifier;
     private UserService userService;
-
-    public JwtUtil getJwtUtil() {
-        return jwtUtil;
-    }
 
     // ---------------- LOGIN with Email/Password ------------------
     public AuthResponse loginWithEmail(String email, String password, boolean rememberMe,

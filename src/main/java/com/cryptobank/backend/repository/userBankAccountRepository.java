@@ -5,5 +5,5 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface userBankAccountRepository extends JpaRepository<UserBankAccount, Long> {
-	Optional<UserBankAccount> findFirstByUserIdOrderByModifiedAtDescCreatedAtDesc(String userId);
+	Optional<UserBankAccount> findFirstByUserIdOrderByUpdatedAtDescCreatedAtDesc(String userId);
 }

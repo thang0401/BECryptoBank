@@ -1,6 +1,6 @@
 package com.cryptobank.backend.configuration;
 
-import com.cryptobank.backend.services.generalServices.CustomUserDetailsService;
+import com.cryptobank.backend.services.CustomUserDetailsService;
 import com.cryptobank.backend.utils.JwtUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

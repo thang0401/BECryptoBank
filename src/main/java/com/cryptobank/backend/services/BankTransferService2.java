@@ -24,6 +24,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+
 @Service
 public class BankTransferService2 {
 
@@ -179,7 +180,7 @@ public class BankTransferService2 {
 
             // 🔍 Nếu không chọn bankAccountId, lấy tài khoản ngân hàng mới nhất
             UserBankAccount bankAccount = userBankAccountRepository.findById(bankAccountId)
-            	    .orElseGet(() -> userBankAccountRepository.findFirstByUserIdOrderByModifiedAtDescCreatedAtDesc(
+            	    .orElseGet(() -> userBankAccountRepository.findFirstByUserIdOrderByUpdatedAtDescCreatedAtDesc(
             	        debitWallet.getUser().getId()
             	    ).orElseThrow(() -> new RuntimeException("Người dùng chưa có tài khoản ngân hàng nào!")));
 
