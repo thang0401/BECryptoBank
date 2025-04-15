@@ -5,8 +5,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
 
 @Getter
 @Setter
@@ -36,11 +34,5 @@ public class DebitTransaction extends BaseEntity {
 
     @Column(name = "to_pub_Key", columnDefinition = "TEXT")
     private String toPubKey;
-
-    @OneToMany(mappedBy = "debitTransaction")
-    private List<SuspiciousActivity> suspiciousActivities = new ArrayList<>();
-
-    @OneToMany(mappedBy = "debitTransaction")
-    private List<TransactionFee> transactionFees = new ArrayList<>();
 
 }

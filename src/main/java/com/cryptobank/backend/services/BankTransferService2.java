@@ -1,11 +1,5 @@
 package com.cryptobank.backend.services;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
-import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
-
 import com.cryptobank.backend.entity.DebitWallet;
 import com.cryptobank.backend.entity.Status;
 import com.cryptobank.backend.entity.UsdcVndTransaction;
@@ -15,13 +9,20 @@ import com.cryptobank.backend.repository.StatusDAO;
 import com.cryptobank.backend.repository.UsdcVndTransactionRepository;
 import com.cryptobank.backend.repository.UserDAO;
 import com.cryptobank.backend.repository.userBankAccountRepository;
-
 import jakarta.transaction.Transactional;
-
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 
 @Service
@@ -179,7 +180,7 @@ public class BankTransferService2 {
 
             // 🔍 Nếu không chọn bankAccountId, lấy tài khoản ngân hàng mới nhất
             UserBankAccount bankAccount = userBankAccountRepository.findById(bankAccountId)
-            	    .orElseGet(() -> userBankAccountRepository.findFirstByUserIdOrderByUpdatedAtDescCreatedAtDesc(
+            	    .orElseGet(() -> userBankAccountRepository.findFirstByUserIdOrderByModifiedAtDescCreatedAtDesc(
             	        debitWallet.getUser().getId()
             	    ).orElseThrow(() -> new RuntimeException("Người dùng chưa có tài khoản ngân hàng nào!")));
 
