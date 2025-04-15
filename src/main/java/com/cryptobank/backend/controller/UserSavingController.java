@@ -11,7 +11,7 @@ import com.cryptobank.backend.repository.DebitWalletDAO;
 import com.cryptobank.backend.repository.SavingAccountDAO;
 import com.cryptobank.backend.repository.TermDAO;
 import com.cryptobank.backend.repository.UserDAO;
-import com.cryptobank.backend.services.generalServices.WithdrawService;
+import com.cryptobank.backend.services.WithdrawService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
