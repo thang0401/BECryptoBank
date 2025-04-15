@@ -1,19 +1,18 @@
 package com.cryptobank.backend.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import lombok.Getter;
-import lombok.Setter;
+import java.time.LocalDateTime;
+
+import jakarta.persistence.*;
+import lombok.*;
 
 @Getter
 @Setter
 @Entity
 @Table(name = "user_bank_account")
-public class UserBankAccount extends BaseEntity {
+public class UserBankAccount {
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id", nullable = false)
@@ -31,4 +30,14 @@ public class UserBankAccount extends BaseEntity {
 	@Column(name = "bank_code", nullable = false, length = 50)
 	private String bankCode;
 
+	@Column(name = "created_at", nullable = false, updatable = false)
+	private LocalDateTime createdAt = LocalDateTime.now();
+
+	@Column(name = "updated_at")
+	private LocalDateTime updatedAt = LocalDateTime.now();
+
+	@PreUpdate
+	protected void onUpdate() {
+		updatedAt = LocalDateTime.now();
+	}
 }

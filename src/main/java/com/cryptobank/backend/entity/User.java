@@ -1,17 +1,10 @@
 package com.cryptobank.backend.entity;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+import lombok.Data;
+
 import java.time.OffsetDateTime;
 import java.util.List;
-import lombok.Data;
 
 /**
  * Entity này được sử dụng trong chức năng Authentication.<br>
@@ -103,9 +96,6 @@ public class User extends BaseEntity {
     @Column(name = "wallet_address", columnDefinition = "TEXT")
     private String walletAddress;
 
-    @Column(name = "has_accepted_terms")
-    private Boolean hasAcceptedTerms = false;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "status_id", nullable = false)
     private Status status;
@@ -125,15 +115,18 @@ public class User extends BaseEntity {
 
     @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
     private List<SavingAccount> savings;
-    
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<UserBankAccount> bankAccounts;
 
 //    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
 //    private List<SubWallet> subWallets;
-    
+
     @OneToOne(mappedBy = "user")
     private UserOtp userOtp;
-    
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, optional = true)
+    private GoogleAuth googleAuth;
+
 
 }

@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 public class RoleService {
 
     private final RoleDAO dao;
+
     private final RoleMapper mapper;
 
     public Page<RoleDTO> getAll(String statusId, Pageable pageable) {

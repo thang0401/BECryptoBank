@@ -220,4 +220,8 @@ public class UserService {
             userRoleDAO.save(userRole);
         }
     }
+
+    public Optional<UserRole> getUserRole(String userId) {
+        return userRoleDAO.findByUserId(userId).stream().findFirst();
+    }
 }

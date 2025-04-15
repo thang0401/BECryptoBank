@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>org.springframework.boot</groupId>
@@ -16,6 +16,7 @@
 	<properties>
 		<java.version>21</java.version>
 		<org.mapstruct.version>1.6.3</org.mapstruct.version>
+		<lombok.version>1.18.34</lombok.version> <!-- Cập nhật phiên bản mới nhất -->
 	</properties>
 	<dependencies>
 		<dependency>
@@ -52,7 +53,8 @@
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
-			<scope>annotationProcessor</scope>
+			<version>${lombok.version}</version>
+			<scope>provided</scope> <!-- Đảm bảo runtime và compile -->
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -62,8 +64,8 @@
 		<dependency>
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-test</artifactId>
+			<scope>test</scope>
 		</dependency>
-
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
 			<artifactId>jjwt-api</artifactId>
@@ -91,6 +93,7 @@
 			<artifactId>uap-java</artifactId>
 			<version>1.5.2</version>
 		</dependency>
+		<!-- MapStruct -->
 		<dependency>
 			<groupId>org.mapstruct</groupId>
 			<artifactId>mapstruct</artifactId>
@@ -100,6 +103,35 @@
 			<groupId>io.minio</groupId>
 			<artifactId>minio</artifactId>
 			<version>8.5.17</version>
+		</dependency>
+		<!-- Google API Client -->
+		<dependency>
+			<groupId>com.google.api-client</groupId>
+			<artifactId>google-api-client</artifactId>
+			<version>2.2.0</version> <!-- Phiên bản mới hơn -->
+		</dependency>
+		<dependency>
+			<groupId>com.google.http-client</groupId>
+			<artifactId>google-http-client-gson</artifactId>
+			<version>1.42.3</version> <!-- Hỗ trợ Gson cho GoogleIdTokenVerifier -->
+		</dependency>
+
+		<!-- Xóa dependency này vì không cần thiết cho GoogleIdTokenVerifier -->
+		<!-- <dependency>
+            <groupId>com.google.oauth-client</groupId>
+            <artifactId>google-oauth-client</artifactId>
+            <version>1.34.1</version>
+        </dependency> -->
+
+		<dependency>
+			<groupId>nl.basjes.parse.useragent</groupId>
+			<artifactId>yauaa</artifactId>
+			<version>6.8</version>
+		</dependency>
+		<dependency>
+		    <groupId>eu.bitwalker</groupId>
+		    <artifactId>UserAgentUtils</artifactId>
+		    <version>1.21</version>
 		</dependency>
 	</dependencies>
 
@@ -139,4 +171,10 @@
 		<finalName>BECryptoBank</finalName>
 	</build>
 
+	<repositories>
+		<repository>
+			<id>basjes-artifactory</id>
+			<url>https://artifactory.basjes.nl/artifactory/public-releases/</url>
+		</repository>
+	</repositories>
 </project>

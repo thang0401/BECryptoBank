@@ -14,13 +14,14 @@ import java.util.function.Function;
 public class JwtUtil {
 
     private static final String SECRET_KEY = "9e6e63974d7cbccd530aa4284dd45df9900af437d4eb0d7d59ee29386c225bcb0761901ff67dd933632c884448ea407e0df862428f9c70ae5b5898303c24e73d";
-    private static final long ACCESS_TOKEN_EXPIRATION = 1000 * 60 * 30; // 30 phút
-    private static final long REFRESH_TOKEN_EXPIRATION = 1000 * 60 * 60 * 24; // 1 ngày
+    private static final long ACCESS_TOKEN_EXPIRATION = 1000 * 60 * 30; // 30 minutes
+    private static final long REFRESH_TOKEN_EXPIRATION = 1000 * 60 * 60 * 24; // 1 day
 
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(Decoders.BASE64URL.decode(SECRET_KEY));
     }
 
+    // Generic token generation with custom expiration
     public String generateToken(String username, long expiration) {
         return Jwts.builder()
                 .header()
@@ -33,12 +34,19 @@ public class JwtUtil {
                 .compact();
     }
 
+    // Generate access token with default expiration (30 minutes)
     public String generateAccessToken(String username) {
         return generateToken(username, ACCESS_TOKEN_EXPIRATION);
     }
 
+    // Generate refresh token with default expiration (1 day)
     public String generateRefreshToken(String username) {
         return generateToken(username, REFRESH_TOKEN_EXPIRATION);
+    }
+
+    // Overloaded method: Generate refresh token with custom expiration
+    public String generateRefreshToken(String username, long expirationInSeconds) {
+        return generateToken(username, expirationInSeconds * 1000); // Convert seconds to milliseconds
     }
 
     public String extractUsername(String token) {
