@@ -156,8 +156,13 @@ public class AuthService {
             UserAgent ua = UserAgent.parseUserAgentString(userAgent);
             Browser browser = ua.getBrowser();
             OperatingSystem os = ua.getOperatingSystem();
+            
+            DeviceInfo currentDevice = createDeviceInfo(session, browser, os, user, request);
+            String currentBrowser = currentDevice.getBrowser();
+            String currentOs = currentDevice.getOs();
+            String currentDeviceName = currentDevice.getDeviceName();
 
-            Optional<DeviceInfo> deviceOpt = deviceInfoRepository.findByDeviceIdAndUser(session.getId(), user);
+            Optional<DeviceInfo> deviceOpt = deviceInfoRepository.findByInforOfDevice(currentDeviceName, currentBrowser,currentOs);
             if (deviceOpt.isPresent()) {
                 if (!isDeviceInUse(user, deviceOpt.get())) {
                     sendDeviceNotification(user, deviceOpt.get());

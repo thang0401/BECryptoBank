@@ -100,7 +100,7 @@ public class AuthController {
             );
             return ResponseEntity.ok(response);
         } catch (com.cryptobank.backend.exception.AuthException e) {
-            if ("OTP verification required".equals(e.getMessage())) {
+            if ("Google login failed: OTP verification required".contains(e.getMessage())) {
                 return ResponseEntity.status(HttpStatus.ACCEPTED).body("Đưa đến trang nhập mã OTP xác thực");
             }
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Google login failed: " + e.getMessage());
@@ -126,52 +126,51 @@ public class AuthController {
             if (!authService.verifyOTP(user, otp)) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid OTP");
             }
+            
+            String userAgent = servletRequest.getHeader("User-Agent");
+            UserAgent ua = UserAgent.parseUserAgentString(userAgent);
+            Browser browser = ua.getBrowser();
+            OperatingSystem os = ua.getOperatingSystem();
+
+            String currentBrowser = browser.getName();
+            String currentOs = os.getName();
+            String currentDeviceName = "Unknown Device";
+            if (userAgent != null && !userAgent.isBlank()) {
+                // Suy ra loại thiết bị từ User-Agent
+                if (userAgent.toLowerCase().contains("mobile")) {
+                	currentDeviceName = "Mobile Device";
+                } else if (userAgent.contains("Windows")) {
+                	currentDeviceName = "Windows PC";
+                } 
+                else if (userAgent.contains("iPhone")) {
+                	currentDeviceName = "iPhone Device";
+                }else if (userAgent.contains("Macintosh")) {
+                	currentDeviceName = "Mac";
+                }
+                
+            }
 
             // Cập nhật DeviceInfo
-            Optional<DeviceInfo> deviceOpt = authService.findDeviceByIdAndUser(session.getId(), user);
+            Optional<DeviceInfo> deviceOpt = authService.findByInforOfDevice(currentDeviceName, currentBrowser, currentOs);
             if (!deviceOpt.isPresent()) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Device not found");
             }
 
             DeviceInfo device = deviceOpt.get();
-            String userAgent = servletRequest.getHeader("User-Agent");
-            if (userAgent != null && !userAgent.isBlank()) {
-                UserAgent ua = UserAgent.parseUserAgentString(userAgent);
-                Browser browser = ua.getBrowser();
-                OperatingSystem os = ua.getOperatingSystem();
-
-                // Cập nhật browser
-                String browserName = "Unknown Browser";
-                if (browser != null && browser != Browser.UNKNOWN) {
-                    browserName = browser.getName();
-                    if (browserName.startsWith("CHROME")) {
-                        browserName = "Chrome";
-                    }
-                }
-                device.setBrowser(browserName);
-
-                // Cập nhật OS
-                String osName = "Unknown OS";
-                if (os != null && os != OperatingSystem.UNKNOWN) {
-                    osName = os.getName();
-                    if (osName.equals("WINDOWS_10")) {
-                        osName = "Windows 10";
-                    }
-                }
-                device.setOs(osName);
-            }
-
-            // Đặt in_use = true cho thiết bị hiện tại
-            device.setLastLoginAt(OffsetDateTime.now());
-            device.setInUse(true);
-            authService.saveDevice(device);
+            device.setBrowser(currentBrowser);
+            device.setOs(currentOs);
 
             // Đặt in_use = false cho tất cả thiết bị khác của user
-            List<DeviceInfo> otherDevices = deviceInfoRepository.findAllByUserAndDeviceIdNot(user, session.getId());
+            List<DeviceInfo> otherDevices = deviceInfoRepository.findAllByUser(user);
             for (DeviceInfo otherDevice : otherDevices) {
                 otherDevice.setInUse(false);
                 authService.saveDevice(otherDevice);
             }
+            
+            // Đặt in_use = true cho thiết bị hiện tại
+            device.setLastLoginAt(OffsetDateTime.now());
+            device.setInUse(true);
+            authService.saveDevice(device);
 
             // Trả về thông tin user
             String role = userService.getUserRole(user.getId())
@@ -202,8 +201,6 @@ public class AuthController {
             {
             	return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("OTP has out of time");
             }
-            
-            
             // Xác thực OTP
             if (!authService.verifyOTP(user, otp)) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid OTP");
