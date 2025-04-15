@@ -20,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -65,18 +66,26 @@ public class AuthService {
             } else if (loginResult == 1) {
                 throw new AuthException("OTP verification required");
             } else {
-                throw new AuthException("Invalid credentials");
+                throw new AuthException("Invalid Email or Password");
             }
         } catch (Exception e) {
-            throw new AuthException("Login failed: " + e.getMessage());
+            throw new AuthException( e.getMessage());
         }
     }
 
     private int handleLogin(String email, String password, HttpServletRequest request, HttpSession session) {
         User user =Optional.ofNullable(userRepository.findByEmail(email)).orElse(null);
-//        if (user == null || !passwordEncoder.matches(password, user.getPassword())) {
-//            return 2;
-//        }
+        if (user == null) {
+            throw new AuthException("Invalid Email");
+        }
+        else if(!passwordEncoder.matches(password, user.getPassword()))
+        {
+        	throw new AuthException("Invalid Password");
+        }
+//        System.out.println("Before "+user.getPassword());
+//        user.setPassword(new BCryptPasswordEncoder().encode("123456"));
+//        userRepository.save(user);
+//        System.out.println("After "+user.getPassword());
 
         String userAgent = request.getHeader("User-Agent");
         UserAgent ua = UserAgent.parseUserAgentString(userAgent);
