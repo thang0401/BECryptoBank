@@ -20,6 +20,7 @@ public class UserInformation {
     private String lastName;
     private String phoneNumber;
     private String gender;
+    private String avatar;
     private OffsetDateTime dateOfBirth;
     private String homeAddress;
     private String ward;
