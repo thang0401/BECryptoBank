@@ -78,7 +78,7 @@ public class UploadImageController {
     ) throws IOException {
         User user = userService.getUserKYC(userId);
         String fileUrl = minioService.uploadFile(file.getOriginalFilename(), bucket, file.getInputStream(), file.getContentType());
-        user.setAvatarUrl(fileUrl);
+        user.setAvatar(fileUrl);
         return userService.convertToUserInformation(user);
     }
 

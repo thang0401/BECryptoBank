@@ -1,7 +1,7 @@
 package com.cryptobank.backend.controller;
 
 import com.cryptobank.backend.DTO.StatusDTO;
-import com.cryptobank.backend.DTO.request.RequestPageParam;
+import com.cryptobank.backend.DTO.request.PageParamRequest;
 import com.cryptobank.backend.services.StatusService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -30,7 +30,7 @@ public class StatusController {
     )
     public PagedModel<StatusDTO> getAllStatuses(
         @Parameter(description = "ID group") @RequestParam(required = false) String groupId,
-        @Valid @ParameterObject RequestPageParam request
+        @Valid @ParameterObject PageParamRequest request
     ) {
         return new PagedModel<>(statusService.getAll(groupId, request.toPageable()));
     }
