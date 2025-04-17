@@ -14,7 +14,6 @@ public class UserInformation {
 	private String username;
     private String email;
     private String fullName;
-    private String avatarUrl;
     private String firstName;
     private String middleName;
     private String lastName;
