@@ -54,9 +54,6 @@ public class User extends BaseEntity {
     @Column(name = "gender", columnDefinition = "TEXT")
     private String gender;
 
-    @Column(name = "avatar_url", columnDefinition = "TEXT")
-    private String avatarUrl;
-
     @Column(name = "smart_otp", columnDefinition = "TEXT")
     private String smartOtp;
 
@@ -118,9 +115,6 @@ public class User extends BaseEntity {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<UserBankAccount> bankAccounts;
-
-//    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
-//    private List<SubWallet> subWallets;
 
     @OneToOne(mappedBy = "user")
     private UserOtp userOtp;

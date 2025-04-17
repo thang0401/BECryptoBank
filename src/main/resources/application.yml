@@ -1,6 +1,10 @@
 server:
   port: 8000
 
+springdoc:
+  swagger-ui:
+    path: /
+
 spring:
   application:
     name: BE-Crypto-Bank
