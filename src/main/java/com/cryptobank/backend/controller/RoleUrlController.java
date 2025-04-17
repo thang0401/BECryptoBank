@@ -1,7 +1,7 @@
 package com.cryptobank.backend.controller;
 
 import com.cryptobank.backend.DTO.RoleUrlDTO;
-import com.cryptobank.backend.DTO.request.RequestPageParam;
+import com.cryptobank.backend.DTO.request.PageParamRequest;
 import com.cryptobank.backend.DTO.request.RoleUrlCreateRequest;
 import com.cryptobank.backend.DTO.request.RoleUrlUpdateRequest;
 import com.cryptobank.backend.services.RoleUrlService;
@@ -32,7 +32,7 @@ public class RoleUrlController {
     )
     public PagedModel<RoleUrlDTO> getAllRoleRoleUrls(
         @Parameter(description = "ID role") @RequestParam(required = false) String roleId,
-        @Valid @ParameterObject RequestPageParam request
+        @Valid @ParameterObject PageParamRequest request
     ) {
         return new PagedModel<>(roleUrlService.getAll(roleId, request.toPageable()));
     }
