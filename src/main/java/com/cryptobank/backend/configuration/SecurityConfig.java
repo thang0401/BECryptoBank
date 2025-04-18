@@ -48,7 +48,7 @@ public class SecurityConfig {
         configuration.setAllowedOrigins(List.of(
             "https://admin-crypto-bank.vercel.app",
             "https://client-crypto-bank.vercel.app",
-            "https://be-crypto-depot.name.vn/"));
+            "https://be-crypto-depot.name.vn"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         configuration.setAllowCredentials(true);
