@@ -72,6 +72,8 @@ public class AuthService {
 
     private int handleLogin(String email, String password, HttpServletRequest request, HttpSession session) {
         User user =Optional.ofNullable(userRepository.findByEmail(email)).orElse(null);
+        System.out.println(password);
+        System.out.println(passwordEncoder.encode(password));
         if (user == null) {
             throw new AuthException("Invalid Email");
         }
