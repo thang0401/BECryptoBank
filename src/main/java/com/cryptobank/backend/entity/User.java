@@ -54,6 +54,9 @@ public class User extends BaseEntity {
     @Column(name = "gender", columnDefinition = "TEXT")
     private String gender;
 
+//    @Column(name = "avatar_url", columnDefinition = "TEXT")
+//    private String avatarUrl;
+
     @Column(name = "smart_otp", columnDefinition = "TEXT")
     private String smartOtp;
 
