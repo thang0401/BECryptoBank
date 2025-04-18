@@ -1,6 +1,5 @@
 package com.cryptobank.backend.controller;
 
-import com.cryptobank.backend.exception.AuthException;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -25,7 +24,6 @@ import jakarta.security.auth.message.AuthException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 import eu.bitwalker.useragentutils.UserAgent;
 import eu.bitwalker.useragentutils.Browser;
@@ -52,10 +50,6 @@ public class AuthController {
     
     @Autowired
     private UserOtpRepository userOtpRepository;
-
-    public AuthController() {
-        this.passwordEncoder = new BCryptPasswordEncoder();
-    }
 
     public String encodePassword(String password) {
         return passwordEncoder.encode(password);
