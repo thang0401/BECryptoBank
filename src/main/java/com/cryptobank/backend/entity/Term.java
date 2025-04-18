@@ -20,7 +20,7 @@ public class Term extends BaseEntity {
     @Column(name = "type", columnDefinition = "TEXT")
     private String type;
 
-    @Column(name = "interest_rate_of_month")
-    private BigDecimal interestRateOfMonth = BigDecimal.ZERO;
+    @Column(name = "interest_rate")
+    private BigDecimal interestRate = BigDecimal.ZERO;
 
 }
