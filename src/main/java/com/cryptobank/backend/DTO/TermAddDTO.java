@@ -15,4 +15,5 @@ public class TermAddDTO {
     private String type;
     private String createdBy="system";
     private BigDecimal interestRate;
+    private BigDecimal minimum;
 }

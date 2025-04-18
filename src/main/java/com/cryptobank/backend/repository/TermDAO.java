@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface TermDAO extends JpaRepository<Term,String> {
     public List<Term> findAll();
+    public List<Term> findByDeleted(boolean deleted);
 }

@@ -8,6 +8,8 @@ import com.cryptobank.backend.entity.TermView;
 import com.cryptobank.backend.repository.TermDAO;
 import com.cryptobank.backend.repository.TermViewDAO;
 
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
@@ -26,13 +28,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @AllArgsConstructor
 @NoArgsConstructor
 @RequestMapping("/term")
+@Tag(name = "Term", description = "Term controller")
 public class TermController {
     TermDAO termDAO;
     TermViewDAO termViewDAO;
 
-
+    //Get all terms
     @GetMapping("/all-term")
-    public ResponseEntity<?> getAllTermList(@RequestParam String param) {
+    public ResponseEntity<?> getAllTermList() {
         List<Term> list=termDAO.findAll();
         if(list!=null){
             return ResponseEntity.ok(list);
@@ -40,18 +43,19 @@ public class TermController {
         return ResponseEntity.notFound().build();
     }
     
-    @GetMapping("/term-active")
-    public ResponseEntity<?> getActiveTermList(@RequestParam String param) {
-        List<TermView> list=termViewDAO.findAll();
+    //Get active terms only
+    @GetMapping("/terms-active")
+    public ResponseEntity<?> getActiveTermList() {
+        List<Term> list=termDAO.findByDeleted(false);
         if(list!=null){
             return ResponseEntity.ok(list);
         }
         return ResponseEntity.notFound().build();
     }
 
+    //Add a new term
     @PostMapping("/add-term")
-    public ResponseEntity<?> addTerm(@RequestBody TermAddDTO entity) {
-        //TODO: process POST request
+    public ResponseEntity<?> addTerm( @Parameter(description = "Data lấy từ client") @RequestBody TermAddDTO entity) {
         //Setup new instance of term
         String existId=checkIfExistAndActive(entity.getAmountMonth());
         if(!existId.isEmpty()){
@@ -62,7 +66,8 @@ public class TermController {
         term.setId(entity.getId());
         term.setAmountMonth(entity.getAmountMonth());
         term.setType(entity.getType());
-        term.setInterestRateOfMonth(entity.getInterestRate());
+        term.setInterestRate(entity.getInterestRate());
+        term.setMinimum(entity.getMinimum());
         //Save term
         try{
             termDAO.save(term);
@@ -74,7 +79,7 @@ public class TermController {
     }
 
     @PostMapping("/delete-term")
-    public ResponseEntity<?> deleteTerm(@RequestBody String id) {
+    public ResponseEntity<?> deleteTerm( @Parameter(description = "ID của term") @RequestBody String id) {
         //TODO: process POST request
         Term term=termDAO.findById(id).orElse(null);
         if(term!=null){
@@ -86,11 +91,11 @@ public class TermController {
     }
 
     @PostMapping("/update-term-interest-rate")
-    public ResponseEntity<?> updateTermInterestRate(@RequestBody TermAddDTO entity) {
+    public ResponseEntity<?> updateTermInterestRate( @Parameter(description = "Data lấy từ client") @RequestBody TermAddDTO entity) {
         //TODO: process POST request
         Term term=termDAO.findById(entity.getId()).orElse(null);
         if(term!=null){
-            term.setInterestRateOfMonth(entity.getInterestRate());
+            term.setInterestRate(entity.getInterestRate());
             return ResponseEntity.ok().body(null);
         }
         return ResponseEntity.notFound().build();
@@ -98,11 +103,11 @@ public class TermController {
 
     private String checkIfExistAndActive(Long amountMonth){
         String result=null;
-        List<TermView> termViews=termViewDAO.findAll();
-        for(int i=0;i<termViews.size()-1;i++){
-            TermView termView=termViews.get(i);
-            if(termView.getAmountMonth()==amountMonth){
-                result=termView.getId();
+        List<Term> terms=termDAO.findByDeleted(false);
+        for(int i=0;i<terms.size()-1;i++){
+            Term term=terms.get(i);
+            if(term.getAmountMonth()==amountMonth){
+                result=term.getId();
             }
         }
         return result;

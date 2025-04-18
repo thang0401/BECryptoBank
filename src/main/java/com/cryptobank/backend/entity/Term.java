@@ -23,4 +23,7 @@ public class Term extends BaseEntity {
     @Column(name = "interest_rate")
     private BigDecimal interestRate = BigDecimal.ZERO;
 
+    @Column(name ="minimum")
+    private BigDecimal minimum = BigDecimal.ZERO;
+
 }
