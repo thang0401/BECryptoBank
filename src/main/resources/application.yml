@@ -44,7 +44,7 @@ banking-api:
   withdraw-endpoint: /v1/withdraw              
 
 payos:
-  client-id: f0522096-3074-4461-a2d1-7e84ea714d06
-  api-key: 43460806-5853-4ea8-982b-dec5c15d9b10
+  client-id: f0522096-5074-4461-a2d1-768a4ea71406
+  api-key: 43460806-5653-4e8b-992b-dec5cf15d9b10
   checksum-key: fa3e160e48bed97941cd9a41598477d1e88f2c12f06d06c4da314355be53b8f3
   base-url: https://api-merchant.payos.vn
