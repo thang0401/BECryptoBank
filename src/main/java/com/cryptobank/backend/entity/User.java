@@ -1,12 +1,7 @@
 package com.cryptobank.backend.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.Digits;
-import java.math.BigDecimal;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -59,8 +54,8 @@ public class User extends BaseEntity {
     @Column(name = "gender", columnDefinition = "TEXT")
     private String gender;
 
-    @Column(name = "avatar_url", columnDefinition = "TEXT")
-    private String avatarUrl;
+//    @Column(name = "avatar_url", columnDefinition = "TEXT")
+//    private String avatarUrl;
 
     @Column(name = "smart_otp", columnDefinition = "TEXT")
     private String smartOtp;
@@ -101,41 +96,6 @@ public class User extends BaseEntity {
     @Column(name = "wallet_address", columnDefinition = "TEXT")
     private String walletAddress;
 
-    @Column(name = "has_accepted_terms")
-    private Boolean hasAcceptedTerms = false;
-
-    @Column(name = "hire_date")
-    private OffsetDateTime hireDate;
-
-    @Column(name = "termination_date")
-    private OffsetDateTime terminationDate;
-
-    @Column(name = "salary", nullable = false)
-    @DecimalMin(value = "0")
-    @Digits(integer = 8, fraction = 2)
-    private BigDecimal salary = BigDecimal.ZERO;
-
-    @Column(name = "bonus")
-    @DecimalMin(value = "0")
-    @Digits(integer = 10, fraction = 2)
-    private BigDecimal bonus = BigDecimal.ZERO;
-
-    @Column(name = "insurance_number", columnDefinition = "text", unique = true)
-    private String insuranceNumber;
-
-    @Column(name = "tax_code", columnDefinition = "text", unique = true)
-    private String taxCode;
-
-    @Column(name = "emergency_contact_name")
-    private String emergencyContactName;
-
-    @Column(name = "emergency_contact_phone")
-    private String emergencyContactPhone;
-
-    @ManyToOne
-    @JoinColumn(name = "marital_status")
-    private Status maritalStatus;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "status_id", nullable = false)
     private Status status;
@@ -156,10 +116,14 @@ public class User extends BaseEntity {
     @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
     private List<SavingAccount> savings;
 
-//    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
-//    private List<SubWallet> subWallets;
-    
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<UserBankAccount> bankAccounts;
+
     @OneToOne(mappedBy = "user")
     private UserOtp userOtp;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, optional = true)
+    private GoogleAuth googleAuth;
+
 
 }

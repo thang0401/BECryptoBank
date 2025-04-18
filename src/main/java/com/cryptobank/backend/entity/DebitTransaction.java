@@ -5,10 +5,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Getter
 @Setter
@@ -38,13 +34,5 @@ public class DebitTransaction extends BaseEntity {
 
     @Column(name = "to_pub_Key", columnDefinition = "TEXT")
     private String toPubKey;
- 
-    @JsonIgnore
-    @OneToMany(mappedBy = "debitTransaction")
-    private List<SuspiciousActivity> suspiciousActivities = new ArrayList<>();
-
-    @JsonIgnore
-    @OneToMany(mappedBy = "debitTransaction")
-    private List<TransactionFee> transactionFees = new ArrayList<>();
 
 }

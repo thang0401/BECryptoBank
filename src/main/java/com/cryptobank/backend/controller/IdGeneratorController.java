@@ -1,10 +1,12 @@
 package com.cryptobank.backend.controller;
 
-import com.cryptobank.backend.model.ApiResponse;
-import com.cryptobank.backend.utils.IdGenerator;
-import org.springframework.http.ResponseEntity;
+import com.cryptobank.backend.utils.Xid;
+import java.sql.Timestamp;
+import java.util.Map;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -12,8 +14,10 @@ import org.springframework.web.bind.annotation.RestController;
 public class IdGeneratorController {
 
     @GetMapping
-    public ResponseEntity<ApiResponse<String>> getId() {
-        return ResponseEntity.ok(new ApiResponse<>("", IdGenerator.generate()));
+    @ResponseStatus(HttpStatus.OK)
+    public Map<String, Object> getId() {
+        Xid xid = new Xid();
+        return Map.of("id", xid.toString(), "date", Timestamp.from(xid.getDate().toInstant()).toString());
     }
 
 }

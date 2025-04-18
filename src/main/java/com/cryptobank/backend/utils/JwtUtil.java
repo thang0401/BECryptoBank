@@ -1,9 +1,11 @@
 package com.cryptobank.backend.utils;
 
+import com.cryptobank.backend.DTO.UserInformation;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import java.nio.charset.StandardCharsets;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -13,14 +15,16 @@ import java.util.function.Function;
 @Component
 public class JwtUtil {
 
-    private static final String SECRET_KEY = "9e6e63974d7cbccd530aa4284dd45df9900af437d4eb0d7d59ee29386c225bcb0761901ff67dd933632c884448ea407e0df862428f9c70ae5b5898303c24e73d";
-    private static final long ACCESS_TOKEN_EXPIRATION = 1000 * 60 * 30; // 30 phút
-    private static final long REFRESH_TOKEN_EXPIRATION = 1000 * 60 * 60 * 24; // 1 ngày
+    @Value("${JWT_SECRET_KEY}")
+    private String SECRET_KEY;
+    private static final long ACCESS_TOKEN_EXPIRATION = 1000 * 60 * 30; // 30 minutes
+    private static final long REFRESH_TOKEN_EXPIRATION = 1000 * 60 * 60 * 24; // 1 day
 
     private SecretKey getSigningKey() {
-        return Keys.hmacShaKeyFor(Decoders.BASE64URL.decode(SECRET_KEY));
+        return Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8));
     }
 
+    // Generic token generation with custom expiration
     public String generateToken(String username, long expiration) {
         return Jwts.builder()
                 .header()
@@ -32,13 +36,37 @@ public class JwtUtil {
                 .signWith(getSigningKey(), Jwts.SIG.HS256)
                 .compact();
     }
+    public String generateToken(UserInformation userInformation, long expiration) {
+        return Jwts.builder()
+            .header()
+            .type("JWT")
+            .and()
+            .subject(userInformation.getId())
+            .claim("email", userInformation.getEmail())
+            .claim("fullName", userInformation.getFullName())
+            .claim("username", userInformation.getUsername())
+            .claim("avatar", userInformation.getAvatar())
+            .claim("kycStatus", userInformation.getKycStatus())
+            .claim("walletAddress", userInformation.getWalletAddress())
+            .issuedAt(new Date())
+            .expiration(new Date(System.currentTimeMillis() + expiration))
+            .signWith(getSigningKey(), Jwts.SIG.HS256)
+            .compact();
+    }
 
+    // Generate access token with default expiration (30 minutes)
     public String generateAccessToken(String username) {
         return generateToken(username, ACCESS_TOKEN_EXPIRATION);
     }
 
+    // Generate refresh token with default expiration (1 day)
     public String generateRefreshToken(String username) {
         return generateToken(username, REFRESH_TOKEN_EXPIRATION);
+    }
+
+    // Overloaded method: Generate refresh token with custom expiration
+    public String generateRefreshToken(String username, long expirationInSeconds) {
+        return generateToken(username, expirationInSeconds * 1000); // Convert seconds to milliseconds
     }
 
     public String extractUsername(String token) {

@@ -1,49 +1,64 @@
 package com.cryptobank.backend.controller;
 
 import com.cryptobank.backend.DTO.RoleUrlDTO;
+import com.cryptobank.backend.DTO.request.PageParamRequest;
 import com.cryptobank.backend.DTO.request.RoleUrlCreateRequest;
 import com.cryptobank.backend.DTO.request.RoleUrlUpdateRequest;
-import com.cryptobank.backend.model.ApiResponse;
 import com.cryptobank.backend.services.RoleUrlService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.web.PagedModel;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/role/url")
+@RequestMapping(value = "/api/role/url", produces = MediaType.APPLICATION_JSON_VALUE)
+@Tag(name = "Role Url", description = "Đường dẫn url cho từng vai trò tương ứng")
 public class RoleUrlController {
 
     private final RoleUrlService roleUrlService;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<PagedModel<RoleUrlDTO>>> getAllRoleRoleUrls(
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        return ResponseEntity.ok(new ApiResponse<>("", new PagedModel<>(roleUrlService.getAll(PageRequest.of(page - 1, size)))));
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(
+        summary = "Lấy danh sách role url",
+        description = "Trả về danh sách các role url được phân trang với tham số page và size, có thể tìm kiếm cụ thể theo role id"
+    )
+    public PagedModel<RoleUrlDTO> getAllRoleRoleUrls(
+        @Parameter(description = "ID role") @RequestParam(required = false) String roleId,
+        @Valid @ParameterObject PageParamRequest request
+    ) {
+        return new PagedModel<>(roleUrlService.getAll(roleId, request.toPageable()));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<RoleUrlDTO>> getRoleRoleUrlById(@PathVariable String id) {
-        return ResponseEntity.ok(new ApiResponse<>("", roleUrlService.toResponseFromId(id)));
+    @ResponseStatus(HttpStatus.OK)
+    public RoleUrlDTO getRoleRoleUrlById(@PathVariable String id) {
+        return roleUrlService.toResponseFromId(id);
     }
 
     @PostMapping
-    public ResponseEntity<ApiResponse<RoleUrlDTO>> addRoleUrl(@Valid @RequestBody RoleUrlCreateRequest request) {
-        return ResponseEntity.ok(new ApiResponse<>("", roleUrlService.save(request)));
+    @ResponseStatus(HttpStatus.OK)
+    public RoleUrlDTO addRoleUrl(@Valid @RequestBody RoleUrlCreateRequest request) {
+        return roleUrlService.save(request);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<RoleUrlDTO>> updateRoleUrl(@PathVariable String id, @Valid @RequestBody RoleUrlUpdateRequest request) {
-        return ResponseEntity.ok(new ApiResponse<>("", roleUrlService.update(id, request)));
+    @ResponseStatus(HttpStatus.OK)
+    public RoleUrlDTO updateRoleUrl(@PathVariable String id, @Valid @RequestBody RoleUrlUpdateRequest request) {
+        return roleUrlService.update(id, request);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Boolean>> deleteRoleUrl(@PathVariable String id) {
-        return ResponseEntity.ok(new ApiResponse<>("", roleUrlService.delete(id)));
+    @ResponseStatus(HttpStatus.OK)
+    public Boolean deleteRoleUrl(@PathVariable String id) {
+        return roleUrlService.delete(id);
     }
 
 }

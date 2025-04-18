@@ -32,9 +32,6 @@ public class Status extends BaseEntity {
 
     @OneToMany(mappedBy = "status",fetch = FetchType.LAZY)
     private List<DebitTransaction> debitTransactions = new ArrayList<>();
-    @JsonIgnore
-    @OneToMany(mappedBy = "status", orphanRemoval = true,fetch = FetchType.LAZY)
-    private List<GroupStatus> groupStatuses = new ArrayList<>();
 
     @JsonIgnore
     @OneToMany(mappedBy = "status",fetch = FetchType.LAZY)

@@ -6,10 +6,6 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Getter
 @Setter
@@ -17,7 +13,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 @Table(name = "debit_account")
 public class DebitWallet extends BaseEntity {
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
 
@@ -62,13 +58,5 @@ public class DebitWallet extends BaseEntity {
 
     @Column(name = "custom_metadata", columnDefinition = "TEXT")
     private String customMetadata;
-
-    @JsonIgnore
-    @OneToMany(mappedBy = "debitWallet")
-    private List<DebitTransaction> debitTransactions = new ArrayList<>();
-
-    @JsonIgnore
-    @OneToMany(mappedBy = "debitWallet")
-    private List<UsdcVndTransaction> usdcVndTransactions = new ArrayList<>();
 
 }

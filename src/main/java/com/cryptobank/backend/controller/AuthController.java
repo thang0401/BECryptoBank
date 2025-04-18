@@ -1,187 +1,332 @@
 package com.cryptobank.backend.controller;
 
-
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
-
-
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.cryptobank.backend.DTO.*;
-
 import com.cryptobank.backend.entity.DeviceInfo;
 import com.cryptobank.backend.entity.User;
+import com.cryptobank.backend.entity.UserOtp;
+import com.cryptobank.backend.repository.DeviceInforDAO;
+import com.cryptobank.backend.repository.UserDAO;
+import com.cryptobank.backend.repository.UserOtpRepository;
 import com.cryptobank.backend.services.AuthService;
 import com.cryptobank.backend.services.UserService;
+
+import jakarta.security.auth.message.AuthException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.*;
+
+import eu.bitwalker.useragentutils.UserAgent;
+import eu.bitwalker.useragentutils.Browser;
+import eu.bitwalker.useragentutils.OperatingSystem;
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
-	@Autowired
-	private AuthService authService;
-	@Autowired
-	private UserService userService;
 
-	private PasswordEncoder passwordEncoder;
+    @Autowired
+    private AuthService authService;
 
-	// Constructor
-	public AuthController() {
-		this.passwordEncoder = new BCryptPasswordEncoder();
-	}
+    @Autowired
+    private UserService userService;
 
-	// Phương thức mã hóa mật khẩu
-	public String encodePassword(String password) {
-		return passwordEncoder.encode(password);
-	}
+    @Autowired
+    private UserDAO userRepository;
 
-	// Đăng nhập
-	@PostMapping("/login")
-	public ResponseEntity<?> login(@RequestParam String email, @RequestParam String password,
-			HttpServletRequest request, HttpSession session) {
-		// Gọi phương thức login từ AuthService để xử lý logic đăng nhập
-		int result=authService.login(email, password, request, session);
-		if (result==0) 
-		{
-			return ResponseEntity.status(HttpStatus.ACCEPTED).body("Đăng nhập thành công");
-		} 
-		else if(result==1)
-		{
-			return ResponseEntity.status(HttpStatus.ACCEPTED).body("Đưa đến trang nhập mã otp xác thực");
-		}
-		else 
-		{
-			return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body("Đăng nhập thất bại");
-		}
-	}
-	
-	@PostMapping("/login/OTP")
-	public ResponseEntity<String> verifyOtp(@RequestParam String otp,@RequestParam String user_id, HttpSession session,HttpServletRequest request)
-	{
-		if(authService.saveDeviceInforToDB(otp,request,session,user_id))
-		{
-			return ResponseEntity.status(HttpStatus.ACCEPTED).body("Xác Thực OTP Thành công");
-		}
-		else
-		{
-			return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body("Xác Thực OTP Thất bại");
-		}
-	}
+    @Autowired
+    private BCryptPasswordEncoder passwordEncoder;
+    
+    @Autowired
+    private DeviceInforDAO deviceInfoRepository;
+    
+    @Autowired
+    private UserOtpRepository userOtpRepository;
 
-	// Đăng xuất
-	@PostMapping("/logout")
-	public ResponseEntity<?> logout(HttpSession session) {
-		// Gọi phương thức logout từ AuthService để xử lý logic đăng xuất
-		authService.logout(session);
-		return ResponseEntity.status(HttpStatus.ACCEPTED).body("Đăng xuất thành công");
-	}
+    public String encodePassword(String password) {
+        return passwordEncoder.encode(password);
+    }
 
-	// Đăng ký
-//	@PostMapping("/register")
-//	public ResponseEntity<?> register(@RequestBody RegisterRequest registerRequest) {
-//		// Kiểm tra xem email đã tồn tại chưa
-//		if (userService.existsByEmail(registerRequest.getEmail())) {
-//			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Email đã được đăng ký");
-//		}
-//
-//		// Kiểm tra xem số điện thoại đã tồn tại chưa
-//		if (userService.existsByPhoneNumber(registerRequest.getPhoneNumber())) {
-//			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Số điện thoại đã được đăng ký");
-//		}
-//
-//		// Kiểm tra xem số CCCD đã tồn tại chưa
-//		if (userService.existsByIdCardNumber(registerRequest.getIdCardNumber())) {
-//			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Số CCCD đã được đăng ký");
-//		}
-//
-//		// Tạo đối tượng người dùng và lưu vào cơ sở dữ liệu
-//		User user = new User();
-//		user.setEmail(registerRequest.getEmail());
-//		user.setFirstName(getFirstAndLastName(registerRequest.getFullname()).getFirstName());
-//		user.setLastName(getFirstAndLastName(registerRequest.getFullname()).getLastname());
-//		user.setPhoneNumber(registerRequest.getPhoneNumber());
-//		user.setIdCardNumber(registerRequest.getIdCardNumber());
-//		user.setPassword(encodePassword(registerRequest.getPassword())); // Mã hóa mật khẩu
-//
-//		// Lưu người dùng vào cơ sở dữ liệu
-//		userService.save(user);
-//
-//		return ResponseEntity.status(HttpStatus.CREATED).body("Đăng ký thành công");
-//	}
+    @PostMapping("/login/email")
+    public ResponseEntity<?> loginWithEmail(
+            @RequestBody LoginRequestAuth login,
+            HttpServletRequest request,
+            HttpSession session) {
+        try {
+            UserAuthResponse response = authService.loginWithEmail(
+                    login.getEmail(),
+                    login.getPassword(),
+                    login.isRememberMe(),
+                    request,
+                    session
+            );
+            return ResponseEntity.ok(response);
+        } catch (com.cryptobank.backend.exception.AuthException e) {
+            if (e.getMessage().contains("OTP verification required")) {
+                return ResponseEntity.status(HttpStatus.ACCEPTED).body("Đưa đến trang nhập mã OTP xác thực");
+            }
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Đăng nhập thất bại: " + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Login failed: " + e.getMessage());
+        }
+    }
 
-	// Yêu cầu quên mật khẩu
-	@PostMapping("/forgot-password")
-	public ResponseEntity<?> requestResetPassword(@RequestBody String email, HttpSession session) {
-		try {
-			userService.requestResetPassword(email, session);
-			return ResponseEntity.ok("Mã xác thực đã được gửi đến email của bạn");
-		} catch (Exception e) {
-			return ResponseEntity.badRequest().body(e.getMessage());
-		}
-	}
+    @PostMapping("/login/google")
+    public ResponseEntity<?> loginWithGoogle(
+            @RequestBody GoogleLoginRequest request,
+            HttpServletRequest servletRequest,
+            HttpSession session) {
+        if (request.getIdToken() == null || request.getIdToken().isBlank()) {
+            return ResponseEntity.badRequest().body("Missing required parameter: idToken");
+        }
+        try {
+            UserAuthResponse response = authService.loginWithGoogle(
+                    request.getIdToken(),
+                    request.isRememberMe(),
+                    servletRequest,
+                    session
+            );
+            return ResponseEntity.ok(response);
+        } catch (com.cryptobank.backend.exception.AuthException e) {
+            if ("Google login failed: OTP verification required".contains(e.getMessage())) {
+                return ResponseEntity.status(HttpStatus.ACCEPTED).body("Đưa đến trang nhập mã OTP xác thực");
+            }
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Google login failed: " + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Google login failed: " + e.getMessage());
+        }
+    }
 
-	// Đổi mật khẩu
-	@PostMapping("/reset-password")
-	public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordRequest request, HttpSession session) {
-		try {
-			userService.resetPassword(request.getEmail(), request.getResetCode(), request.getNewPassword(), session);
-			return ResponseEntity.ok("Mật khẩu đã được thay đổi thành công");
-		} catch (Exception e) {
-			return ResponseEntity.badRequest().body(e.getMessage());
-		}
-	}
+    @PostMapping("/login/google/OTP")
+    public ResponseEntity<?> verifyGoogleOTP(
+            @RequestBody OtpRequest request,
+            HttpServletRequest servletRequest,
+            HttpSession session) {
+        try {
+            String userId = request.getUser_id();
+            String otp = request.getOtp();
+            boolean rememberMe = request.isRememberMe();
 
-	private static NameSplit getFirstAndLastName(String fullname) {
-		String[] nameParts = fullname.split("\\s+");
+            User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AuthException("User not found"));
 
-		if (nameParts.length == 1) {
-			System.out.println("First Name: " + nameParts[0]);
-			return new NameSplit(nameParts[0], "");
-		}
+            // Xác thực OTP
+            if (!authService.verifyOTP(user, otp)) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid OTP");
+            }
+            
+            String userAgent = servletRequest.getHeader("User-Agent");
+            UserAgent ua = UserAgent.parseUserAgentString(userAgent);
+            Browser browser = ua.getBrowser();
+            OperatingSystem os = ua.getOperatingSystem();
 
-		// Gán firstName là phần cuối cùng
-		String firstName = nameParts[nameParts.length - 1];
+            String currentBrowser = browser.getName();
+            String currentOs = os.getName();
+            String currentDeviceName = "Unknown Device";
+            if (userAgent != null && !userAgent.isBlank()) {
+                // Suy ra loại thiết bị từ User-Agent
+                if (userAgent.toLowerCase().contains("mobile")) {
+                	currentDeviceName = "Mobile Device";
+                } else if (userAgent.contains("Windows")) {
+                	currentDeviceName = "Windows PC";
+                } 
+                else if (userAgent.contains("iPhone")) {
+                	currentDeviceName = "iPhone Device";
+                }else if (userAgent.contains("Macintosh")) {
+                	currentDeviceName = "Mac";
+                }
+                
+            }
 
-		// Gán lastName là tất cả các phần trước firstName
-		String lastName = "";
-		for (int i = 0; i < nameParts.length - 1; i++) {
-			lastName += nameParts[i] + " ";
-		}
-		lastName = lastName.trim(); // Loại bỏ khoảng trắng thừa ở cuối
+            // Cập nhật DeviceInfo
+            Optional<DeviceInfo> deviceOpt = authService.findByInforOfDevice(currentDeviceName, currentBrowser, currentOs);
+            if (!deviceOpt.isPresent()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Device not found");
+            }
 
-		return new NameSplit(firstName, lastName);
-	}
+            DeviceInfo device = deviceOpt.get();
+            device.setBrowser(currentBrowser);
+            device.setOs(currentOs);
 
-	
-	@GetMapping("/getAllDevice/{userId}")
-	public ResponseEntity<List<Optional<DeviceInfo>>> getAllDeviceFromUser(@PathVariable String userId)
-	{
-		List<Optional<DeviceInfo>> lissDevice=authService.getAllDeviceFromUser(userId);
-		
-		return ResponseEntity.ok(lissDevice);
-	}
+            // Đặt in_use = false cho tất cả thiết bị khác của user
+            List<DeviceInfo> otherDevices = deviceInfoRepository.findAllByUser(user);
+            for (DeviceInfo otherDevice : otherDevices) {
+                otherDevice.setInUse(false);
+                authService.saveDevice(otherDevice);
+            }
+            
+            // Đặt in_use = true cho thiết bị hiện tại
+            device.setLastLoginAt(OffsetDateTime.now());
+            device.setInUse(true);
+            authService.saveDevice(device);
+
+            // Trả về thông tin user
+            String role = userService.getUserRole(user.getId())
+                .map(userRole -> userRole.getRole().getName())
+                .orElse("USER");
+            return ResponseEntity.ok(buildUserAuthResponse(user, role, rememberMe));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("OTP verification failed: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/login/email/OTP")
+    public ResponseEntity<?> verifyEmailOTP(
+            @RequestBody OtpRequest request,
+            HttpServletRequest servletRequest,
+            HttpSession session) {
+        try {
+            String userId = request.getUser_id();
+            String otp = request.getOtp();
+            boolean rememberMe = request.isRememberMe();
+
+            User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AuthException("User not found"));
+
+            //Kiểm tra thời gian
+            UserOtp userOtp = userOtpRepository.findByUserId(user.getId());
+            if(userOtp.getTimeEnd().isBefore(LocalDateTime.now()))
+            {
+            	return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("OTP has out of time");
+            }
+            // Xác thực OTP
+            if (!authService.verifyOTP(user, otp)) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid OTP");
+            }
+            
+            String userAgent = servletRequest.getHeader("User-Agent");
+            UserAgent ua = UserAgent.parseUserAgentString(userAgent);
+            Browser browser = ua.getBrowser();
+            OperatingSystem os = ua.getOperatingSystem();
+
+            String currentBrowser = browser.getName();
+            String currentOs = os.getName();
+            String currentDeviceName = "Unknown Device";
+            if (userAgent != null && !userAgent.isBlank()) {
+                // Suy ra loại thiết bị từ User-Agent
+                if (userAgent.toLowerCase().contains("mobile")) {
+                	currentDeviceName = "Mobile Device";
+                } else if (userAgent.contains("Windows")) {
+                	currentDeviceName = "Windows PC";
+                } 
+                else if (userAgent.contains("iPhone")) {
+                	currentDeviceName = "iPhone Device";
+                }else if (userAgent.contains("Macintosh")) {
+                	currentDeviceName = "Mac";
+                }
+                
+            }
+           
+            // Cập nhật DeviceInfo
+            Optional<DeviceInfo> deviceOpt = authService.findByInforOfDevice(currentDeviceName, currentBrowser, currentOs);
+            if (!deviceOpt.isPresent()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Device not found");
+            }
+
+            DeviceInfo device = deviceOpt.get();
+            device.setBrowser(currentBrowser);
+            device.setOs(currentOs);
 
 
-	@PostMapping("/accesstoken")
-	public AuthResponse getAccessToken(@RequestParam String username, @RequestParam String password) {
-		return authService.authenticate(username, password);
-	}
+            // Đặt in_use = false cho tất cả thiết bị khác của user
+            List<DeviceInfo> otherDevices = deviceInfoRepository.findAllByUser(user);
+            for (DeviceInfo otherDevice : otherDevices) {
+                otherDevice.setInUse(false);
+                authService.saveDevice(otherDevice);
+            }
+            
+            // Đặt in_use = true cho thiết bị hiện tại
+            device.setLastLoginAt(OffsetDateTime.now());
+            device.setInUse(true);
+            authService.saveDevice(device);
 
+            // Trả về thông tin user
+            String role = userService.getUserRole(user.getId())
+                .map(userRole -> userRole.getRole().getName())
+                .orElse("USER");
+            return ResponseEntity.ok(buildUserAuthResponse(user, role, rememberMe));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("OTP verification failed: " + e.getMessage());
+        }
+    }
 
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpSession session) {
+        authService.logout(session);
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body("Đăng xuất thành công");
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> requestResetPassword(@RequestBody String email, HttpSession session) {
+        try {
+            userService.requestResetPassword(email, session);
+            return ResponseEntity.ok("Mã xác thực đã được gửi đến email của bạn");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(
+            @RequestBody ResetPasswordRequest request,
+            HttpSession session) {
+        try {
+            userService.resetPassword(
+                    request.getEmail(),
+                    request.getResetCode(),
+                    request.getNewPassword(),
+                    session
+            );
+            return ResponseEntity.ok("Mật khẩu đã được thay đổi thành công");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/getAllDevice/{userId}")
+    public ResponseEntity<List<Optional<DeviceInfo>>> getAllDeviceFromUser(@PathVariable String userId) {
+        List<Optional<DeviceInfo>> listDevice = authService.getAllDeviceFromUser(userId);
+        return ResponseEntity.ok(listDevice);
+    }
+
+    @PostMapping("/accesstoken")
+    public AuthResponse getAccessToken(
+            @RequestParam String username,
+            @RequestParam String password) {
+        return authService.authenticate(username, password);
+    }
+
+    private UserAuthResponse buildUserAuthResponse(User user, String role, boolean rememberMe) {
+        UserAuthResponse response = new UserAuthResponse();
+        response.setId(user.getId());
+        response.setRole(role);
+        response.setEmail(user.getEmail());
+        response.setFullName(user.getFullName());
+        response.setUsername(user.getUsername());
+        response.setPassword(user.getPassword());
+        response.setAvatar(user.getAvatar());
+        response.setKycStatus(user.getKycStatus());
+        response.setWalletAddress(user.getWalletAddress());
+        response.setFirstName(user.getFirstName());
+        response.setRememberMe(rememberMe);
+        return response;
+    }
+
+    private static NameSplit getFirstAndLastName(String fullname) {
+        String[] nameParts = fullname.split("\\s+");
+        if (nameParts.length == 1) {
+            return new NameSplit(nameParts[0], "");
+        }
+        String firstName = nameParts[nameParts.length - 1];
+        String lastName = String.join(" ", java.util.Arrays.copyOfRange(nameParts, 0, nameParts.length - 1));
+        return new NameSplit(firstName, lastName);
+    }
 }
-

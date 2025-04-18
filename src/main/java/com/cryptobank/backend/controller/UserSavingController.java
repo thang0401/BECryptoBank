@@ -114,7 +114,7 @@ public class UserSavingController {
             SavingAccount newSavingAccount=new SavingAccount();
             newSavingAccount.setBalance(entity.getAmount());
             // newSavingAccount.setHeirStatus(false);
-            newSavingAccount.setInterestRate(selectedTerm.getInterestRateOfMonth());
+            newSavingAccount.setInterestRate(selectedTerm.getInterestRate());
             // newSavingAccount.setCreatedBy(userId);
             // newSavingAccount.setCreatedDate(ZonedDateTime.now());
             newSavingAccount.setMaturityDate(null);

@@ -6,10 +6,6 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Getter
 @Setter
@@ -49,9 +45,5 @@ public class SavingAccount extends BaseEntity {
 
     @Column(name = "heir_name", columnDefinition = "TEXT")
     private String heirName;
-
-    @JsonIgnore
-    @OneToMany(mappedBy = "savingAccount")
-    private List<SavingTransaction> savingTransactions = new ArrayList<>();
 
 }

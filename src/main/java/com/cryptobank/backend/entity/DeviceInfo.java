@@ -1,17 +1,24 @@
 package com.cryptobank.backend.entity;
 
 import jakarta.persistence.*;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.util.UUID;
 
-@Getter
-@Setter
+@Data
 @Entity
 @Table(name = "device_info")
 public class DeviceInfo extends BaseEntity {
 
+	
+	@Id
+	@Column(name="id")
+	private String id= UUID.randomUUID().toString();
+	
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
@@ -34,7 +41,17 @@ public class DeviceInfo extends BaseEntity {
     @Column(name = "last_login_at")
     private OffsetDateTime lastLoginAt;
 
-    @Column(name = "in_use")
-    private Boolean inUse = false;
 
+    @Column(name = "uuid_id", unique = true, nullable = false)
+    private String uuidId = UUID.randomUUID().toString(); // Mã UUID duy nhất cho từng thiết bị
+    
+    @Column(name="in_use")
+    private Boolean inUse; // dùng để kiểm tra hiện tại tài khoản đang được hoạt động ở thiết bị nào
+    
+    @Column(name="otp")
+    private String otp;
 }
+
+
+
+
