@@ -195,7 +195,7 @@ public class AuthService {
         }
 
         String email = payload.getEmail();
-        User user = Optional.ofNullable(userRepository.findByEmail(email)).orElse(null);
+        User user = userRepository.findByEmail(email);
         if (user == null) {
             user = new User();
             user.setEmail(email);

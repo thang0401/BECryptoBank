@@ -14,12 +14,12 @@ public class UserInformation {
 	private String username;
     private String email;
     private String fullName;
-    private String avatarUrl;
     private String firstName;
     private String middleName;
     private String lastName;
     private String phoneNumber;
     private String gender;
+    private String avatar;
     private OffsetDateTime dateOfBirth;
     private String homeAddress;
     private String ward;

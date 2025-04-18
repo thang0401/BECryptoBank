@@ -1,5 +1,6 @@
 package com.cryptobank.backend.controller;
 
+import com.cryptobank.backend.exception.AuthException;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -43,7 +44,8 @@ public class AuthController {
     @Autowired
     private UserDAO userRepository;
 
-    private PasswordEncoder passwordEncoder;
+    @Autowired
+    private BCryptPasswordEncoder passwordEncoder;
     
     @Autowired
     private DeviceInforDAO deviceInfoRepository;

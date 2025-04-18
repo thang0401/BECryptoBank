@@ -119,9 +119,6 @@ public class User extends BaseEntity {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<UserBankAccount> bankAccounts;
 
-//    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
-//    private List<SubWallet> subWallets;
-
     @OneToOne(mappedBy = "user")
     private UserOtp userOtp;
 
