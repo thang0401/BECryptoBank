@@ -1,5 +1,7 @@
 package com.cryptobank.backend.entity;
 
+
+
 import com.cryptobank.backend.utils.IdGenerator;
 import jakarta.persistence.Column;
 import jakarta.persistence.Id;
@@ -22,7 +24,6 @@ public abstract class BaseEntity {
     @Id
     @Column(name = "id", length = 50, nullable = false)
     private String id = IdGenerator.generate();
-
     @Column(name = "delete_yn")
     private Boolean deleted = false;
 

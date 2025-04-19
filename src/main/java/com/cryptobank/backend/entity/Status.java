@@ -7,6 +7,8 @@ import lombok.Setter;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Getter
 @Setter
 @Entity
@@ -23,31 +25,40 @@ public class Status extends BaseEntity {
     @JoinColumn(name = "group_status_id")
     private GroupStatus groupStatus;
 
-    @OneToMany(mappedBy = "status")
+    @JsonIgnore
+    @OneToMany(mappedBy = "status",fetch = FetchType.LAZY)
     private List<User> users = new ArrayList<>();
+    @JsonIgnore
 
-    @OneToMany(mappedBy = "status")
+    @OneToMany(mappedBy = "status",fetch = FetchType.LAZY)
     private List<DebitTransaction> debitTransactions = new ArrayList<>();
 
-    @OneToMany(mappedBy = "status")
+    @JsonIgnore
+    @OneToMany(mappedBy = "status",fetch = FetchType.LAZY)
     private List<Loan> loans = new ArrayList<>();
 
-    @OneToMany(mappedBy = "status")
+    @JsonIgnore
+    @OneToMany(mappedBy = "status",fetch = FetchType.LAZY)
     private List<LoanRepayment> loanRepayments = new ArrayList<>();
 
-    @OneToMany(mappedBy = "status")
+    @JsonIgnore
+    @OneToMany(mappedBy = "status",fetch = FetchType.LAZY)
     private List<Role> roles = new ArrayList<>();
 
-    @OneToMany(mappedBy = "status")
+    @JsonIgnore
+    @OneToMany(mappedBy = "status",fetch = FetchType.LAZY)
     private List<SuspiciousActivity> suspiciousActivities = new ArrayList<>();
 
-    @OneToMany(mappedBy = "status")
+    @JsonIgnore
+    @OneToMany(mappedBy = "status",fetch = FetchType.LAZY)
     private List<UsdcVndTransaction> usdcVndTransactions = new ArrayList<>();
 
-    @OneToMany(mappedBy = "status")
+    @JsonIgnore
+    @OneToMany(mappedBy = "status",fetch = FetchType.LAZY)
     private List<ReferralBonus> referralBonuses = new ArrayList<>();
 
-    @OneToMany(mappedBy = "status")
+    @JsonIgnore
+    @OneToMany(mappedBy = "status",fetch = FetchType.LAZY)
     private List<SavingAccount> savingAccounts = new ArrayList<>();
 
 }
