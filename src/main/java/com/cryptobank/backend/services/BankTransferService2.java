@@ -11,6 +11,7 @@ import com.cryptobank.backend.repository.UserDAO;
 import com.cryptobank.backend.repository.userBankAccountRepository;
 import jakarta.transaction.Transactional;
 import java.math.BigDecimal;
+import java.net.http.HttpResponse;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -25,6 +26,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import vn.payos.*;
+import vn.payos.exception.PayOSException;
+import vn.payos.type.CheckoutResponseData;
+import vn.payos.type.PaymentData;
 
 @Service
 public class BankTransferService2 {
@@ -37,6 +42,9 @@ public class BankTransferService2 {
 
     @Value("${payos.api-key}")
     private String payosApiKey;
+    
+    @Value("${payos.checksum-key}")
+    private String checksumKey;
     
     @Autowired
     private PaymentService paymentService;
@@ -74,19 +82,19 @@ public class BankTransferService2 {
     }
 
     // API nạp tiền - Trả về mã QR
-    public Map<String, String> depositToPayOS(String orderId, Double amount, String description, String returnUrl, String cancelUrl) {
-        String url = payosBaseUrl.endsWith("/") ? payosBaseUrl + "v2/payment-requests" : payosBaseUrl + "/v2/payment-requests";
+    public Map<String, String> depositToPayOS(String orderId, Double amount, String description, String returnUrl, String cancelUrl, String userId) {
         Map<String, String> responseBody = new HashMap<>();
 
         try {
-            // Kiểm tra đầu vào
+            // Validate inputs
             if (amount == null || amount <= 0) {
                 responseBody.put("error", "amount phải lớn hơn 0");
                 return responseBody;
             }
             if (description == null || description.trim().isEmpty()) {
-                responseBody.put("error", "description không được để trống");
-                return responseBody;
+                description = "" + userId; // Nhúng user_id vào description
+            } else {
+                description = description + "" + userId; // Thêm user_id vào description
             }
             if (returnUrl == null || returnUrl.trim().isEmpty()) {
                 responseBody.put("error", "returnUrl không được để trống");
@@ -97,84 +105,53 @@ public class BankTransferService2 {
                 return responseBody;
             }
 
-            // Xử lý orderCode
-            int orderCode;
+            // Generate unique orderCode
+            Integer orderCode;
             if ("auto".equalsIgnoreCase(orderId)) {
-                // Tạo orderCode ngẫu nhiên 6 chữ số (100000-999999)
-                orderCode = 100000 + new Random().nextInt(900000);
+                String uniqueId = System.currentTimeMillis() + String.valueOf(new Random().nextInt(10000));
+                orderCode = Integer.parseInt(uniqueId.substring(uniqueId.length() - 9));
             } else {
                 try {
-                    // Thử ép kiểu orderId thành số nguyên
                     orderCode = Integer.parseInt(orderId);
                 } catch (NumberFormatException e) {
-                    // Nếu không phải số, tạo orderCode ngẫu nhiên 6 chữ số
-                    orderCode = 100000 + new Random().nextInt(900000);
+                    String uniqueId = System.currentTimeMillis() + String.valueOf(new Random().nextInt(10000));
+                    orderCode = Integer.parseInt(uniqueId.substring(uniqueId.length() - 9));
                 }
             }
 
-            // Tạo body theo yêu cầu của PayOS
-            Map<String, Object> requestBody = new HashMap<>();
-            requestBody.put("orderCode", orderCode);
-            requestBody.put("amount", amount.intValue()); // amount là số nguyên (VND)
-            requestBody.put("description", description);
-            requestBody.put("returnUrl", returnUrl);
-            requestBody.put("cancelUrl", cancelUrl);
+            // Initialize PayOS
+            final PayOS payos = new PayOS(payosClientId, payosApiKey, checksumKey);
 
-            // Thiết lập headers
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.set("x-client-id", payosClientId);
-            headers.set("x-api-key", payosApiKey);
+            // Build PaymentData
+            PaymentData paymentData = PaymentData.builder()
+                .orderCode(Long.parseLong(orderCode.toString()))
+                .amount(amount.intValue())
+                .description(description) // Sử dụng description có user_id
+                .returnUrl(returnUrl)
+                .cancelUrl(cancelUrl)
+                .build();
 
-            // Ghi log để debug
-            System.out.println("PayOS Request URL: " + url);
-            System.out.println("PayOS Request Headers: " + headers);
-            System.out.println("PayOS Request Body: " + requestBody);
+            // Log for debugging
+            System.out.println("PayOS Client ID: " + payosClientId);
+            System.out.println("PaymentData: " + paymentData);
 
-            // Gửi yêu cầu
-            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
-            ResponseEntity<Map> response;
-            try {
-                response = restTemplate.exchange(url, HttpMethod.POST, entity, Map.class);
-            } catch (HttpClientErrorException e) {
-                System.err.println("PayOS Error: " + e.getStatusCode() + " - " + e.getResponseBodyAsString());
-                responseBody.put("error", "Lỗi khi gọi API PayOS: " + e.getResponseBodyAsString());
-                return responseBody;
-            }
+            // Call PayOS API
+            CheckoutResponseData result = payos.createPaymentLink(paymentData);
 
-            // Xử lý phản hồi
-            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
-                System.out.println("PayOS Response Body: " + response.getBody());
-                Map<String, Object> responseData = response.getBody();
-                String checkoutUrl = null;
+            // Process response
+            responseBody.put("checkoutUrl", result.getCheckoutUrl());
+            responseBody.put("qrCodeUrl", "https://chart.googleapis.com/chart?chs=250x250&cht=qr&chl=" + result.getCheckoutUrl());
+            responseBody.put("orderCode", String.valueOf(orderCode));
 
-                // Kiểm tra các trường có thể chứa link thanh toán
-                if (responseData.containsKey("data")) {
-                    Map<String, Object> data = (Map<String, Object>) responseData.get("data");
-                    checkoutUrl = (String) data.get("checkoutUrl");
-                    if (checkoutUrl == null) {
-                        checkoutUrl = (String) data.get("paymentLink");
-                    }
-                } else {
-                    checkoutUrl = (String) responseData.get("checkoutUrl");
-                    if (checkoutUrl == null) {
-                        checkoutUrl = (String) responseData.get("paymentLink");
-                    }
-                }
-
-                if (checkoutUrl != null) {
-                    responseBody.put("checkoutUrl", checkoutUrl);
-                    responseBody.put("qrCodeUrl", "https://chart.googleapis.com/chart?chs=250x250&cht=qr&chl=" + checkoutUrl);
-                    responseBody.put("orderCode", String.valueOf(orderCode));
-                } else {
-                    responseBody.put("error", "Không tìm thấy checkoutUrl hoặc paymentLink trong phản hồi từ PayOS");
-                }
-            } else {
-                responseBody.put("error", "Lỗi khi tạo giao dịch: Phản hồi không hợp lệ từ PayOS");
-            }
-
-        } catch (Exception e) {
+        } catch (PayOSException e) {
             System.err.println("PayOS Error: " + e.getMessage());
+            e.printStackTrace();
+            responseBody.put("error", "Lỗi khi gọi API PayOS: " + e.getMessage());
+            if (e.getMessage().contains("231") || e.getMessage().contains("Đơn thanh toán đã tồn tại")) {
+                responseBody.put("error", "Đơn thanh toán đã tồn tại. Vui lòng sử dụng orderCode khác.");
+            }
+        } catch (Exception e) {
+            System.err.println("Unexpected Error: " + e.getMessage());
             e.printStackTrace();
             responseBody.put("error", "Lỗi khi tạo giao dịch: " + e.getMessage());
         }
