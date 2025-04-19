@@ -15,12 +15,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-@RequiredArgsConstructor
 @Service
+@RequiredArgsConstructor
 public class RoleService {
 
     private final RoleDAO dao;
-
     private final RoleMapper mapper;
 
     public Page<RoleDTO> getAll(String statusId, Pageable pageable) {
@@ -70,13 +69,13 @@ public class RoleService {
 
     public boolean deleteById(String id) {
         Role role = getById(id);
-        if (role != null) {
-            role.setDeleted(true);
-            role.setModifiedAt(OffsetDateTime.now());
-            dao.save(role);
-            return true;
+        if (role.getDeleted()) {
+            return false;
         }
-        return false;
+        role.setDeleted(true);
+        role.setModifiedAt(OffsetDateTime.now());
+        dao.save(role);
+        return true;
     }
 
     private Specification<Role> ignoreDeleted() {

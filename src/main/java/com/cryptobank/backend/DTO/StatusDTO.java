@@ -10,4 +10,5 @@ public class StatusDTO {
     String id;
     String name;
     String group;
+    String note;
 }
