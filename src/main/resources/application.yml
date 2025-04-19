@@ -58,6 +58,26 @@ banking-api:
   transfer-endpoint: /v1/transfer               
   withdraw-endpoint: /v1/withdraw              
 
+DB_HOST:
+  14.225.206.68
+DB_PORT:
+  5555
+DB_NAME:
+  CryptoBank
+DB_USER:
+  postgresql
+DB_PASS:
+  CjZwTK1f03pY
+
+MINIO_BUCKET:
+  dev
+MINIO_URL:
+  http://14.225.206.68:9000
+MINIO_ACCESS_KEY:
+  bM5WQ3rBlCzyf8pj5YF1
+MINIO_SECRET_KEY:
+  PofKnV4gHOc3FuUfPvcy2FtaAInIfunMRYA8jn90
+
 payos:
   client-id: f0522096-3074-4461-a2d1-7e84ea714d06
   api-key: 43460806-5853-4ea8-982b-dec5c15d9b10
@@ -66,3 +86,4 @@ payos:
 
 jwt:
   secret-key: your-jwt-secret-key-here
+

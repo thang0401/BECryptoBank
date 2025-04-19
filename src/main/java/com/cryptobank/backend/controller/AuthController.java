@@ -34,6 +34,11 @@ import com.cryptobank.backend.repository.UserOtpRepository;
 import com.cryptobank.backend.services.AuthService;
 import com.cryptobank.backend.services.UserService;
 
+
+import jakarta.security.auth.message.AuthException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import eu.bitwalker.useragentutils.Browser;
 import eu.bitwalker.useragentutils.OperatingSystem;
 import eu.bitwalker.useragentutils.UserAgent;
@@ -61,10 +66,6 @@ public class AuthController {
     
     @Autowired
     private UserOtpRepository userOtpRepository;
-
-    public AuthController() {
-        this.passwordEncoder = new BCryptPasswordEncoder();
-    }
 
     public String encodePassword(String password) {
         return passwordEncoder.encode(password);
