@@ -3,10 +3,12 @@ package com.cryptobank.backend.services;
 import com.cryptobank.backend.DTO.UserCreateRequest;
 import com.cryptobank.backend.DTO.UserInformation;
 import com.cryptobank.backend.DTO.UserUpdateRequest;
+import com.cryptobank.backend.DTO.request.UserSearchParamRequest;
 import com.cryptobank.backend.entity.Role;
 import com.cryptobank.backend.entity.User;
 import com.cryptobank.backend.entity.UserRole;
 import com.cryptobank.backend.exception.ResourceNotFoundException;
+import com.cryptobank.backend.mapper.UserMapper;
 import com.cryptobank.backend.repository.UserDAO;
 import com.cryptobank.backend.repository.UserRoleDAO;
 import jakarta.servlet.http.HttpSession;
@@ -19,6 +21,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -31,6 +35,7 @@ public class UserService {
     private final UserRoleDAO userRoleDAO;
     private final RoleService roleService;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final UserMapper userMapper;
 
     public UserInformation convertToUserInformation(User user) {
         UserInformation dto = new UserInformation();
@@ -224,4 +229,36 @@ public class UserService {
     public Optional<UserRole> getUserRole(String userId) {
         return userRoleDAO.findByUserId(userId).stream().findFirst();
     }
+
+    public Page<UserInformation> getAll(UserSearchParamRequest request, Pageable pageable) {
+        Specification<User> spec = ignoreDeleted();
+        if (request.getPhone() != null && !request.getPhone().isBlank()) {
+            spec = spec.and((root, query, cb) -> cb.like(root.get("phoneNumber"), "%" + request.getPhone() + "%"));
+        }
+        if (request.getEmail() != null && !request.getEmail().isBlank()) {
+            spec = spec.and((root, query, cb) -> cb.like(root.get("email"), "%" + request.getEmail() + "%"));
+        }
+        if (request.getName() != null && !request.getName().isBlank()) {
+            spec = spec.and((root, query, cb) -> cb.like(
+                cb.concat(cb.concat(root.get("firstName"), " "),
+                    cb.concat(cb.concat(root.get("middleName"), " "), root.get("lastName"))),
+                "%" + request.getName() + "%")
+            );
+        }
+        if (request.getRole() != null && !request.getRole().isBlank()) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("role").get("id"), request.getRole()));
+        }
+        if (request.getRanking() != null && !request.getRanking().isBlank()) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("ranking").get("id"), request.getRanking()));
+        }
+        if (request.getStatus() != null && !request.getStatus().isBlank()) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("status").get("id"), request.getStatus()));
+        }
+        return repository.findAll(spec, pageable).map(userMapper::toDTO);
+    }
+
+    private Specification<User> ignoreDeleted() { // where deleted_yn <> true
+        return (root, query, cb) -> cb.notEqual(root.get("deleted"), true);
+    }
+
 }
