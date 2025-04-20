@@ -76,7 +76,7 @@ public class UploadImageController {
         @Parameter(description = "FIle hình ảnh") @RequestParam MultipartFile file,
         @Parameter(description = "Tên bucket") @RequestParam(required = false) String bucket
     ) throws IOException {
-        User user = userService.getUserKYC(userId);
+        User user = userService.getUserEntity(userId);
         String fileUrl = minioService.uploadFile(file.getOriginalFilename(), bucket, file.getInputStream(), file.getContentType());
         user.setAvatar(fileUrl);
         return userService.convertToUserInformation(user);

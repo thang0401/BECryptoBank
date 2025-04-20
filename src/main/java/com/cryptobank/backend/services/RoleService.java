@@ -21,6 +21,7 @@ public class RoleService {
 
     private final RoleDAO dao;
     private final RoleMapper mapper;
+    private final StatusService statusService;
 
     public Page<RoleDTO> getAll(String statusId, Pageable pageable) {
         Specification<Role> spec = ignoreDeleted();
@@ -58,12 +59,22 @@ public class RoleService {
             throw new AlreadyExistException("Role with name " + request.getName() + " already exist");
         }
         Role created = mapper.fromCreateRequest(request);
+        if (request.getStatusId() != null && !request.getStatusId().isBlank()) {
+            created.setStatus(statusService.getById(request.getStatusId()));
+        }
         return mapper.toDTO(dao.save(created));
     }
 
     public RoleDTO update(String id, RoleUpdateRequest request) {
         Role found = getById(id);
+        if (request.isSimilar(found)) {
+            return mapper.toDTO(found);
+        }
         Role updated = mapper.fromUpdateRequest(found, request);
+        if (request.getStatusId() != null && !request.getStatusId().isBlank()) {
+            updated.setStatus(statusService.getById(request.getStatusId()));
+        }
+        updated.setModifiedAt(OffsetDateTime.now());
         return mapper.toDTO(dao.save(updated));
     }
 

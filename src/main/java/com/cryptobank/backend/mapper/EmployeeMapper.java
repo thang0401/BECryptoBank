@@ -19,16 +19,11 @@ public interface EmployeeMapper {
     @Mapping(target = "status", source = "status.name")
     @Mapping(target = "maritalStatus", source = "maritalStatus.name")
     @Mapping(target = "employmentType", source = "employmentType.type_name")
-    @Mapping(target = "fullName", expression = "java(employee.getFirstName() + \" \" + employee.getMiddleName() + \" \" + employee.getLastName())")
+    @Mapping(target = "fullName", expression = "java((employee.getFirstName() != null ? employee.getFirstName() + \" \" : \"\") + (employee.getMiddleName() != null ? \" \" + employee.getMiddleName() + \" \" : \"\") + (employee.getLastName() != null ? \" \" + employee.getLastName() : \"\").trim())")
     EmployeeDTO toDTO(Employee employee);
 
-    @Mapping(target = "maritalStatus.id", source = "maritalStatusId")
-    @Mapping(target = "employmentType.id", source = "employmentTypeId")
     Employee fromCreateRequest(EmployeeCreateRequest request);
 
-    @Mapping(target = "status.id", source = "statusId")
-    @Mapping(target = "maritalStatus.id", source = "maritalStatusId")
-    @Mapping(target = "employmentType.id", source = "employmentTypeId")
     Employee fromUpdateRequest(@MappingTarget Employee found, EmployeeUpdateRequest request);
 
 }

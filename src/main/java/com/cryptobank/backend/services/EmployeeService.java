@@ -5,12 +5,17 @@ import com.cryptobank.backend.DTO.request.EmployeeCreateRequest;
 import com.cryptobank.backend.DTO.request.EmployeeSearchParamRequest;
 import com.cryptobank.backend.DTO.request.EmployeeUpdateRequest;
 import com.cryptobank.backend.entity.Employee;
+import com.cryptobank.backend.entity.EmploymentType;
 import com.cryptobank.backend.exception.AlreadyExistException;
 import com.cryptobank.backend.exception.ResourceNotFoundException;
 import com.cryptobank.backend.mapper.EmployeeMapper;
 import com.cryptobank.backend.repository.EmployeeDAO;
+import com.cryptobank.backend.repository.EmploymentTypeDAO;
+import jakarta.persistence.criteria.Predicate;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,6 +29,8 @@ public class EmployeeService {
 
     private final EmployeeDAO dao;
     private final EmployeeMapper mapper;
+    private final EmploymentTypeDAO employmentTypeDAO;
+    private final StatusService statusService;
     private final BCryptPasswordEncoder passwordEncoder;
 
     public Page<EmployeeDTO> getAll(EmployeeSearchParamRequest request, Pageable pageable) {
@@ -32,11 +39,19 @@ public class EmployeeService {
             spec = spec.and((root, query, cb) -> cb.like(cb.lower(root.get("email")), "%" + request.getEmail().toLowerCase() + "%"));
         }
         if (request.getName() != null && !request.getName().isBlank()) {
-            spec = spec.and((root, query, cb) -> cb.like(
-                cb.concat(cb.concat(root.get("firstName"), " "),
-                    cb.concat(cb.concat(root.get("middleName"), " "), root.get("lastName"))),
-                "%" + request.getName() + "%")
-            );
+            spec = spec.and((root, query, cb) -> {
+                List<Predicate> predicates = new ArrayList<>();
+                if (root.get("firstName") != null) {
+                    predicates.add(cb.like(cb.lower(root.get("firstName")), "%" + request.getName().toLowerCase() + "%"));
+                }
+                if (root.get("lastName") != null) {
+                    predicates.add(cb.like(cb.lower(root.get("lastName")), "%" + request.getName().toLowerCase() + "%"));
+                }
+                if (root.get("middleName") != null) {
+                    predicates.add(cb.like(cb.lower(root.get("middleName")), "%" + request.getName().toLowerCase() + "%"));
+                }
+                return !predicates.isEmpty() ? cb.or(predicates.toArray(new Predicate[0])) : cb.conjunction();
+            });
         }
         if (request.getPhoneNumber() != null && !request.getPhoneNumber().isBlank()) {
             spec = spec.and((root, query, cb) -> cb.like(root.get("phoneNumber"), "%" + request.getPhoneNumber() + "%"));
@@ -78,31 +93,31 @@ public class EmployeeService {
         return employee == null ? null : mapper.toDTO(employee);
     }
 
-    public EmployeeDTO toResponseFromEmail(String email) {
-        Employee employee = getByEmail(email);
-        return employee == null ? null : mapper.toDTO(employee);
-    }
-
     public Employee getById(String id) {
         return dao.findOne(ignoreDeleted()
                 .and((root, query, cb) -> cb.equal(root.get("id"), id)))
             .orElseThrow(() -> new ResourceNotFoundException("Employee with id " + id + " not found"));
     }
 
-    public Employee getByEmail(String email) {
-        return dao.findOne(ignoreDeleted()
-                .and((root, query, cb) -> cb.equal(root.get("email"), email)))
-            .orElseThrow(() -> new ResourceNotFoundException("Employee with email " + email + " not found"));
-    }
-
     public EmployeeDTO save(EmployeeCreateRequest request) {
-        Employee found = getByEmail(request.getEmail());
-        if (found != null && !found.getDeleted()) {
+        boolean found = dao.exists(ignoreDeleted()
+            .and((root, query, cb) -> cb.equal(root.get("email"), request.getEmail())));
+        if (found) {
             throw new AlreadyExistException("Employee with email " + request.getEmail() + " already exist");
         }
         Employee created = mapper.fromCreateRequest(request);
         String encodePassword = passwordEncoder.encode(created.getPassword());
         created.setPassword(encodePassword);
+        created.setStatus(statusService.getById(request.getStatusId()));
+        if (request.getMaritalStatusId() != null && !request.getMaritalStatusId().isBlank()) {
+            created.setMaritalStatus(statusService.getById(request.getMaritalStatusId()));
+        }
+        if (request.getMaritalStatusId() != null && !request.getMaritalStatusId().isBlank()) {
+            created.setMaritalStatus(statusService.getById(request.getMaritalStatusId()));
+        }
+        if (request.getEmploymentTypeId() != null && !request.getEmploymentTypeId().isBlank()) {
+            created.setEmploymentType(getEmployeeType(request.getEmploymentTypeId()));
+        }
         return mapper.toDTO(dao.save(created));
     }
 
@@ -112,6 +127,15 @@ public class EmployeeService {
             return mapper.toDTO(found);
         }
         Employee updated = mapper.fromUpdateRequest(found, request);
+        if (request.getMaritalStatusId() != null && !request.getMaritalStatusId().isBlank()) {
+            updated.setMaritalStatus(statusService.getById(request.getMaritalStatusId()));
+        }
+        if (request.getMaritalStatusId() != null && !request.getMaritalStatusId().isBlank()) {
+            updated.setMaritalStatus(statusService.getById(request.getMaritalStatusId()));
+        }
+        if (request.getEmploymentTypeId() != null && !request.getEmploymentTypeId().isBlank()) {
+            updated.setEmploymentType(getEmployeeType(request.getEmploymentTypeId()));
+        }
         updated.setModifiedAt(OffsetDateTime.now());
         return mapper.toDTO(dao.save(updated));
     }
@@ -125,6 +149,11 @@ public class EmployeeService {
         employee.setModifiedAt(OffsetDateTime.now());
         dao.save(employee);
         return true;
+    }
+
+    public EmploymentType getEmployeeType(String id) {
+        return employmentTypeDAO.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Employment type with id " + id + " not found"));
     }
 
     private Specification<Employee> ignoreDeleted() {

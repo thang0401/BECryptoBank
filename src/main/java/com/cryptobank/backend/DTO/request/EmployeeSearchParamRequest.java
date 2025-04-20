@@ -8,8 +8,6 @@ import org.springdoc.core.annotations.ParameterObject;
 @ParameterObject
 public class EmployeeSearchParamRequest {
 
-    @Parameter(description = "Tên đăng nhập")
-    private String username;
     @Parameter(description = "Email")
     private String email;
     @Parameter(description = "Tên")

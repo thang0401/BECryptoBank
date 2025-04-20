@@ -1,8 +1,8 @@
 package com.cryptobank.backend.DTO.request;
 
 import com.cryptobank.backend.entity.Employee;
-import com.cryptobank.backend.entity.Status;
 import jakarta.validation.constraints.Digits;
+import jakarta.validation.constraints.Email;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import lombok.Data;
@@ -11,6 +11,7 @@ import lombok.Data;
 public class EmployeeUpdateRequest {
 
     private String password;
+    @Email
     private String email;
     private String firstName;
     private String middleName;
@@ -21,7 +22,6 @@ public class EmployeeUpdateRequest {
     @Digits(integer = 10, fraction = 2)
     private BigDecimal bonus;
     private String taxCode;
-    private Status status;
     private OffsetDateTime terminationDate;
     private String emergencyContactName;
     private String emergencyContactPhone;
@@ -39,7 +39,6 @@ public class EmployeeUpdateRequest {
             (salary != null && salary.equals(employee.getSalary())) &&
             (bonus != null && bonus.equals(employee.getBonus())) &&
             (taxCode != null && taxCode.equals(employee.getTaxCode())) &&
-            (status != null && status.equals(employee.getStatus())) &&
             (emergencyContactName != null &&
                 emergencyContactName.equals(employee.getEmergencyContactName())) &&
             (emergencyContactPhone != null &&

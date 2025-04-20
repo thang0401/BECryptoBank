@@ -28,6 +28,7 @@ public class EmployeeCreateRequest {
     private String taxCode;
     private String emergencyContactName;
     private String emergencyContactPhone;
+    private String statusId;
     private String maritalStatusId;
     private String employmentTypeId;
 

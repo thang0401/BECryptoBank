@@ -54,4 +54,5 @@ public class UserUpdateRequest {
 
     @Size(max = 50, message = "Nation cannot exceed 50 characters")
     private String nation;
+
 }

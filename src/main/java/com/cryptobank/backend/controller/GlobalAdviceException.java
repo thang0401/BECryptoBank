@@ -11,6 +11,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.BindException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
@@ -18,34 +19,36 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class GlobalAdviceException {
 
     @ExceptionHandler(BindException.class)
-    public ResponseEntity<?> handleBindException(BindException e) {
+    public ResponseEntity<ErrorMessage> handleBindException(BindException e) {
         Map<String, String> errors = e.getBindingResult()
             .getFieldErrors()
             .stream()
             .collect(Collectors.toMap(FieldError::getField,
                 fieldError -> fieldError.getDefaultMessage() == null ? "" : fieldError.getDefaultMessage()));
-        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(new ErrorMessage(errors), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<String> handleResourceNotFound(ResourceNotFoundException ex) {
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
+    public ResponseEntity<ErrorMessage> handleResourceNotFound(ResourceNotFoundException ex) {
+        return new ResponseEntity<>(new ErrorMessage(ex.getMessage()), HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(AlreadyExistException.class)
-    public ResponseEntity<String> handleResourceNotFound(AlreadyExistException ex) {
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.CONFLICT);
+    public ResponseEntity<ErrorMessage> handleResourceNotFound(AlreadyExistException ex) {
+        return new ResponseEntity<>(new ErrorMessage(ex.getMessage()), HttpStatus.CONFLICT);
     }
 
     @ExceptionHandler(UsernameNotFoundException.class)
-    public ResponseEntity<String> handleUsernameNotFound(UsernameNotFoundException ex) {
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.UNAUTHORIZED);
+    public ResponseEntity<ErrorMessage> handleUsernameNotFound(UsernameNotFoundException ex) {
+        return new ResponseEntity<>(new ErrorMessage(ex.getMessage()), HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<String> handleAnyException(Exception ex) {
+    public ResponseEntity<ErrorMessage> handleAnyException(Exception ex) {
         log.error("Unexpected exception occurred", ex);
-        return new ResponseEntity<>("Lỗi hệ thống", HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(new ErrorMessage("Lỗi hệ thống"), HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+    public record ErrorMessage(Object message) { }
 
 }
