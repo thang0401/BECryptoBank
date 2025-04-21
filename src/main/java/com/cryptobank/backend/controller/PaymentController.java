@@ -1,17 +1,24 @@
 package com.cryptobank.backend.controller;
 
+import com.cryptobank.backend.DTO.UsdcVndTransactionDTO;
+import com.cryptobank.backend.DTO.transactionsConfirmDTO;
+import com.cryptobank.backend.DTO.withdrawDTO;
 import com.cryptobank.backend.entity.Status;
 import com.cryptobank.backend.entity.UsdcVndTransaction;
 import com.cryptobank.backend.entity.User;
+import com.cryptobank.backend.entity.UserBankAccount;
 import com.cryptobank.backend.repository.StatusDAO;
 import com.cryptobank.backend.repository.UsdcVndTransactionRepository;
 import com.cryptobank.backend.repository.UserDAO;
+import com.cryptobank.backend.repository.userBankAccountRepository;
 import com.cryptobank.backend.services.BankTransferService2;
 import com.cryptobank.backend.services.DebitWalletService;
 import com.cryptobank.backend.services.ExchangeRateService;
 import com.cryptobank.backend.services.PaymentService;
 import com.cryptobank.backend.services.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.simpleframework.xml.Path;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,10 +29,12 @@ import vn.payos.type.WebhookData;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/payment")
@@ -57,6 +66,9 @@ public class PaymentController {
 
     @Autowired
     private PayOS payos;
+    
+    @Autowired
+    private userBankAccountRepository userBankAccountRepository;
 
     @PostMapping("/deposit")
     public ResponseEntity<Map<String, String>> deposit(@RequestBody Map<String, Object> requestBody) {
@@ -138,8 +150,8 @@ public class PaymentController {
             String transactionId = String.valueOf(data.getOrderCode());
 
             // Mặc định status là PAID vì webhook không có trường statusp
-            String transactionStatus = "Sucesss";
-            Status dbStatus = Optional.ofNullable(statusRepository.findByName(transactionStatus))
+            String transactionStatus = "Pending";
+            Status dbStatus = statusRepository.findByName(transactionStatus)
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy trạng thái: " + transactionStatus));
 
             if (transactionRepository.findById(transactionId).isPresent()) {
@@ -185,15 +197,13 @@ public class PaymentController {
     // API rút tiền - Xử lý yêu cầu rút tiền
     @PostMapping("/withdraw")
     public ResponseEntity<Map<String, String>> withdraw(
-            @RequestParam String userId,
-            @RequestParam BigDecimal amount,
-            @RequestParam String bankAccount,
-            @RequestParam String bankCode) {
+            @RequestBody withdrawDTO withDraw) {
 
-        Map<String, String> response = bankTransferService.requestWithdraw(userId, amount, bankAccount, bankCode);
+        Map<String, String> response = bankTransferService.requestWithdraw(withDraw.getUserId(), withDraw.getAmount());
         return ResponseEntity.ok(response);
     }
 
+    //API Admin xác nhận yêu cầu rút tiền
     @PostMapping("/transactions/update-status")
     public ResponseEntity<Map<String, String>> updateTransactionStatus(
             @RequestParam String transactionId,
@@ -207,32 +217,123 @@ public class PaymentController {
     // API để cập nhật trạng thái và cập nhật số dư
     @PutMapping("/transactions/confirm")
     public ResponseEntity<String> confirmTransaction(
-            @RequestParam String transactionId,
-            @RequestParam String userId,
-            @RequestParam String newStatus) {
+            @RequestBody transactionsConfirmDTO Transaction) {
 
         // Tìm giao dịch theo ID
-        UsdcVndTransaction transaction = transactionRepository.findById(transactionId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy giao dịch với ID: " + transactionId));
+        UsdcVndTransaction transaction = transactionRepository.findById(Transaction.getTransactionId())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy giao dịch với ID: " + Transaction.getTransactionId()));
 
         // Kiểm tra xem giao dịch có thuộc về user không
-        if (!transaction.getDebitWallet().getUser().getId().equals(userId)) {
+        if (!transaction.getDebitWallet().getUser().getId().equals(Transaction.getUserId())) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Giao dịch không thuộc về user này!");
         }
 
         // Tìm Status theo tên
-        Status status = Optional.ofNullable(statusRepository.findByName(newStatus))
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy trạng thái: " + newStatus));
+        Status status = statusRepository.findByName(Transaction.getNewStatus())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy trạng thái: " + Transaction.getNewStatus()));
 
         // Cập nhật trạng thái
-        transaction.setStatus(status);
-        transactionRepository.save(transaction);
+        if(!status.getName().equalsIgnoreCase(transaction.getStatus().getName()))
+        {
+        	 transaction.setStatus(status);
+             transactionRepository.save(transaction);
+        }
+        else
+        {
+        	return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Trạng thái hiện tại đã là Success");
+        }
+       
 
         // Nếu trạng thái mới là "SUCCESS", cập nhật số dư
-        if ("SUCCESS".equalsIgnoreCase(newStatus)) {
-            debitWalletService.updateBalance(userId, transaction.getUsdcAmount());
+        if ("Sucesss".equalsIgnoreCase(Transaction.getNewStatus())) {
+            debitWalletService.updateBalance(Transaction.getUserId(), transaction.getUsdcAmount());
         }
 
-        return ResponseEntity.ok("Trạng thái giao dịch đã được cập nhật thành: " + newStatus);
+        return ResponseEntity.ok("Trạng thái giao dịch đã được cập nhật thành: " + Transaction.getNewStatus());
+    }
+    
+ // API lấy tất cả giao dịch của một userId
+    @GetMapping("/transactions/user/{userId}")
+    public ResponseEntity<List<UsdcVndTransactionDTO>> getTransactionsByUserId(@PathVariable String userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy user với ID: " + userId));
+
+        List<UsdcVndTransaction> transactions = transactionRepository.findByDebitWalletUserId(userId);
+        List<UsdcVndTransactionDTO> transactionDTOs = transactions.stream()
+                .map(tx -> new UsdcVndTransactionDTO(
+                        tx.getId(),
+                        tx.getDebitWallet().getUser().getId(),
+                        tx.getDebitWallet().getId(),
+                        tx.getVndAmount(),
+                        tx.getUsdcAmount(),
+                        tx.getExchangeRate(),
+                        tx.getType(),
+                        tx.getStatus().getName()
+                ))
+                .collect(Collectors.toList());
+
+        if (transactionDTOs.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(transactionDTOs);
+        }
+
+        return ResponseEntity.ok(transactionDTOs);
+    }
+
+    // API lấy tất cả giao dịch của toàn bộ người dùng
+    @GetMapping("/transactions/all")
+    public ResponseEntity<List<UsdcVndTransactionDTO>> getAllTransactions() {
+        List<UsdcVndTransaction> transactions = transactionRepository.findAll();
+        List<UsdcVndTransactionDTO> transactionDTOs = transactions.stream()
+                .map(tx -> new UsdcVndTransactionDTO(
+                        tx.getId(),
+                        tx.getDebitWallet().getUser().getId(),
+                        tx.getDebitWallet().getId(),
+                        tx.getVndAmount(),
+                        tx.getUsdcAmount(),
+                        tx.getExchangeRate(),
+                        tx.getType(),
+                        tx.getStatus().getName()
+                ))
+                .collect(Collectors.toList());
+
+        if (transactionDTOs.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(transactionDTOs);
+        }
+
+        return ResponseEntity.ok(transactionDTOs);
+    }
+
+    // API lấy tất cả giao dịch có trạng thái PENDING
+    @GetMapping("/transactions/pending")
+    public ResponseEntity<List<UsdcVndTransactionDTO>> getPendingTransactions() {
+        Status pendingStatus = Optional.ofNullable(statusRepository.findById("cvvveejme6nnaun2s4a0"))
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy trạng thái: PENDING")).get();
+
+        List<UsdcVndTransaction> pendingTransactions = transactionRepository.findByStatus(pendingStatus);
+        List<UsdcVndTransactionDTO> transactionDTOs = pendingTransactions.stream()
+                .map(tx -> new UsdcVndTransactionDTO(
+                        tx.getId(),
+                        tx.getDebitWallet().getUser().getId(),
+                        tx.getDebitWallet().getId(),
+                        tx.getVndAmount(),
+                        tx.getUsdcAmount(),
+                        tx.getExchangeRate(),
+                        tx.getType(),
+                        tx.getStatus().getName()
+                ))
+                .collect(Collectors.toList());
+
+        if (transactionDTOs.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(transactionDTOs);
+        }
+
+        return ResponseEntity.ok(transactionDTOs);
+    }
+
+    @GetMapping("BankAccount/{userId}")
+    public ResponseEntity<List<UserBankAccount>> getAllBankAccountByUser(@PathVariable String userId)
+    {
+    	List<UserBankAccount> listBankAccount=userBankAccountRepository.findByUser_Id(userId);
+    	return ResponseEntity.ok(listBankAccount);
     }
 }

@@ -27,7 +27,7 @@ import com.cryptobank.backend.DTO.UserAuthResponse;
 import com.cryptobank.backend.entity.DeviceInfo;
 import com.cryptobank.backend.entity.User;
 import com.cryptobank.backend.entity.UserOtp;
-import com.cryptobank.backend.exception.AuthException;
+//import com.cryptobank.backend.exception.AuthException;
 import com.cryptobank.backend.repository.DeviceInforDAO;
 import com.cryptobank.backend.repository.UserDAO;
 import com.cryptobank.backend.repository.UserOtpRepository;
