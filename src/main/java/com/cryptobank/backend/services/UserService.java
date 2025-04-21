@@ -151,19 +151,24 @@ public class UserService {
         if (request.getEmail() != null && !request.getEmail().isBlank()) {
             spec = spec.and((root, query, cb) -> cb.like(root.get("email"), "%" + request.getEmail() + "%"));
         }
-        spec = spec.and((root, query, cb) -> {
-            List<Predicate> predicates = new ArrayList<>();
-            if (root.get("firstName") != null) {
-                predicates.add(cb.like(cb.lower(root.get("firstName")), "%" + request.getName().toLowerCase() + "%"));
-            }
-            if (root.get("lastName") != null) {
-                predicates.add(cb.like(cb.lower(root.get("lastName")), "%" + request.getName().toLowerCase() + "%"));
-            }
-            if (root.get("middleName") != null) {
-                predicates.add(cb.like(cb.lower(root.get("middleName")), "%" + request.getName().toLowerCase() + "%"));
-            }
-            return !predicates.isEmpty() ? cb.or(predicates.toArray(new Predicate[0])) : cb.conjunction();
-        });
+        if (request.getName() != null && !request.getName().isBlank()) {
+            spec = spec.and((root, query, cb) -> {
+                List<Predicate> predicates = new ArrayList<>();
+                if (root.get("firstName") != null) {
+                    predicates.add(
+                        cb.like(cb.lower(root.get("firstName")), "%" + request.getName().toLowerCase() + "%"));
+                }
+                if (root.get("lastName") != null) {
+                    predicates.add(
+                        cb.like(cb.lower(root.get("lastName")), "%" + request.getName().toLowerCase() + "%"));
+                }
+                if (root.get("middleName") != null) {
+                    predicates.add(
+                        cb.like(cb.lower(root.get("middleName")), "%" + request.getName().toLowerCase() + "%"));
+                }
+                return !predicates.isEmpty() ? cb.or(predicates.toArray(new Predicate[0])) : cb.conjunction();
+            });
+        }
         if (request.getRole() != null && !request.getRole().isBlank()) {
             spec = spec.and((root, query, cb) -> cb.equal(root.get("role").get("id"), request.getRole()));
         }
