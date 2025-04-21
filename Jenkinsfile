@@ -8,22 +8,6 @@ pipeline {
     }
 
     stages {
-        stage("Clone repo") {
-            steps {
-                script {
-		    sh "git status"
-                    def gitDirExists = fileExists(".git")
-                    if (!gitDirExists) {
-                        echo 'Cloning repository...'
-                        sh "git clone --branch deploy --single-branch ${REPO_URL}"
-                    } else {
-                        echo 'Repository already cloned. Fetching new commit'
-                        sh "git fetch"
-                        sh "git reset --hard origin/deploy"
-                    }
-                }
-            }
-        }
         stage("Build") {
             steps {
                 sh "mvn clean package -DskipTests"
