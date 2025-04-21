@@ -11,6 +11,7 @@ pipeline {
         stage("Clone repo") {
             steps {
                 script {
+		    sh "git status"
                     def gitDirExists = fileExists(".git")
                     if (!gitDirExists) {
                         echo 'Cloning repository...'
