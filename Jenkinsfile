@@ -4,7 +4,6 @@ pipeline {
     environment {
         APP_NAME = "BECryptoBank"
         DOCKER_IMAGE = "becryptobank-app:latest"
-        REPO_URL = "https://github.com/thang0401/BECryptoBank.git"
     }
 
     stages {
@@ -20,8 +19,8 @@ pipeline {
         }
         stage("Run with Docker") {
             steps {
-	        sh "docker rm -f ${APP_NAME} || true"
-	        sh "docker run -d --name ${APP_NAME} -p 8000:8000 --env-file .env --network becryptobank ${DOCKER_IMAGE}"
+                sh "docker rm -f ${APP_NAME} || true"
+                sh "docker run -d --name ${APP_NAME} -p 8000:8000 --env-file .env --network becryptobank ${DOCKER_IMAGE}"
             }
         }
     }
