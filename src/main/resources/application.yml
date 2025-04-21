@@ -39,7 +39,6 @@ spring:
     properties:
       hibernate:
         format_sql: true
-        dialect: org.hibernate.dialect.PostgreSQLDialect
 
 banking-api:
   base-url: https://api.nganhang.com           

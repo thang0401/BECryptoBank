@@ -16,10 +16,8 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 )
 public interface RoleMapper {
 
-    @Mapping(target = "status.id", source = "statusId")
     Role fromCreateRequest(RoleCreateRequest request);
 
-    @Mapping(target = "status.id", source = "statusId")
     Role fromUpdateRequest(@MappingTarget Role role, RoleUpdateRequest request);
 
     @Mapping(target = "status", source = "status.name")

@@ -16,10 +16,10 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 )
 public interface RoleUrlMapper {
 
-    @Mapping(target = "role.id", source = "roleId")
+    @Mapping(target = "functionUrl", source = "url")
     RoleUrl fromCreateRequest(RoleUrlCreateRequest request);
 
-    @Mapping(target = "role.id", source = "roleId")
+    @Mapping(target = "functionUrl", source = "url")
     RoleUrl fromUpdateRequest(@MappingTarget RoleUrl roleUrl, RoleUrlUpdateRequest request);
 
     @Mapping(target = "role", source = "role.name")

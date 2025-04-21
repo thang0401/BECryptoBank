@@ -6,6 +6,8 @@ import lombok.Setter;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 
+import org.hibernate.annotations.GenericGenerator;
+
 @Getter
 @Setter
 @Entity
@@ -14,6 +16,8 @@ public class UsdcVndTransaction {
 
     @Id
     @Column(name = "id", nullable = false, length = 255)
+    @GeneratedValue(generator = "uuid2")
+    @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
     private String id;
 
     @ManyToOne(fetch = FetchType.LAZY)
