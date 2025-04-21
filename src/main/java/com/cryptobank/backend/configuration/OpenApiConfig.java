@@ -13,8 +13,7 @@ public class OpenApiConfig {
     @Bean
     public OpenAPI openAPI() {
         return new OpenAPI()
-            .servers(List.of(new Server().url("https://be-crypto-depot.name.vn"),
-                new Server().url("http://14.225.206.68:8000")))
+            .servers(List.of(new Server().url("https://be-crypto-depot.name.vn")))
             .info(new Info().title("CryptoBank API").version("1.0"));
     }
 
