@@ -1,7 +1,5 @@
 package com.cryptobank.backend.entity;
 
-
-
 import com.cryptobank.backend.utils.IdGenerator;
 import jakarta.persistence.Column;
 import jakarta.persistence.Id;

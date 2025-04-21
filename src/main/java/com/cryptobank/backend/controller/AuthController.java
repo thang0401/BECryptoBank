@@ -27,23 +27,18 @@ import com.cryptobank.backend.DTO.UserAuthResponse;
 import com.cryptobank.backend.entity.DeviceInfo;
 import com.cryptobank.backend.entity.User;
 import com.cryptobank.backend.entity.UserOtp;
-import com.cryptobank.backend.exception.AuthException;
 import com.cryptobank.backend.repository.DeviceInforDAO;
 import com.cryptobank.backend.repository.UserDAO;
 import com.cryptobank.backend.repository.UserOtpRepository;
 import com.cryptobank.backend.services.AuthService;
 import com.cryptobank.backend.services.UserService;
 
-
 import jakarta.security.auth.message.AuthException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import eu.bitwalker.useragentutils.Browser;
 import eu.bitwalker.useragentutils.OperatingSystem;
 import eu.bitwalker.useragentutils.UserAgent;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
 
 @RestController
 @RequestMapping("/api/auth")

@@ -3,22 +3,25 @@ package com.cryptobank.backend.services;
 import com.cryptobank.backend.DTO.UserCreateRequest;
 import com.cryptobank.backend.DTO.UserInformation;
 import com.cryptobank.backend.DTO.UserUpdateRequest;
-import com.cryptobank.backend.entity.Role;
+import com.cryptobank.backend.DTO.request.UserSearchParamRequest;
 import com.cryptobank.backend.entity.User;
 import com.cryptobank.backend.entity.UserRole;
 import com.cryptobank.backend.exception.ResourceNotFoundException;
+import com.cryptobank.backend.mapper.UserMapper;
 import com.cryptobank.backend.repository.UserDAO;
 import com.cryptobank.backend.repository.UserRoleDAO;
+import jakarta.persistence.criteria.Predicate;
 import jakarta.servlet.http.HttpSession;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -29,40 +32,23 @@ public class UserService {
     private final UserDAO repository;
     private final EmailService emailService;
     private final UserRoleDAO userRoleDAO;
-    private final RoleService roleService;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final UserMapper userMapper;
 
     public UserInformation convertToUserInformation(User user) {
         UserInformation dto = new UserInformation();
         BeanUtils.copyProperties(user, dto);
         return dto;
     }
-    public User getUserKYC(String id) {
-        return repository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("User with id " + id + " not found or deleted"));
-    }
 
-    private User getUserEntity(String id) {
-        return repository.findById(id)
-            .filter(u -> !u.getDeleted())
+    public User getUserEntity(String id) {
+        return repository.findOne(ignoreDeleted())
             .orElseThrow(() -> new ResourceNotFoundException("User with id " + id + " not found or deleted"));
     }
 
     public UserInformation get(String id) {
         User user = getUserEntity(id);
         return convertToUserInformation(user);
-    }
-
-    public List<UserInformation> getAll() {
-        return repository.findAll().stream()
-                .filter(user -> !user.getDeleted())
-                .map(this::convertToUserInformation)
-                .collect(Collectors.toList());
-    }
-
-    public Page<UserInformation> getAll(int page, int size) {
-        return repository.findAllNotDeleted(PageRequest.of(page, size))
-                .map(this::convertToUserInformation);
     }
 
     public void delete(String id, String deletedBy) {
@@ -110,33 +96,6 @@ public class UserService {
         return convertToUserInformation(savedUser);
     }
 
-    public UserInformation getEmail(String email) {
-        User user = repository.findByEmail(email);
-        if (user != null && !user.getDeleted()) {
-            return convertToUserInformation(user);
-        }
-        throw new ResourceNotFoundException("User with email " + email + " not found or deleted");
-    }
-
-    public List<UserInformation> getName(String name) {
-        return repository.findByName(name).stream()
-                .filter(user -> !user.getDeleted())
-                .map(this::convertToUserInformation)
-                .collect(Collectors.toList());
-    }
-
-    public boolean existsByEmail(String email) {
-        return repository.existsByEmail(email);
-    }
-
-    public boolean existsByPhoneNumber(String phoneNumber) {
-        return repository.existsByPhoneNumber(phoneNumber);
-    }
-
-    public boolean existsByIdCardNumber(String cardNumber) {
-        return repository.existsByIdCardNumber(cardNumber);
-    }
-
     private String generateResetCode() {
         int randomCode = (int) (Math.random() * 900000) + 100000;
         return String.valueOf(randomCode);
@@ -152,7 +111,6 @@ public class UserService {
         session.setAttribute("time", LocalDateTime.now().plusMinutes(15));
         emailService.sendResetPasswordEmail(email, resetCode);
     }
-
 
     public void resetPassword(String email, String resetCode, String newPassword, HttpSession session) {
         User user = repository.findByEmail(email);
@@ -171,57 +129,55 @@ public class UserService {
         repository.save(user);
     }
 
-    public Double getUserBalance(String userId) {
-        Optional<User> user = repository.findById(userId);
+    public Double getUserBalance(String id) {
+        User user = getUserEntity(id);
         return 0.0; // Logic cần hoàn thiện
     }
 
-    public void decreaseUserBalance(String userId, Double amount) {
-        Optional<User> userOpt = repository.findById(userId);
+    public void decreaseUserBalance(String id, Double amount) {
+        User userOpt = getUserEntity(id);
         // Logic cần hoàn thiện
-    }
-
-    public List<UserInformation> getUsersByRoleName(String roleName) {
-        return repository.findByRole(roleName).stream()
-                .filter(user -> !user.getDeleted())
-                .map(this::convertToUserInformation)
-                .collect(Collectors.toList());
-    }
-
-    public List<UserInformation> getUsersByRankingName(String rankingName) {
-        return repository.findByRanking_NameContaining(rankingName).stream()
-                .filter(user -> !user.getDeleted())
-                .map(this::convertToUserInformation)
-                .collect(Collectors.toList());
-    }
-
-    public List<UserInformation> getUsersByPhoneNumber(String phoneNum) {
-        return repository.findByPhoneNumberContaining(phoneNum).stream()
-                .filter(user -> !user.getDeleted())
-                .map(this::convertToUserInformation)
-                .collect(Collectors.toList());
-    }
-
-    public UserInformation getUsersByIdNumber(String idNumber) {
-        User user = repository.findByIdCardNumber(idNumber);
-        if (user != null && !user.getDeleted()) {
-            return convertToUserInformation(user);
-        }
-        throw new ResourceNotFoundException("User with id number " + idNumber + " not found or deleted");
-    }
-
-    public void addRoleToUser(String id, String... roles) {
-        User user = getUserEntity(id);
-        for (String roleName : roles) {
-            Role role = roleService.getByName(roleName);
-            UserRole userRole = new UserRole();
-            userRole.setUser(user);
-            userRole.setRole(role);
-            userRoleDAO.save(userRole);
-        }
     }
 
     public Optional<UserRole> getUserRole(String userId) {
         return userRoleDAO.findByUserId(userId).stream().findFirst();
     }
+
+    public Page<UserInformation> getAll(UserSearchParamRequest request, Pageable pageable) {
+        Specification<User> spec = ignoreDeleted();
+        if (request.getPhone() != null && !request.getPhone().isBlank()) {
+            spec = spec.and((root, query, cb) -> cb.like(root.get("phoneNumber"), "%" + request.getPhone() + "%"));
+        }
+        if (request.getEmail() != null && !request.getEmail().isBlank()) {
+            spec = spec.and((root, query, cb) -> cb.like(root.get("email"), "%" + request.getEmail() + "%"));
+        }
+        spec = spec.and((root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            if (root.get("firstName") != null) {
+                predicates.add(cb.like(cb.lower(root.get("firstName")), "%" + request.getName().toLowerCase() + "%"));
+            }
+            if (root.get("lastName") != null) {
+                predicates.add(cb.like(cb.lower(root.get("lastName")), "%" + request.getName().toLowerCase() + "%"));
+            }
+            if (root.get("middleName") != null) {
+                predicates.add(cb.like(cb.lower(root.get("middleName")), "%" + request.getName().toLowerCase() + "%"));
+            }
+            return !predicates.isEmpty() ? cb.or(predicates.toArray(new Predicate[0])) : cb.conjunction();
+        });
+        if (request.getRole() != null && !request.getRole().isBlank()) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("role").get("id"), request.getRole()));
+        }
+        if (request.getRanking() != null && !request.getRanking().isBlank()) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("ranking").get("id"), request.getRanking()));
+        }
+        if (request.getStatus() != null && !request.getStatus().isBlank()) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("status").get("id"), request.getStatus()));
+        }
+        return repository.findAll(spec, pageable).map(userMapper::toDTO);
+    }
+
+    private Specification<User> ignoreDeleted() { // where deleted_yn <> true
+        return (root, query, cb) -> cb.notEqual(root.get("deleted"), true);
+    }
+
 }

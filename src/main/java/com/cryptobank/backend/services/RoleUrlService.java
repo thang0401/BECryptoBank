@@ -3,6 +3,7 @@ package com.cryptobank.backend.services;
 import com.cryptobank.backend.DTO.RoleUrlDTO;
 import com.cryptobank.backend.DTO.request.RoleUrlCreateRequest;
 import com.cryptobank.backend.DTO.request.RoleUrlUpdateRequest;
+import com.cryptobank.backend.entity.Role;
 import com.cryptobank.backend.entity.RoleUrl;
 import com.cryptobank.backend.exception.AlreadyExistException;
 import com.cryptobank.backend.exception.ResourceNotFoundException;
@@ -45,19 +46,21 @@ public class RoleUrlService {
     }
 
     public RoleUrlDTO save(RoleUrlCreateRequest request) {
-        roleService.getById(request.getRoleId());
+        Role role = roleService.getById(request.getRoleId());
         RoleUrl found = getByRoleAndUrl(request.getRoleId(), request.getUrl());
         if (found != null && !found.getDeleted()) {
             throw new AlreadyExistException("Role " + request.getRoleId() + " with url " + request.getUrl() + " already exist");
         }
         RoleUrl roleUrl = mapper.fromCreateRequest(request);
+        roleUrl.setRole(role);
         return mapper.toDTO(dao.save(roleUrl));
     }
 
     public RoleUrlDTO update(String id, RoleUrlUpdateRequest request) {
-        roleService.getById(request.getRoleId());
+        Role role = roleService.getById(request.getRoleId());
         RoleUrl found = getById(id);
         RoleUrl updated = mapper.fromUpdateRequest(found, request);
+        updated.setRole(role);
         return mapper.toDTO(dao.save(updated));
     }
 
