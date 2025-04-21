@@ -10,7 +10,6 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.web.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -32,7 +31,7 @@ public class RoleController {
     )
     public PagedModel<RoleDTO> getAllRoles(
         @Parameter(description = "ID status") @RequestParam(required = false) String statusId,
-        @Valid @ParameterObject PageParamRequest request
+        @Valid PageParamRequest request
     ) {
         return new PagedModel<>(roleService.getAll(statusId, request.toPageable()));
     }

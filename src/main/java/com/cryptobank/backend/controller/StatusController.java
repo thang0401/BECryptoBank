@@ -8,7 +8,6 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.web.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -30,7 +29,7 @@ public class StatusController {
     )
     public PagedModel<StatusDTO> getAllStatuses(
         @Parameter(description = "ID group") @RequestParam(required = false) String groupId,
-        @Valid @ParameterObject PageParamRequest request
+        @Valid PageParamRequest request
     ) {
         return new PagedModel<>(statusService.getAll(groupId, request.toPageable()));
     }
