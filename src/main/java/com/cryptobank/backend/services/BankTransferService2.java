@@ -216,11 +216,20 @@ public class BankTransferService2 {
     	        	    .orElseThrow(() -> new RuntimeException("Không tìm thấy trạng thái: " + newStatus));
 
     	        // Cập nhật trạng thái giao dịch
-    	        transaction.setStatus(status);
-    	        transactionRepository.save(transaction);
+    	        if(transaction.getStatus().getName().equalsIgnoreCase(status.getName()))
+    	        {
+    	        	responseBody.put("error", "Đơn yêu cầu trên vốn đã được duyệt");
+    	        	return responseBody;
+    	        }
+    	        else
+    	        {
+    	        	transaction.setStatus(status);
+        	        transactionRepository.save(transaction);
 
+    	        }
+    	        
     	        // Nếu giao dịch được duyệt, thực hiện rút tiền
-    	        if ("SUCCESS".equals(newStatus)) {
+    	        if ("Sucesss".equals(newStatus)) {
     	            DebitWallet debitWallet = transaction.getDebitWallet();
     	            BigDecimal usdcAmount = transaction.getUsdcAmount();
 
@@ -242,16 +251,16 @@ public class BankTransferService2 {
     	            debitWalletRepository.save(debitWallet);
 
     	            // Gửi yêu cầu rút tiền đến PayOS
-    	            Map<String, String> payosResponse = payosService.withdraw(
-    	                transaction.getVndAmount(), 
-    	                bankAccount.getAccountNumber(), 
-    	                bankAccount.getBankCode()
-    	            );
-
-    	            if (payosResponse.containsKey("error")) {
-    	                responseBody.put("error", "Lỗi khi gửi yêu cầu rút tiền: " + payosResponse.get("error"));
-    	                return responseBody;
-    	            }
+//    	            Map<String, String> payosResponse = payosService.withdraw(
+//    	                transaction.getVndAmount(), 
+//    	                bankAccount.getAccountNumber(), 
+//    	                bankAccount.getBankCode()
+//    	            );
+//
+//    	            if (payosResponse.containsKey("error")) {
+//    	                responseBody.put("error", "Lỗi khi gửi yêu cầu rút tiền: " + payosResponse.get("error"));
+//    	                return responseBody;
+//    	            }
 
     	            responseBody.put("message", "Giao dịch đã được duyệt và tiền đang được chuyển!");
     	        } else if ("FAILED".equals(newStatus)) {
