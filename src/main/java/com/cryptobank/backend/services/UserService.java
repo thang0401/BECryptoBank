@@ -42,7 +42,7 @@ public class UserService {
     }
 
     public User getUserEntity(String id) {
-        return repository.findOne(ignoreDeleted())
+        return repository.findOne(ignoreDeleted().and((root, query, cb) -> cb.equal(root.get("id"), id)))
             .orElseThrow(() -> new ResourceNotFoundException("User with id " + id + " not found or deleted"));
     }
 
