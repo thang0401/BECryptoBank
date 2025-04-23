@@ -2,6 +2,8 @@ package com.cryptobank.backend.services;
 
 import com.cryptobank.backend.model.CustomerUserDetails;
 import com.cryptobank.backend.repository.UserDAO;
+import com.cryptobank.backend.repository.UserRoleDAO;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -13,17 +15,17 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
 
-    private final UserDAO repository;
+    private final UserDAO userDAO;
+    private final UserRoleDAO userRoleDAO;
     private final PasswordEncoder encoder;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        CustomerUserDetails user = repository.authenticate(username);
-
-        if (user == null) {
-            throw new UsernameNotFoundException("User not found " + username);
+        if (userDAO.existsById(username)) {
+            List<String> roles = userRoleDAO.findRoleNameByUserId(username);
+            return new CustomerUserDetails(username, roles);
         } else {
-            return new CustomerUserDetails(username, encoder.encode(user.getPassword()), user.getRole());
+            throw new UsernameNotFoundException("User not found " + username);
         }
     }
 }

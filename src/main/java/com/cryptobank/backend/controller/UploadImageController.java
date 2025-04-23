@@ -6,6 +6,7 @@ import com.cryptobank.backend.services.MinioService;
 import com.cryptobank.backend.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping(value = "/api/image", produces = MediaType.APPLICATION_JSON_VALUE)
 @RequiredArgsConstructor
 @Tag(name = "Image", description = "Hình ảnh")
+@SecurityRequirement(name = "Bearer Authorization")
 public class UploadImageController {
 
     private final MinioService minioService;

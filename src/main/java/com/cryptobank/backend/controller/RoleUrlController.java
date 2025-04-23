@@ -7,6 +7,7 @@ import com.cryptobank.backend.DTO.request.RoleUrlUpdateRequest;
 import com.cryptobank.backend.services.RoleUrlService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping(value = "/api/role/url", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Role Url", description = "Đường dẫn url cho từng vai trò tương ứng")
+@SecurityRequirement(name = "Bearer Authorization")
 public class RoleUrlController {
 
     private final RoleUrlService roleUrlService;

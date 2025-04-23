@@ -1,6 +1,7 @@
 package com.cryptobank.backend.entity;
 
 import jakarta.persistence.*;
+import java.util.ArrayList;
 import lombok.Data;
 
 import java.time.OffsetDateTime;
@@ -125,5 +126,7 @@ public class User extends BaseEntity {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, optional = true)
     private GoogleAuth googleAuth;
 
+    @OneToMany(mappedBy = "user")
+    private List<UserRole> userRoles = new ArrayList<>();
 
 }
