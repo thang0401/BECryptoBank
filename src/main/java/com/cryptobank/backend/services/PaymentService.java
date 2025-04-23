@@ -37,7 +37,7 @@ public class PaymentService {
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy ví của user: " + userId));
 
         // Tìm trạng thái
-        Status status = Optional.ofNullable(statusRepository.findByName(statusName))
+        Status status = statusRepository.findByName(statusName)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy trạng thái: " + statusName));
 
 
