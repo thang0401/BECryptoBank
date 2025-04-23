@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class TermAddDTO {
-    private String id;
+    private String Id;
     private Long amountMonth;
     private String type;
     private String createdBy="system";
