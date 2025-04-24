@@ -31,7 +31,7 @@ public class RoleUrlService {
 
     public RoleUrlDTO toResponseFromId(String id) {
         RoleUrl role = getById(id);
-        return role == null ? null : mapper.toDTO(role);
+        return mapper.toDTO(role);
     }
 
     public RoleUrl getById(String id) {
