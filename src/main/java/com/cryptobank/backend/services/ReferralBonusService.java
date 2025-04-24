@@ -5,9 +5,12 @@ import com.cryptobank.backend.DTO.request.ReferralBonusCreateRequest;
 import com.cryptobank.backend.DTO.request.ReferralBonusSearchParamRequest;
 import com.cryptobank.backend.DTO.request.ReferralBonusUpdateRequest;
 import com.cryptobank.backend.entity.ReferralBonus;
+import com.cryptobank.backend.entity.User;
+import com.cryptobank.backend.exception.AlreadyExistException;
 import com.cryptobank.backend.exception.ResourceNotFoundException;
 import com.cryptobank.backend.mapper.ReferralBonusMapper;
 import com.cryptobank.backend.repository.ReferralBonusDAO;
+import com.cryptobank.backend.repository.UserDAO;
 import java.time.OffsetDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -23,6 +26,7 @@ public class ReferralBonusService {
     private final ReferralBonusMapper mapper;
     private final StatusService statusService;
     private final UserService userService;
+    private final UserDAO userDAO;
 
     public Page<ReferralBonusDTO> getAll(ReferralBonusSearchParamRequest request, Pageable pageable) {
         Specification<ReferralBonus> spec = ignoreDeleted();
@@ -61,6 +65,11 @@ public class ReferralBonusService {
     }
 
     public ReferralBonusDTO save(ReferralBonusCreateRequest request) {
+        boolean found = dao.exists(ignoreDeleted()
+            .and((root, query, cb) -> cb.equal(root.get("user").get("id"), request.getUserId())));
+        if (found) {
+            throw new AlreadyExistException("User with id " + request.getUserId() + " has already entered a referral code of " + request.getUserReferralId() + " before");
+        }
         ReferralBonus created = mapper.fromCreateRequest(request);
         if (request.getStatusId() != null && !request.getStatusId().isBlank()) {
             created.setStatus(statusService.getById(request.getStatusId()));
@@ -73,7 +82,11 @@ public class ReferralBonusService {
         if (request.getUserReferralId() != null && !request.getUserReferralId().isBlank()) {
             created.setReferralUser(userService.getUserEntity(request.getUserReferralId()));
         }
-        return mapper.toDTO(dao.save(created));
+        ReferralBonus save = dao.save(created);
+        User user = userService.getUserEntity(request.getUserId());
+        user.setBonusAmount(user.getBonusAmount().add(save.getBonusAmount()));
+        userDAO.save(user);
+        return mapper.toDTO(save);
     }
 
     public ReferralBonusDTO update(String id, ReferralBonusUpdateRequest request) {
