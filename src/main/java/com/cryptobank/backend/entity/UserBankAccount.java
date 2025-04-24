@@ -30,11 +30,12 @@ public class UserBankAccount {
 	@Column(name = "account_holder_name", nullable = false, length = 255)
 	private String accountHolderName;
 
-	@Column(name = "bank_code", nullable = false, length = 50)
-	private String bankCode;
 
 	@Column(name = "created_at", nullable = false, updatable = false)
 	private LocalDateTime createdAt = LocalDateTime.now();
+	
+	@Column(name = "describe", nullable = false, length = 255)
+	private String describe;
 
 	@Column(name = "updated_at")
 	private LocalDateTime updatedAt = LocalDateTime.now();
