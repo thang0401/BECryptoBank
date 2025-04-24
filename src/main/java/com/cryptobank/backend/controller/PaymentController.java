@@ -1,8 +1,10 @@
 package com.cryptobank.backend.controller;
 
+import com.cryptobank.backend.DTO.DepositDTO;
 import com.cryptobank.backend.DTO.UsdcVndTransactionDTO;
 import com.cryptobank.backend.DTO.transactionsConfirmDTO;
 import com.cryptobank.backend.DTO.withdrawDTO;
+import com.cryptobank.backend.DTO.withdrawStatusDTO;
 import com.cryptobank.backend.entity.Status;
 import com.cryptobank.backend.entity.UsdcVndTransaction;
 import com.cryptobank.backend.entity.User;
@@ -71,26 +73,21 @@ public class PaymentController {
     private userBankAccountRepository userBankAccountRepository;
 
     @PostMapping("/deposit")
-    public ResponseEntity<Map<String, String>> deposit(@RequestBody Map<String, Object> requestBody) {
-        String orderId = (String) requestBody.get("orderId");
-        Double amount = Double.valueOf(requestBody.get("amount").toString());
-        String description = (String) requestBody.get("description");
-        String returnUrl = (String) requestBody.get("returnUrl");
-        String cancelUrl = (String) requestBody.get("cancelUrl");
-        String userId = (String) requestBody.get("userId"); // Lấy user_id từ requestBody
+    public ResponseEntity<Map<String, String>> deposit(@RequestBody DepositDTO requestBody) {
+       
 
         // Kiểm tra user_id
-        if (userId == null || userId.trim().isEmpty()) {
+        if (requestBody.getUserId() == null || requestBody.getUserId().trim().isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("error", "userId không được để trống"));
         }
 
         // Kiểm tra user trong DB
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy user với ID: " + userId));
+        User user = userRepository.findById(requestBody.getUserId())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy user với ID: " + requestBody.getUserId()));
 
         // Gọi depositToPayOS với userId
-        Map<String, String> response = bankTransferService.depositToPayOS(orderId, amount, description, returnUrl, cancelUrl, userId);
+        Map<String, String> response = bankTransferService.depositToPayOS(requestBody.getOrderId(), requestBody.getAmount(), requestBody.getDescription(), requestBody.getReturnUrl(), requestBody.getCancelUrl(), requestBody.getUserId());
         return ResponseEntity.ok(response);
     }
 
@@ -206,15 +203,13 @@ public class PaymentController {
     //API Admin xác nhận yêu cầu rút tiền
     @PostMapping("/transactions/update-status")
     public ResponseEntity<Map<String, String>> updateTransactionStatus(
-            @RequestParam String transactionId,
-            @RequestParam String newStatus,
-            @RequestParam(required = false) Long bankAccountId) {
+            @RequestBody withdrawStatusDTO withdrawStatus) {
 
-        Map<String, String> response = bankTransferService.updateTransactionStatus(transactionId, newStatus, bankAccountId);
+        Map<String, String> response = bankTransferService.updateTransactionStatus(withdrawStatus.getTransactionId(), withdrawStatus.getNewStatus(), withdrawStatus.getBankAccountId());
         return ResponseEntity.ok(response);
     }
 
-    // API để cập nhật trạng thái và cập nhật số dư
+    // API để cập nhật trạng thái và cập nhật số dư nạp tiền 
     @PutMapping("/transactions/confirm")
     public ResponseEntity<String> confirmTransaction(
             @RequestBody transactionsConfirmDTO Transaction) {
@@ -330,10 +325,11 @@ public class PaymentController {
         return ResponseEntity.ok(transactionDTOs);
     }
 
-    @GetMapping("BankAccount/{userId}")
-    public ResponseEntity<List<UserBankAccount>> getAllBankAccountByUser(@PathVariable String userId)
-    {
-    	List<UserBankAccount> listBankAccount=userBankAccountRepository.findByUser_Id(userId);
-    	return ResponseEntity.ok(listBankAccount);
-    }
+//    @GetMapping("/BankAccount/{userId}")
+//    public ResponseEntity<List<UserBankAccount>> getAllBankAccountByUser(@PathVariable String userId)
+//    {
+//    	List<UserBankAccount> listBankAccount=userBankAccountRepository.findByUser_Id(userId);
+//    	return ResponseEntity.ok(listBankAccount);
+//    }
+    
 }
