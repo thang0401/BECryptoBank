@@ -9,6 +9,7 @@ import com.cryptobank.backend.entity.Status;
 import com.cryptobank.backend.entity.UsdcVndTransaction;
 import com.cryptobank.backend.entity.User;
 import com.cryptobank.backend.entity.UserBankAccount;
+import com.cryptobank.backend.repository.DebitWalletDAO;
 import com.cryptobank.backend.repository.StatusDAO;
 import com.cryptobank.backend.repository.UsdcVndTransactionRepository;
 import com.cryptobank.backend.repository.UserDAO;
@@ -71,6 +72,9 @@ public class PaymentController {
     
     @Autowired
     private userBankAccountRepository userBankAccountRepository;
+    
+    @Autowired
+    private DebitWalletDAO debitWalletDAO;
 
     @PostMapping("/deposit")
     public ResponseEntity<Map<String, String>> deposit(@RequestBody DepositDTO requestBody) {
@@ -238,10 +242,13 @@ public class PaymentController {
         	return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Trạng thái hiện tại đã là Success");
         }
        
-
+        BigDecimal usdcOld=debitWalletDAO.findByUserId(Transaction.getUserId()).getFirst().getBalance();
+        BigDecimal usdcNew=debitWalletDAO.findByUserId(Transaction.getUserId()).getFirst().getBalance().add(transaction.getUsdcAmount());
         // Nếu trạng thái mới là "SUCCESS", cập nhật số dư
         if ("Sucesss".equalsIgnoreCase(Transaction.getNewStatus())) {
+        	//debitWalletService.updateUsdcBalance();
             debitWalletService.updateBalance(Transaction.getUserId(), transaction.getUsdcAmount());
+            debitWalletService.UpdateVNDBalance(usdcOld, usdcNew);
         }
 
         return ResponseEntity.ok("Trạng thái giao dịch đã được cập nhật thành: " + Transaction.getNewStatus());
