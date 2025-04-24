@@ -1,6 +1,7 @@
 package com.cryptobank.backend.controller;
 
 import com.cryptobank.backend.exception.AlreadyExistException;
+import com.cryptobank.backend.exception.JwtEmptyException;
 import com.cryptobank.backend.exception.ResourceNotFoundException;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
@@ -39,7 +40,7 @@ public class GlobalAdviceException {
         return new ResponseEntity<>(new ErrorMessage(ex.getMessage()), HttpStatus.CONFLICT);
     }
 
-    @ExceptionHandler({UsernameNotFoundException.class, ExpiredJwtException.class, JwtException.class})
+    @ExceptionHandler({UsernameNotFoundException.class, JwtException.class, JwtEmptyException.class})
     public ResponseEntity<ErrorMessage> handleUnauthorized(RuntimeException ex) {
         return new ResponseEntity<>(new ErrorMessage(ex.getMessage()), HttpStatus.UNAUTHORIZED);
     }
