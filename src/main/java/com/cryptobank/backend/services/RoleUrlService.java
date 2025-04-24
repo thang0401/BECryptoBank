@@ -9,9 +9,8 @@ import com.cryptobank.backend.exception.AlreadyExistException;
 import com.cryptobank.backend.exception.ResourceNotFoundException;
 import com.cryptobank.backend.mapper.RoleUrlMapper;
 import com.cryptobank.backend.repository.RoleUrlDAO;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -23,11 +22,11 @@ public class RoleUrlService {
     private final RoleService roleService;
     private final RoleUrlMapper mapper;
 
-    public Page<RoleUrlDTO> getAll(String roleId, Pageable pageable) {
+    public List<RoleUrlDTO> getAll(String roleId) {
         Specification<RoleUrl> spec = ignoreDeleted();
         if (roleId != null && !roleId.isBlank())
             spec = spec.and((root, query, cb) -> cb.equal(root.get("role").get("id"), roleId));
-        return dao.findAll(spec, pageable).map(mapper::toDTO);
+        return dao.findAll(spec).stream().map(mapper::toDTO).toList();
     }
 
     public RoleUrlDTO toResponseFromId(String id) {
