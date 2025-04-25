@@ -13,8 +13,10 @@ import eu.bitwalker.useragentutils.Browser;
 import eu.bitwalker.useragentutils.OperatingSystem;
 import eu.bitwalker.useragentutils.UserAgent;
 
+import jakarta.persistence.EntityManager;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 import org.apache.commons.lang3.RandomStringUtils;
@@ -46,6 +48,7 @@ public class AuthService {
     private final JwtUtil jwtUtil;
     private final GoogleIdTokenVerifier googleTokenVerifier;
     private final UserService userService;
+    private final EntityManager entityManager;
 
     // ---------------- LOGIN with Email/Password ------------------
     public UserAuthResponse loginWithEmail(String email, String password, boolean rememberMe, HttpServletRequest request,
@@ -131,8 +134,9 @@ public class AuthService {
     }
 
     // ---------------- LOGIN with Google ------------------
+    @Transactional
     public UserAuthResponse loginWithGoogle(String idToken, boolean rememberMe, HttpServletRequest request,
-            HttpSession session) {
+                                            HttpSession session) {
         try {
             GoogleIdToken token = googleTokenVerifier.verify(idToken);
             if (token == null) {
@@ -145,13 +149,18 @@ public class AuthService {
 
             User user = getOrCreateGoogleUser(payload, googleId);
             user.setLastLoginAt(OffsetDateTime.now());
-            userRepository.save(user);
+            user = userRepository.save(user);
+            System.out.println("User saved, userId: " + user.getId());
+            if (user.getId() == null) {
+                System.out.println("Error: userId is null after saving user");
+                throw new IllegalStateException("User ID is null after saving");
+            }
 
             String userAgent = request.getHeader("User-Agent");
             UserAgent ua = UserAgent.parseUserAgentString(userAgent);
             Browser browser = ua.getBrowser();
             OperatingSystem os = ua.getOperatingSystem();
-            
+
             DeviceInfo currentDevice = createDeviceInfo(session, browser, os, user, request);
             String currentBrowser = currentDevice.getBrowser();
             String currentOs = currentDevice.getOs();
@@ -160,8 +169,15 @@ public class AuthService {
             Optional<DeviceInfo> deviceOpt = deviceInfoRepository.findByInforOfDevice(currentDeviceName, currentBrowser,currentOs,user.getId());
             if (deviceOpt.isPresent()) {
                 if (!isDeviceInUse(user, deviceOpt.get())) {
+                    System.out.println("User ID before throwing exception (existing device): " + user.getId());
+                    if (user.getId() == null) {
+                        System.out.println("Error: userId is null before throwing OTP exception (existing device)");
+                        throw new IllegalStateException("User ID is null before throwing OTP exception");
+                    }
                     sendDeviceNotification(user, deviceOpt.get());
-                    throw new AuthException("OTP verification required");
+                    AuthException authException = new AuthException("OTP verification required", user.getId());
+                    System.out.println("AuthException created with userId: " + authException.getUserId());
+                    throw authException;
                 } else {
                     DeviceInfo device = deviceOpt.get();
                     device.setLastLoginAt(OffsetDateTime.now());
@@ -170,13 +186,18 @@ public class AuthService {
             } else {
                 DeviceInfo newDevice = createDeviceInfo(session, browser, os, user, request);
                 deviceInfoRepository.save(newDevice);
+                System.out.println("User ID before throwing exception (new device): " + user.getId());
+                if (user.getId() == null) {
+                    System.out.println("Error: userId is null before throwing OTP exception (new device)");
+                    throw new IllegalStateException("User ID is null before throwing OTP exception");
+                }
                 sendFirstLoginNotification(user, newDevice);
-                throw new AuthException("OTP verification required");
+                throw new AuthException("OTP verification required", user.getId());
             }
 
             String role = userService.getUserRole(user.getId())
-                .map(userRole -> userRole.getRole().getName())
-                .orElse("USER");
+                    .map(userRole -> userRole.getRole().getName())
+                    .orElse("USER");
 
             return buildUserAuthResponse(user, role, rememberMe);
         } catch (Exception e) {
@@ -187,7 +208,9 @@ public class AuthService {
     private User getOrCreateGoogleUser(GoogleIdToken.Payload payload, String googleId) {
         Optional<GoogleAuth> googleAuth = googleAuthRepository.findByGoogleId(googleId);
         if (googleAuth.isPresent()) {
-            return googleAuth.get().getUser();
+            User user = googleAuth.get().getUser();
+            System.out.println("Found existing GoogleAuth, userId: " + user.getId());
+            return user;
         }
 
         String email = payload.getEmail();
@@ -202,8 +225,11 @@ public class AuthService {
             user.setAvatar((String) payload.get("picture"));
             user.setPassword(passwordEncoder.encode(RandomStringUtils.randomAlphanumeric(10)));
             user.setCreatedAt(OffsetDateTime.now());
-            user = userRepository.save(user);
         }
+
+        user = userRepository.save(user);
+        entityManager.refresh(user); // Làm mới entity
+        System.out.println("User saved in getOrCreateGoogleUser, userId: " + user.getId());
 
         GoogleAuth newAuth = new GoogleAuth();
         newAuth.setGoogleId(googleId);
