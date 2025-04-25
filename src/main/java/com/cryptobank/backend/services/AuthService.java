@@ -51,10 +51,10 @@ public class AuthService {
     public UserAuthResponse loginWithEmail(String email, String password, boolean rememberMe, HttpServletRequest request,
             HttpSession session) {
         try {
-            int loginResult = handleLogin(email, password, request, session);
-            User user = Optional.ofNullable(userRepository.findByEmail(email))
-                .orElseThrow(() -> new AuthException("User not found"));
-
+        	User user = Optional.ofNullable(userRepository.findByEmail(email))
+                    .orElseThrow(() -> new AuthException("User not found"));
+            int loginResult = handleLogin(email, password, request, session,user.getId());
+            
             if (loginResult == 0) {
                 String role = userService.getUserRole(user.getId())
                     .map(userRole -> userRole.getRole().getName())
@@ -70,7 +70,7 @@ public class AuthService {
         }
     }
 
-    private int handleLogin(String email, String password, HttpServletRequest request, HttpSession session) {
+    private int handleLogin(String email, String password, HttpServletRequest request, HttpSession session,String userId) {
         User user =Optional.ofNullable(userRepository.findByEmail(email)).orElse(null);
         System.out.println(password);
         System.out.println(passwordEncoder.encode(password));
@@ -81,10 +81,6 @@ public class AuthService {
         {
         	throw new AuthException("Invalid Password");
         }
-//        System.out.println("Before "+user.getPassword());
-//        user.setPassword(new BCryptPasswordEncoder().encode("123456"));
-//        userRepository.save(user);
-//        System.out.println("After "+user.getPassword());
 
         String userAgent = request.getHeader("User-Agent");
         UserAgent ua = UserAgent.parseUserAgentString(userAgent);
@@ -112,7 +108,7 @@ public class AuthService {
                 return 0;
             } else {
                 // Nếu là thiết bị khác, tìm thiết bị theo device_id
-                Optional<DeviceInfo> deviceOpt = deviceInfoRepository.findByInforOfDevice(currentDeviceName,currentBrowser,currentOs);
+                Optional<DeviceInfo> deviceOpt = deviceInfoRepository.findByInforOfDevice(currentDeviceName,currentBrowser,currentOs,userId);
                 if (deviceOpt.isPresent()) {
                     // Thiết bị đã tồn tại nhưng chưa xác thực
                     sendDeviceNotification(user, deviceOpt.get());
@@ -161,7 +157,7 @@ public class AuthService {
             String currentOs = currentDevice.getOs();
             String currentDeviceName = currentDevice.getDeviceName();
 
-            Optional<DeviceInfo> deviceOpt = deviceInfoRepository.findByInforOfDevice(currentDeviceName, currentBrowser,currentOs);
+            Optional<DeviceInfo> deviceOpt = deviceInfoRepository.findByInforOfDevice(currentDeviceName, currentBrowser,currentOs,user.getId());
             if (deviceOpt.isPresent()) {
                 if (!isDeviceInUse(user, deviceOpt.get())) {
                     sendDeviceNotification(user, deviceOpt.get());
@@ -235,9 +231,9 @@ public class AuthService {
         return deviceInfoRepository.findByDeviceIdAndUser(deviceId, user);
     }
     
-    public Optional<DeviceInfo> findByInforOfDevice(String currentDeviceName,String currentBrowser,String currentOs)
+    public Optional<DeviceInfo> findByInforOfDevice(String currentDeviceName,String currentBrowser,String currentOs,String currentUserId)
     {
-    	return deviceInfoRepository.findByInforOfDevice(currentDeviceName, currentBrowser, currentOs);
+    	return deviceInfoRepository.findByInforOfDevice(currentDeviceName, currentBrowser, currentOs,currentUserId);
     }
 
     public void saveDevice(DeviceInfo device) {
