@@ -28,5 +28,7 @@ public interface DebitWalletDAO extends JpaRepository<DebitWallet,String>{
 	@Modifying
 	@Query("UPDATE DebitWallet d SET d.balance = d.balance - :amount WHERE d.user.id = :userId AND d.balance >= :amount")
 	void decreaseBalanceByUserId(@Param("userId") String userId, @Param("amount") BigDecimal amount);
+	
+	
 
 }

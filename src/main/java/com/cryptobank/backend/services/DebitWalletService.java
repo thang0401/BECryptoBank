@@ -39,6 +39,14 @@ public class DebitWalletService {
     }
     
     @Transactional
+    public void decreaseBalance(String userId, BigDecimal newBalance) {
+    	debitWalletRepository.decreaseBalanceByUserId(userId, newBalance);
+        entityManager.flush();
+        entityManager.clear();
+    }
+    
+    //Không dùng
+    @Transactional
     public void updateUsdcBalance() {
         // Kiểm tra exchangeRate
     	Double exchangeRate=exchangeRateService.getUsdcVndRate();
