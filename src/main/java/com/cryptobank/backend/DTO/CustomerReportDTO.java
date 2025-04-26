@@ -9,5 +9,6 @@ public class CustomerReportDTO {
     private int    priority;
     private String description;
     private String title;
+    private String reportedBy;
     private String documentLink;
 }

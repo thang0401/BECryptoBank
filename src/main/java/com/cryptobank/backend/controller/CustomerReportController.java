@@ -22,6 +22,8 @@ import lombok.AllArgsConstructor;
 
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 
 
@@ -35,9 +37,10 @@ public class CustomerReportController {
     ReportCategoryDAO reportCategoryDAO;
 
     @GetMapping("/GetAll")
-    public ResponseEntity<List<CustomerReport>> getAllCustomerReport() {
+    public ResponseEntity<?> getAllCustomerReport() {
         List<CustomerReport> reportList=reportDAO.findAll();
-        return ResponseEntity.ok(reportList);
+        //Create DTO for custom response cause 
+        return ResponseEntity.ok("reportList");
     }
 
     @PostMapping("/IssueReport")
@@ -47,6 +50,13 @@ public class CustomerReportController {
         reportDAO.save(cusreport);
         return ResponseEntity.ok("successfull");
     }
+
+    @GetMapping("/User/Report")
+    public ResponseEntity<?> getUserReport(@RequestParam String id) {
+        List<CustomerReport> userReportList=reportDAO.findAllByReportedByAndDeleted(id, false);
+        return ResponseEntity.ok(userReportList);
+    }
+    
 
     @PostMapping("path")
     public String ResolveReport(@RequestBody String entity) {
@@ -77,6 +87,7 @@ public class CustomerReportController {
         customerReport.setStatus(status);
         customerReport.setCategory(reportCategory);
         customerReport.setDescription(entity.getDescription());
+        customerReport.setReportedBy(entity.getReportedBy());
         customerReport.setDocumentLink(entity.getDocumentLink());
         customerReport.setPriority(entity.getPriority());
         customerReport.setTransactionID(entity.getTransactionID());

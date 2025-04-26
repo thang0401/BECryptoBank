@@ -20,22 +20,29 @@ import lombok.Setter;
 @Table(name="customer_issue_report")
 public class CustomerReport extends BaseEntity{
      @Column(name="title")
-     private String Title;
+     private String title;
+
      @ManyToOne(fetch = FetchType.LAZY)
      @JoinColumn(name = "category_id")
-     private ReportCategory Category;
+     private ReportCategory category;
+
      @Column(name="description")
-     private String Description;
+     private String description;
+     
      @ManyToOne(fetch = FetchType.LAZY)
      @JoinColumn(name = "status_id")
-     private Status Status;
+     private Status status;
+
      @ManyToOne(fetch = FetchType.LAZY)
      @JoinColumn(name="issue_to")
-     private Employee IssueTo;
+     private Employee issueTo;
+
      @Column(name="document_link")
-     private String DocumentLink=null;
+     private String documentLink=null;
      @Column(name="transaction_id")
-     private String TransactionID=null;
+     private String transactionID=null;
      @Column(name="priority")
-     private int Priority;
+     private int priority;
+     @Column(name="reported_by")
+     private String reportedBy;
 }
