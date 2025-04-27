@@ -30,7 +30,7 @@ public class KycController {
 	{
 		// lưu thông tin user kyc
 		try {
-			User userKYC = userService.getUserEntity(userId);
+			User userKYC = userService.getUserById(userId);
 			userKYC.setFirstName(request.getFirstName());
 			userKYC.setLastName(request.getLastName());
 			userKYC.setGender(request.getGender());
@@ -52,7 +52,7 @@ public class KycController {
 			userDao.save(userKYC);
 			return ResponseEntity.ok("Xác thực người dùng thành công");
 		} catch (Exception e) {
-			return ResponseEntity.status(401).body("Xác thực người dùng (KYC) thất bại");
+			return ResponseEntity.status(401).body("Xác thực người dùng (KYC) thất bại ("+e.getMessage()+")");
 		}
 		
 	}

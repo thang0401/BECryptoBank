@@ -2,9 +2,13 @@ package com.cryptobank.backend.controller;
 
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
+import com.cryptobank.backend.DTO.*;
+import com.cryptobank.backend.utils.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,13 +21,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.cryptobank.backend.DTO.AuthResponse;
-import com.cryptobank.backend.DTO.GoogleLoginRequest;
-import com.cryptobank.backend.DTO.LoginRequestAuth;
-import com.cryptobank.backend.DTO.NameSplit;
-import com.cryptobank.backend.DTO.OtpRequest;
-import com.cryptobank.backend.DTO.ResetPasswordRequest;
-import com.cryptobank.backend.DTO.UserAuthResponse;
 import com.cryptobank.backend.entity.DeviceInfo;
 import com.cryptobank.backend.entity.User;
 import com.cryptobank.backend.entity.UserOtp;
@@ -33,6 +30,7 @@ import com.cryptobank.backend.repository.UserDAO;
 import com.cryptobank.backend.repository.UserOtpRepository;
 import com.cryptobank.backend.services.AuthService;
 import com.cryptobank.backend.services.UserService;
+
 
 import jakarta.security.auth.message.AuthException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -62,6 +60,10 @@ public class AuthController {
     
     @Autowired
     private UserOtpRepository userOtpRepository;
+
+    @Autowired
+    private JwtUtil jwtUtil; // Inject JwtUtil
+
 
     public String encodePassword(String password) {
         return passwordEncoder.encode(password);
@@ -109,7 +111,11 @@ public class AuthController {
             return ResponseEntity.ok(response);
         } catch (com.cryptobank.backend.exception.AuthException e) {
             if ("Google login failed: OTP verification required".contains(e.getMessage())) {
-                return ResponseEntity.status(HttpStatus.ACCEPTED).body("Đưa đến trang nhập mã OTP xác thực");
+                Map<String, String> responseBody = new HashMap<>();
+                responseBody.put("message", "Đưa đến trang nhập mã OTP xác thực");
+                // Lưu userId vào session
+                session.setAttribute("otpUserId", e.getUserId());
+                return ResponseEntity.status(HttpStatus.ACCEPTED).body(responseBody);
             }
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Google login failed: " + e.getMessage());
         } catch (Exception e) {
@@ -127,14 +133,28 @@ public class AuthController {
             String otp = request.getOtp();
             boolean rememberMe = request.isRememberMe();
 
-            User user = userRepository.findById(userId)
-                .orElseThrow(() -> new AuthException("User not found"));
-
-            // Xác thực OTP
-            if (!authService.verifyOTP(user, otp)) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid OTP");
+            if (userId == null || otp == null) {
+                return ResponseEntity.badRequest().body("Thiếu tham số: user_id hoặc otp");
             }
-            
+
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new AuthException("Không tìm thấy người dùng với ID: " + userId));
+
+            // Kiểm tra OTP và thời gian hết hạn
+            UserOtp userOtp = userOtpRepository.findByUserId(userId);
+            if (userOtp == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Mã OTP không tồn tại");
+            }
+            if (userOtp.getTimeEnd().isBefore(LocalDateTime.now())) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Mã OTP đã hết hạn");
+            }
+            if (!authService.verifyOTP(user, otp)) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Mã OTP không hợp lệ");
+            }
+
+            // Xóa OTP sau khi xác minh thành công
+            userOtpRepository.delete(userOtp);
+
             String userAgent = servletRequest.getHeader("User-Agent");
             UserAgent ua = UserAgent.parseUserAgentString(userAgent);
             Browser browser = ua.getBrowser();
@@ -144,24 +164,21 @@ public class AuthController {
             String currentOs = os.getName();
             String currentDeviceName = "Unknown Device";
             if (userAgent != null && !userAgent.isBlank()) {
-                // Suy ra loại thiết bị từ User-Agent
                 if (userAgent.toLowerCase().contains("mobile")) {
-                	currentDeviceName = "Mobile Device";
+                    currentDeviceName = "Mobile Device";
                 } else if (userAgent.contains("Windows")) {
-                	currentDeviceName = "Windows PC";
-                } 
-                else if (userAgent.contains("iPhone")) {
-                	currentDeviceName = "iPhone Device";
-                }else if (userAgent.contains("Macintosh")) {
-                	currentDeviceName = "Mac";
+                    currentDeviceName = "Windows PC";
+                } else if (userAgent.contains("iPhone")) {
+                    currentDeviceName = "iPhone Device";
+                } else if (userAgent.contains("Macintosh")) {
+                    currentDeviceName = "Mac";
                 }
-                
             }
 
             // Cập nhật DeviceInfo
-            Optional<DeviceInfo> deviceOpt = authService.findByInforOfDevice(currentDeviceName, currentBrowser, currentOs);
+            Optional<DeviceInfo> deviceOpt = authService.findByInforOfDevice(currentDeviceName, currentBrowser, currentOs,userId);
             if (!deviceOpt.isPresent()) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Device not found");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Không tìm thấy thiết bị");
             }
 
             DeviceInfo device = deviceOpt.get();
@@ -174,19 +191,26 @@ public class AuthController {
                 otherDevice.setInUse(false);
                 authService.saveDevice(otherDevice);
             }
-            
+
             // Đặt in_use = true cho thiết bị hiện tại
             device.setLastLoginAt(OffsetDateTime.now());
             device.setInUse(true);
             authService.saveDevice(device);
 
-            // Trả về thông tin user
+            // Tạo token với thông tin người dùng
             String role = userService.getUserRole(user.getId())
-                .map(userRole -> userRole.getRole().getName())
-                .orElse("USER");
-            return ResponseEntity.ok(buildUserAuthResponse(user, role, rememberMe));
+                    .map(userRole -> userRole.getRole().getName())
+                    .orElse("USER");
+            UserInformation userInformation = userService.convertToUserInformation(user); // Chuyển User thành UserInformation
+            String accessToken = jwtUtil.generateToken(userInformation, 1000 * 60 * 30); // 30 phút
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("accessToken", accessToken);
+            response.put("userData", buildUserAuthResponse(user, role, rememberMe));
+
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("OTP verification failed: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Xác minh OTP thất bại: " + e.getMessage());
         }
     }
 
@@ -238,7 +262,7 @@ public class AuthController {
             }
            
             // Cập nhật DeviceInfo
-            Optional<DeviceInfo> deviceOpt = authService.findByInforOfDevice(currentDeviceName, currentBrowser, currentOs);
+            Optional<DeviceInfo> deviceOpt = authService.findByInforOfDevice(currentDeviceName, currentBrowser, currentOs,user.getId());
             if (!deviceOpt.isPresent()) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Device not found");
             }

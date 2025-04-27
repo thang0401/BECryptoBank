@@ -1,13 +1,16 @@
 package com.cryptobank.backend.controller;
 
+import com.cryptobank.backend.DTO.DepositDTO;
 import com.cryptobank.backend.DTO.UsdcVndTransactionDTO;
 import com.cryptobank.backend.DTO.transactionsConfirmDTO;
 import com.cryptobank.backend.DTO.withdrawDTO;
 import com.cryptobank.backend.DTO.withdrawStatusDTO;
+import com.cryptobank.backend.entity.DebitWallet;
 import com.cryptobank.backend.entity.Status;
 import com.cryptobank.backend.entity.UsdcVndTransaction;
 import com.cryptobank.backend.entity.User;
 import com.cryptobank.backend.entity.UserBankAccount;
+import com.cryptobank.backend.repository.DebitWalletDAO;
 import com.cryptobank.backend.repository.StatusDAO;
 import com.cryptobank.backend.repository.UsdcVndTransactionRepository;
 import com.cryptobank.backend.repository.UserDAO;
@@ -70,28 +73,26 @@ public class PaymentController {
     
     @Autowired
     private userBankAccountRepository userBankAccountRepository;
+    
+    @Autowired
+    private DebitWalletDAO debitWalletDAO;
 
     @PostMapping("/deposit")
-    public ResponseEntity<Map<String, String>> deposit(@RequestBody Map<String, Object> requestBody) {
-        String orderId = (String) requestBody.get("orderId");
-        Double amount = Double.valueOf(requestBody.get("amount").toString());
-        String description = (String) requestBody.get("description");
-        String returnUrl = (String) requestBody.get("returnUrl");
-        String cancelUrl = (String) requestBody.get("cancelUrl");
-        String userId = (String) requestBody.get("userId"); // Lấy user_id từ requestBody
+    public ResponseEntity<Map<String, String>> deposit(@RequestBody DepositDTO requestBody) {
+       
 
         // Kiểm tra user_id
-        if (userId == null || userId.trim().isEmpty()) {
+        if (requestBody.getUserId() == null || requestBody.getUserId().trim().isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("error", "userId không được để trống"));
         }
 
         // Kiểm tra user trong DB
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy user với ID: " + userId));
+        User user = userRepository.findById(requestBody.getUserId())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy user với ID: " + requestBody.getUserId()));
 
         // Gọi depositToPayOS với userId
-        Map<String, String> response = bankTransferService.depositToPayOS(orderId, amount, description, returnUrl, cancelUrl, userId);
+        Map<String, String> response = bankTransferService.depositToPayOS(requestBody.getOrderId(), requestBody.getAmount(), requestBody.getDescription(), requestBody.getReturnUrl(), requestBody.getCancelUrl(), requestBody.getUserId());
         return ResponseEntity.ok(response);
     }
 
@@ -206,14 +207,99 @@ public class PaymentController {
 
     //API Admin xác nhận yêu cầu rút tiền
     @PostMapping("/transactions/update-status")
-    public ResponseEntity<Map<String, String>> updateTransactionStatus(
+    public ResponseEntity<String> updateTransactionStatus(
             @RequestBody withdrawStatusDTO withdrawStatus) {
 
-        Map<String, String> response = bankTransferService.updateTransactionStatus(withdrawStatus.getTransactionId(), withdrawStatus.getNewStatus(), withdrawStatus.getBankAccountId());
-        return ResponseEntity.ok(response);
+//        Map<String, String> response = bankTransferService.updateTransactionStatus(withdrawStatus.getTransactionId(), withdrawStatus.getNewStatus(), withdrawStatus.getBankAccountId());
+//        return ResponseEntity.ok(response);
+    	String transactionId=withdrawStatus.getTransactionId();
+    	String newStatus=withdrawStatus.getNewStatus();
+    	Long bankAccountId=withdrawStatus.getBankAccountId();
+    	try {
+		 	// Tìm giao dịch
+	        UsdcVndTransaction transaction = transactionRepository.findById(transactionId)
+	            .orElseThrow(() -> new RuntimeException("Không tìm thấy giao dịch với ID: " + transactionId));
+	        
+	        System.out.println("Lấy trạng thái mới từ db");
+	        // Lấy trạng thái mới từ DB
+	        Status status = statusRepository.findByName(newStatus)
+	        		.stream()
+	        		.findFirst()
+	        	    .orElseThrow(() -> new RuntimeException("Không tìm thấy trạng thái: " + newStatus));
+
+	        // Cập nhật trạng thái giao dịch
+	        if(transaction.getStatus().getName().equalsIgnoreCase(status.getName()))
+	        {
+	        	return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Đơn yêu cầu trên vốn đã được duyệt");
+	        }
+	        else
+	        {
+	        	transaction.setStatus(status);
+    	        transactionRepository.save(transaction);
+	        }
+	        
+	        System.out.println("Thực hiện rút tiền");
+	        // Nếu giao dịch được duyệt, thực hiện rút tiền
+	        if ("Sucesss".equals(newStatus)) {
+	            DebitWallet debitWallet = transaction.getDebitWallet();
+	            BigDecimal usdcAmount = transaction.getUsdcAmount();
+
+	            if (debitWallet.getBalance().compareTo(usdcAmount) < 0) {
+	                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Số dư không đủ!");
+	            }
+
+	            System.out.println("thực hiện truy vấn user_bank_account");
+	            System.out.println("BankAccountID: "+bankAccountId);
+	            
+	            // Nếu không chọn bankAccountId, lấy tài khoản ngân hàng mới nhất
+	            UserBankAccount bankAccount;
+	            if (bankAccountId != null) {
+	                bankAccount = userBankAccountRepository.findById(bankAccountId)
+	                    .orElseGet(() -> userBankAccountRepository
+	                        .findFirstByUserIdOrderByUpdatedAtDescCreatedAtDesc(debitWallet.getUser().getId())
+	                        .orElseThrow(() -> new RuntimeException("Người dùng chưa có tài khoản ngân hàng nào!")));
+	            } else {
+	                bankAccount = userBankAccountRepository
+	                    .findFirstByUserIdOrderByUpdatedAtDescCreatedAtDesc(debitWallet.getUser().getId())
+	                    .orElseThrow(() -> new RuntimeException("Người dùng chưa có tài khoản ngân hàng nào!"));
+	            }
+	            System.out.println("debitWalletuser: "+debitWallet.getUser().getId());
+	            System.out.println("thực hiện truy vấn user");
+	            String userId=debitWallet.getUser().getId();
+	            BigDecimal usdcOld=debitWalletDAO.findByUserId(userId).getFirst().getBalance();
+	            BigDecimal usdcNew=debitWalletDAO.findByUserId(userId).getFirst().getBalance().subtract(usdcAmount);
+	            System.out.println("USDC Cũ: "+usdcOld);
+	            System.out.println("USDC Mới: "+usdcNew);
+	            System.out.println("Trừ số dư USDC trong ví");
+	            // Trừ số dư USDC trong ví
+	            //debitWallet.setBalance(debitWallet.getBalance().subtract(usdcAmount));
+	            debitWalletService.decreaseBalance(debitWallet.getUser().getId(), usdcAmount);
+	            debitWalletService.UpdateVNDBalance(usdcOld, usdcNew);
+//	            debitWalletRepository.save(debitWallet);
+
+	            // Gửi yêu cầu rút tiền đến PayOS
+//	            Map<String, String> payosResponse = payosService.withdraw(
+//	                transaction.getVndAmount(), 
+//	                bankAccount.getAccountNumber(), 
+//	                bankAccount.getBankCode()
+//	            );
+//
+//	            if (payosResponse.containsKey("error")) {
+//	                responseBody.put("error", "Lỗi khi gửi yêu cầu rút tiền: " + payosResponse.get("error"));
+//	                return responseBody;
+//	            }
+	        } else if ("Failed".equalsIgnoreCase(newStatus)) {
+	            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Giao dịch đã bị từ chối!");
+	        }
+
+	        
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Lỗi khi tạo giao dịch: " + e.getMessage());
+		}
+    	return ResponseEntity.ok("Giao dịch đã được duyệt và tiền đang được chuyển!");
     }
 
-    // API để cập nhật trạng thái và cập nhật số dư nạp tiền 
+    // APIAdmin xác nhận yêu cầu nạp tiền 
     @PutMapping("/transactions/confirm")
     public ResponseEntity<String> confirmTransaction(
             @RequestBody transactionsConfirmDTO Transaction) {
@@ -242,10 +328,13 @@ public class PaymentController {
         	return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Trạng thái hiện tại đã là Success");
         }
        
-
+        BigDecimal usdcOld=debitWalletDAO.findByUserId(Transaction.getUserId()).getFirst().getBalance();
+        BigDecimal usdcNew=debitWalletDAO.findByUserId(Transaction.getUserId()).getFirst().getBalance().add(transaction.getUsdcAmount());
         // Nếu trạng thái mới là "SUCCESS", cập nhật số dư
         if ("Sucesss".equalsIgnoreCase(Transaction.getNewStatus())) {
+        	//debitWalletService.updateUsdcBalance();
             debitWalletService.updateBalance(Transaction.getUserId(), transaction.getUsdcAmount());
+            debitWalletService.UpdateVNDBalance(usdcOld, usdcNew);
         }
 
         return ResponseEntity.ok("Trạng thái giao dịch đã được cập nhật thành: " + Transaction.getNewStatus());
