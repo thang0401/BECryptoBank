@@ -42,7 +42,6 @@ public class KycController {
 			userKYC.setProvince(request.getProvince());
 			userKYC.setIdCardFrontImgUrl(request.getIdCardFrontImgUrl());
 			userKYC.setIdCardBackImgUrl(request.getIdCardBackImgUrl());
-			userKYC.setEmail(request.getEmail());
 			userKYC.setNation(request.getNation());
 			userKYC.setIdCardNumber(request.getIdNumber());
 			if (userKYC.getStatus() == null) {
