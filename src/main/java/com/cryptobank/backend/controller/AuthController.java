@@ -176,7 +176,7 @@ public class AuthController {
             }
 
             // Cập nhật DeviceInfo
-            Optional<DeviceInfo> deviceOpt = authService.findByInforOfDevice(currentDeviceName, currentBrowser, currentOs);
+            Optional<DeviceInfo> deviceOpt = authService.findByInforOfDevice(currentDeviceName, currentBrowser, currentOs,userId);
             if (!deviceOpt.isPresent()) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Không tìm thấy thiết bị");
             }
@@ -262,7 +262,7 @@ public class AuthController {
             }
            
             // Cập nhật DeviceInfo
-            Optional<DeviceInfo> deviceOpt = authService.findByInforOfDevice(currentDeviceName, currentBrowser, currentOs);
+            Optional<DeviceInfo> deviceOpt = authService.findByInforOfDevice(currentDeviceName, currentBrowser, currentOs,user.getId());
             if (!deviceOpt.isPresent()) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Device not found");
             }

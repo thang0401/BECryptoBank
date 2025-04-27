@@ -29,7 +29,7 @@ public class ExchangeRateService {
 	                }
 	            } else {
 	                System.err.println("Không nhận được dữ liệu tỷ giá USD Coin");
-	                return 25885.0;  // Giá trị mặc định
+	                return 26000.0;  // Giá trị mặc định
 	            }
 	        } catch (Exception e) {
 	            e.printStackTrace();
