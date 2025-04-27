@@ -48,10 +48,6 @@ public interface UserDAO extends JpaRepository<User, String>, JpaSpecificationEx
             "AND u.deleted = false")
     List<User> findByName(@Param("name") String name);
 
-    @Query("SELECT new com.cryptobank.backend.model.CustomerUserDetails(u.email, u.password, 'ROLE_USER') FROM User u " +
-            "WHERE u.email = :email AND u.deleted = false")
-    CustomerUserDetails authenticate(String email);
-
     @Query("SELECT u FROM User u WHERE u.deleted = false")
     Page<User> findAllNotDeleted(Pageable pageable);
 

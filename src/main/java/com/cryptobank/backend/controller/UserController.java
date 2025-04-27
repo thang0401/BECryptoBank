@@ -7,6 +7,7 @@ import com.cryptobank.backend.DTO.request.PageParamRequest;
 import com.cryptobank.backend.DTO.request.UserSearchParamRequest;
 import com.cryptobank.backend.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping(value = "/api/users", produces = MediaType.APPLICATION_JSON_VALUE)
 @RequiredArgsConstructor
 @Tag(name = "User", description = "Người dùng")
+@SecurityRequirement(name = "Bearer Authorization")
 public class UserController {
 
 	private final UserService userService;
