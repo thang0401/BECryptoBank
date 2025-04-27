@@ -30,4 +30,5 @@ public class UserInformation {
     private Boolean kycStatus;
     private Boolean hasAcceptedTerms;
     private OffsetDateTime lastLoginAt;
+    private OffsetDateTime createdAt;
 }
