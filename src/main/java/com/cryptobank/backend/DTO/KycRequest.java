@@ -11,6 +11,7 @@ import java.time.OffsetDateTime;
 public class KycRequest {
 	private String fullName;
 	private String firstName;
+	private String middleName;
 	private String lastName;
 	private String address;
 	private OffsetDateTime dateOfBirth;
