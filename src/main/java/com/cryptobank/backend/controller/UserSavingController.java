@@ -1,6 +1,5 @@
 package com.cryptobank.backend.controller;
 
-
 import java.util.List;
 import java.util.UUID;
 
@@ -9,9 +8,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import com.cryptobank.backend.DTO.UserSavingAccountDTO.InformationFormPostRequestDTO;
-
 import com.cryptobank.backend.DTO.UserSavingAccountDTO.InformationFormResponseDTO;
 import com.cryptobank.backend.entity.DebitWallet;
 import com.cryptobank.backend.entity.SavingAccount;
@@ -24,22 +24,7 @@ import com.cryptobank.backend.repository.UserDAO;
 import com.cryptobank.backend.services.WithdrawService;
 import com.cryptobank.backend.services.AccruedInterestService;
 
-
-import jakarta.servlet.http.HttpSession;
 import lombok.AllArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.UUID;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-
-
-
 
 @RestController
 @AllArgsConstructor

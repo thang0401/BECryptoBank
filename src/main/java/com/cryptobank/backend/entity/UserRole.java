@@ -8,10 +8,10 @@ import lombok.Setter;
 @Setter
 @Entity
 @Table(
-        name = "user_role",
-        uniqueConstraints = {
-                @UniqueConstraint(columnNames = {"role_id", "user_id"})
-        }
+    name = "user_role",
+    uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"role_id", "user_id"})
+    }
 )
 public class UserRole extends BaseEntity {
 
@@ -19,7 +19,7 @@ public class UserRole extends BaseEntity {
     @JoinColumn(name = "role_id")
     private Role role;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
 
