@@ -16,8 +16,12 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 )
 public interface ReferralBonusMapper {
 
-    @Mapping(target = "user", source = "user.email")
-    @Mapping(target = "referralUser", source = "referralUser.email")
+    @Mapping(target = "user.id", source = "user.id")
+    @Mapping(target = "user.fullName", source = "user.fullName")
+    @Mapping(target = "user.email", source = "user.email")
+    @Mapping(target = "referralUser.id", source = "referralUser.id")
+    @Mapping(target = "referralUser.fullName", source = "referralUser.fullName")
+    @Mapping(target = "referralUser.email", source = "referralUser.email")
     @Mapping(target = "status", source = "status.name")
     ReferralBonusDTO toDTO(ReferralBonus employee);
 

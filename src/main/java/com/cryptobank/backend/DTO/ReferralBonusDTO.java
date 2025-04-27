@@ -6,8 +6,15 @@ import lombok.Value;
 @Value
 public class ReferralBonusDTO {
     String id;
-    String user;
     BigDecimal bonusAmount;
     String status;
-    String referralUser;
+    UserReferralBonusDTO user;
+    UserReferralBonusDTO referralUser;
+
+    @Value
+    public static class UserReferralBonusDTO {
+        String id;
+        String fullName;
+        String email;
+    }
 }
