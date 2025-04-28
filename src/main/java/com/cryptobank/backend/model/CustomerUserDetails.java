@@ -17,7 +17,7 @@ public class CustomerUserDetails implements UserDetails {
     public CustomerUserDetails(String username, List<String> roles) {
         this.username = username;
         this.password = "";
-        this.authorities = roles.stream().map(SimpleGrantedAuthority::new).toList();
+        this.authorities = roles.stream().map(role -> new SimpleGrantedAuthority("ROLE_" + role)).toList();
     }
 
 }

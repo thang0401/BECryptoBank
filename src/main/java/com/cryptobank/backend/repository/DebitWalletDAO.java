@@ -18,6 +18,9 @@ import java.util.Optional;
 public interface DebitWalletDAO extends JpaRepository<DebitWallet,String>{
 	DebitWallet findByWalletAddress(String walletAddress);
 	List<DebitWallet> findByUserId(String userId);
+	
+	@Query("SELECT d FROM DebitWallet d WHERE d.user.id=:userId")
+	DebitWallet findByOneUserId(String userId);
     
     //Optional<DebitWallet> findByUserDebitId(String userId);
 	
