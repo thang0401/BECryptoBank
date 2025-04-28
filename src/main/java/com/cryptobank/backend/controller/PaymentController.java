@@ -11,7 +11,6 @@ import com.cryptobank.backend.entity.UsdcVndTransaction;
 import com.cryptobank.backend.entity.User;
 import com.cryptobank.backend.entity.UserBankAccount;
 import com.cryptobank.backend.repository.DebitWalletDAO;
-import com.cryptobank.backend.repository.StatusDAO;
 import com.cryptobank.backend.repository.UsdcVndTransactionRepository;
 import com.cryptobank.backend.repository.UserDAO;
 import com.cryptobank.backend.repository.userBankAccountRepository;
@@ -19,10 +18,10 @@ import com.cryptobank.backend.services.BankTransferService2;
 import com.cryptobank.backend.services.DebitWalletService;
 import com.cryptobank.backend.services.ExchangeRateService;
 import com.cryptobank.backend.services.PaymentService;
+import com.cryptobank.backend.services.StatusService;
 import com.cryptobank.backend.services.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import org.simpleframework.xml.Path;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,7 +34,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -66,7 +64,7 @@ public class PaymentController {
     private UsdcVndTransactionRepository transactionRepository;
 
     @Autowired
-    private StatusDAO statusRepository;
+    private StatusService statusService;
 
     @Autowired
     private PayOS payos;
@@ -153,8 +151,7 @@ public class PaymentController {
 
             // Mặc định status là PAID vì webhook không có trường statusp
             String transactionStatus = "Pending";
-            Status dbStatus = statusRepository.findByName(transactionStatus)
-                    .orElseThrow(() -> new RuntimeException("Không tìm thấy trạng thái: " + transactionStatus));
+            Status dbStatus = statusService.getById(transactionStatus);
 
             if (transactionRepository.findById(transactionId).isPresent()) {
                 return ResponseEntity.ok("Giao dịch đã được xử lý trước đó: " + transactionStatus);
@@ -222,10 +219,7 @@ public class PaymentController {
 	        
 	        System.out.println("Lấy trạng thái mới từ db");
 	        // Lấy trạng thái mới từ DB
-	        Status status = statusRepository.findByName(newStatus)
-	        		.stream()
-	        		.findFirst()
-	        	    .orElseThrow(() -> new RuntimeException("Không tìm thấy trạng thái: " + newStatus));
+	        Status status = statusService.getById(newStatus);
 
 	        // Cập nhật trạng thái giao dịch
 	        if(transaction.getStatus().getName().equalsIgnoreCase(status.getName()))
@@ -240,7 +234,7 @@ public class PaymentController {
 	        
 	        System.out.println("Thực hiện rút tiền");
 	        // Nếu giao dịch được duyệt, thực hiện rút tiền
-	        if ("Sucesss".equals(newStatus)) {
+	        if ("cvvvehbme6nnaun2s4ag".equals(newStatus)) { //Transaction Status
 	            DebitWallet debitWallet = transaction.getDebitWallet();
 	            BigDecimal usdcAmount = transaction.getUsdcAmount();
 
@@ -288,7 +282,7 @@ public class PaymentController {
 //	                responseBody.put("error", "Lỗi khi gửi yêu cầu rút tiền: " + payosResponse.get("error"));
 //	                return responseBody;
 //	            }
-	        } else if ("Failed".equalsIgnoreCase(newStatus)) {
+	        } else if ("cvvvem3me6nnaun2s4b0".equalsIgnoreCase(newStatus)) {
 	            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Giao dịch đã bị từ chối!");
 	        }
 
@@ -314,8 +308,7 @@ public class PaymentController {
         }
 
         // Tìm Status theo tên
-        Status status = statusRepository.findByName(Transaction.getNewStatus())
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy trạng thái: " + Transaction.getNewStatus()));
+        Status status = statusService.getById(Transaction.getNewStatus());
 
         // Cập nhật trạng thái
         if(!status.getName().equalsIgnoreCase(transaction.getStatus().getName()))
@@ -331,13 +324,13 @@ public class PaymentController {
         BigDecimal usdcOld=debitWalletDAO.findByUserId(Transaction.getUserId()).getFirst().getBalance();
         BigDecimal usdcNew=debitWalletDAO.findByUserId(Transaction.getUserId()).getFirst().getBalance().add(transaction.getUsdcAmount());
         // Nếu trạng thái mới là "SUCCESS", cập nhật số dư
-        if ("Sucesss".equalsIgnoreCase(Transaction.getNewStatus())) {
+        if ("cvvvehbme6nnaun2s4ag".equalsIgnoreCase(Transaction.getNewStatus())) {
         	//debitWalletService.updateUsdcBalance();
             debitWalletService.updateBalance(Transaction.getUserId(), transaction.getUsdcAmount());
             debitWalletService.UpdateVNDBalance(usdcOld, usdcNew);
         }
 
-        return ResponseEntity.ok("Trạng thái giao dịch đã được cập nhật thành: " + Transaction.getNewStatus());
+        return ResponseEntity.ok("Trạng thái giao dịch đã được cập nhật thành: " + status.getName());
     }
     
  // API lấy tất cả giao dịch của một userId
@@ -394,8 +387,7 @@ public class PaymentController {
     // API lấy tất cả giao dịch có trạng thái PENDING
     @GetMapping("/transactions/pending")
     public ResponseEntity<List<UsdcVndTransactionDTO>> getPendingTransactions() {
-        Status pendingStatus = Optional.ofNullable(statusRepository.findById("cvvveejme6nnaun2s4a0"))
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy trạng thái: PENDING")).get();
+        Status pendingStatus = statusService.getById("cvvveejme6nnaun2s4a0"); //success
 
         List<UsdcVndTransaction> pendingTransactions = transactionRepository.findByStatus(pendingStatus);
         List<UsdcVndTransactionDTO> transactionDTOs = pendingTransactions.stream()

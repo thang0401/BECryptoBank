@@ -31,7 +31,6 @@ import com.cryptobank.backend.repository.UserOtpRepository;
 import com.cryptobank.backend.services.AuthService;
 import com.cryptobank.backend.services.UserService;
 
-
 import jakarta.security.auth.message.AuthException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -54,16 +53,15 @@ public class AuthController {
 
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
-    
+
     @Autowired
     private DeviceInforDAO deviceInfoRepository;
-    
+
     @Autowired
     private UserOtpRepository userOtpRepository;
 
     @Autowired
-    private JwtUtil jwtUtil; // Inject JwtUtil
-
+    private JwtUtil jwtUtil;
 
     public String encodePassword(String password) {
         return passwordEncoder.encode(password);
@@ -111,10 +109,12 @@ public class AuthController {
             return ResponseEntity.ok(response);
         } catch (com.cryptobank.backend.exception.AuthException e) {
             if ("Google login failed: OTP verification required".contains(e.getMessage())) {
+                System.out.println("OTP required, user_id: " + e.getUserId());
                 Map<String, String> responseBody = new HashMap<>();
                 responseBody.put("message", "Đưa đến trang nhập mã OTP xác thực");
-                // Lưu userId vào session
-                session.setAttribute("otpUserId", e.getUserId());
+                if (e.getUserId() != null) {
+                    session.setAttribute("otpUserId", e.getUserId());
+                }
                 return ResponseEntity.status(HttpStatus.ACCEPTED).body(responseBody);
             }
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Google login failed: " + e.getMessage());
@@ -129,22 +129,24 @@ public class AuthController {
             HttpServletRequest servletRequest,
             HttpSession session) {
         try {
-            String userId = request.getUser_id();
+            String gmail = request.getGmail();
             String otp = request.getOtp();
             boolean rememberMe = request.isRememberMe();
 
-            if (userId == null || otp == null) {
-                return ResponseEntity.badRequest().body("Thiếu tham số: user_id hoặc otp");
+            if (gmail == null || otp == null) {
+                return ResponseEntity.badRequest().body("Thiếu tham số: gmail hoặc otp");
             }
 
-            User user = userRepository.findById(userId)
-                    .orElseThrow(() -> new AuthException("Không tìm thấy người dùng với ID: " + userId));
+            User user = userRepository.findByEmail(gmail);
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Không tìm thấy người dùng với email: " + gmail);
+            }
 
-            // Kiểm tra OTP và thời gian hết hạn
-            UserOtp userOtp = userOtpRepository.findByUserId(userId);
+            UserOtp userOtp = userOtpRepository.findByUserId(user.getId());
             if (userOtp == null) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Mã OTP không tồn tại");
             }
+            System.out.println("Verifying OTP for user: " + user.getId() + ", currentTime: " + LocalDateTime.now() + ", otpEndTime: " + userOtp.getTimeEnd());
             if (userOtp.getTimeEnd().isBefore(LocalDateTime.now())) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Mã OTP đã hết hạn");
             }
@@ -152,7 +154,6 @@ public class AuthController {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Mã OTP không hợp lệ");
             }
 
-            // Xóa OTP sau khi xác minh thành công
             userOtpRepository.delete(userOtp);
 
             String userAgent = servletRequest.getHeader("User-Agent");
@@ -175,8 +176,7 @@ public class AuthController {
                 }
             }
 
-            // Cập nhật DeviceInfo
-            Optional<DeviceInfo> deviceOpt = authService.findByInforOfDevice(currentDeviceName, currentBrowser, currentOs,userId);
+            Optional<DeviceInfo> deviceOpt = authService.findByInforOfDevice(currentDeviceName, currentBrowser, currentOs);
             if (!deviceOpt.isPresent()) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Không tìm thấy thiết bị");
             }
@@ -185,24 +185,21 @@ public class AuthController {
             device.setBrowser(currentBrowser);
             device.setOs(currentOs);
 
-            // Đặt in_use = false cho tất cả thiết bị khác của user
             List<DeviceInfo> otherDevices = deviceInfoRepository.findAllByUser(user);
             for (DeviceInfo otherDevice : otherDevices) {
                 otherDevice.setInUse(false);
                 authService.saveDevice(otherDevice);
             }
 
-            // Đặt in_use = true cho thiết bị hiện tại
             device.setLastLoginAt(OffsetDateTime.now());
             device.setInUse(true);
             authService.saveDevice(device);
 
-            // Tạo token với thông tin người dùng
             String role = userService.getUserRole(user.getId())
                     .map(userRole -> userRole.getRole().getName())
                     .orElse("USER");
-            UserInformation userInformation = userService.convertToUserInformation(user); // Chuyển User thành UserInformation
-            String accessToken = jwtUtil.generateToken(userInformation, 1000 * 60 * 30); // 30 phút
+            UserInformation userInformation = userService.convertToUserInformation(user);
+            String accessToken = jwtUtil.generateToken(userInformation, 1000 * 60 * 30);
 
             Map<String, Object> response = new HashMap<>();
             response.put("accessToken", accessToken);
@@ -220,24 +217,29 @@ public class AuthController {
             HttpServletRequest servletRequest,
             HttpSession session) {
         try {
-            String userId = request.getUser_id();
+            String gmail = request.getGmail();
             String otp = request.getOtp();
             boolean rememberMe = request.isRememberMe();
 
-            User user = userRepository.findById(userId)
-                .orElseThrow(() -> new AuthException("User not found"));
+            User user = userRepository.findByEmail(gmail);
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Không tìm thấy người dùng với email: " + gmail);
+            }
 
-            //Kiểm tra thời gian
             UserOtp userOtp = userOtpRepository.findByUserId(user.getId());
-            if(userOtp.getTimeEnd().isBefore(LocalDateTime.now()))
-            {
-            	return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("OTP has out of time");
+            if (userOtp == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Mã OTP không tồn tại");
             }
-            // Xác thực OTP
+            System.out.println("Verifying OTP for user: " + user.getId() + ", currentTime: " + LocalDateTime.now() + ", otpEndTime: " + userOtp.getTimeEnd());
+            if (userOtp.getTimeEnd().isBefore(LocalDateTime.now())) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Mã OTP đã hết hạn");
+            }
             if (!authService.verifyOTP(user, otp)) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid OTP");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Mã OTP không hợp lệ");
             }
-            
+
+            userOtpRepository.delete(userOtp);
+
             String userAgent = servletRequest.getHeader("User-Agent");
             UserAgent ua = UserAgent.parseUserAgentString(userAgent);
             Browser browser = ua.getBrowser();
@@ -247,52 +249,96 @@ public class AuthController {
             String currentOs = os.getName();
             String currentDeviceName = "Unknown Device";
             if (userAgent != null && !userAgent.isBlank()) {
-                // Suy ra loại thiết bị từ User-Agent
                 if (userAgent.toLowerCase().contains("mobile")) {
-                	currentDeviceName = "Mobile Device";
+                    currentDeviceName = "Mobile Device";
                 } else if (userAgent.contains("Windows")) {
-                	currentDeviceName = "Windows PC";
-                } 
-                else if (userAgent.contains("iPhone")) {
-                	currentDeviceName = "iPhone Device";
-                }else if (userAgent.contains("Macintosh")) {
-                	currentDeviceName = "Mac";
+                    currentDeviceName = "Windows PC";
+                } else if (userAgent.contains("iPhone")) {
+                    currentDeviceName = "iPhone Device";
+                } else if (userAgent.contains("Macintosh")) {
+                    currentDeviceName = "Mac";
                 }
-                
             }
-           
-            // Cập nhật DeviceInfo
-            Optional<DeviceInfo> deviceOpt = authService.findByInforOfDevice(currentDeviceName, currentBrowser, currentOs,user.getId());
+
+            Optional<DeviceInfo> deviceOpt = authService.findByInforOfDevice(currentDeviceName, currentBrowser, currentOs);
             if (!deviceOpt.isPresent()) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Device not found");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Không tìm thấy thiết bị");
             }
 
             DeviceInfo device = deviceOpt.get();
             device.setBrowser(currentBrowser);
             device.setOs(currentOs);
 
-
-            // Đặt in_use = false cho tất cả thiết bị khác của user
             List<DeviceInfo> otherDevices = deviceInfoRepository.findAllByUser(user);
             for (DeviceInfo otherDevice : otherDevices) {
                 otherDevice.setInUse(false);
                 authService.saveDevice(otherDevice);
             }
-            
-            // Đặt in_use = true cho thiết bị hiện tại
+
             device.setLastLoginAt(OffsetDateTime.now());
             device.setInUse(true);
             authService.saveDevice(device);
 
-            // Trả về thông tin user
             String role = userService.getUserRole(user.getId())
-                .map(userRole -> userRole.getRole().getName())
-                .orElse("USER");
+                    .map(userRole -> userRole.getRole().getName())
+                    .orElse("USER");
             return ResponseEntity.ok(buildUserAuthResponse(user, role, rememberMe));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("OTP verification failed: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Xác minh OTP thất bại: " + e.getMessage());
         }
     }
+
+//    @PostMapping("/resend-otp")
+//    public ResponseEntity<?> resendOtp(@RequestBody Map<String, String> request, HttpServletRequest servletRequest, HttpSession session) {
+//        try {
+//            String gmail = request.get("email");
+//            if (gmail == null) {
+//                return ResponseEntity.badRequest().body("Thiếu tham số: email");
+//            }
+//
+//            User user = userRepository.findByEmail(gmail);
+//            if (user == null) {
+//                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Không tìm thấy người dùng với email: " + gmail);
+//            }
+//
+//            // Kiểm tra thời gian gửi OTP cuối cùng
+//            LocalDateTime lastOtpSent = (LocalDateTime) session.getAttribute("lastOtpSent_" + user.getId());
+//            if (lastOtpSent != null && lastOtpSent.plusSeconds(30).isAfter(LocalDateTime.now())) {
+//                return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body("Vui lòng đợi 30 giây trước khi yêu cầu OTP mới");
+//            }
+//
+//            String userAgent = servletRequest.getHeader("User-Agent");
+//            UserAgent ua = UserAgent.parseUserAgentString(userAgent);
+//            Browser browser = ua.getBrowser();
+//            OperatingSystem os = ua.getOperatingSystem();
+//
+//            String currentBrowser = browser.getName();
+//            String currentOs = os.getName();
+//            String currentDeviceName = "Unknown Device";
+//            if (userAgent != null && !userAgent.isBlank()) {
+//                if (userAgent.toLowerCase().contains("mobile")) {
+//                    currentDeviceName = "Mobile Device";
+//                } else if (userAgent.contains("Windows")) {
+//                    currentDeviceName = "Windows PC";
+//                } else if (userAgent.contains("iPhone")) {
+//                    currentDeviceName = "iPhone Device";
+//                } else if (userAgent.contains("Macintosh")) {
+//                    currentDeviceName = "Mac";
+//                }
+//            }
+//
+//            Optional<DeviceInfo> deviceOpt = authService.findByInforOfDevice(currentDeviceName, currentBrowser, currentOs);
+//            if (!deviceOpt.isPresent()) {
+//                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Không tìm thấy thiết bị");
+//            }
+//
+//            authService.sendDeviceNotification(user, deviceOpt.get());
+//            session.setAttribute("lastOtpSent_" + user.getId(), LocalDateTime.now());
+//            return ResponseEntity.ok("Mã OTP mới đã được gửi đến email của bạn");
+//        } catch (Exception e) {
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Gửi lại OTP thất bại: " + e.getMessage());
+//        }
+//    }
 
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpSession session) {
@@ -347,7 +393,6 @@ public class AuthController {
         response.setEmail(user.getEmail());
         response.setFullName(user.getFullName());
         response.setUsername(user.getUsername());
-        response.setPassword(user.getPassword());
         response.setAvatar(user.getAvatar());
         response.setKycStatus(user.getKycStatus());
         response.setWalletAddress(user.getWalletAddress());
@@ -356,13 +401,21 @@ public class AuthController {
         return response;
     }
 
-    private static NameSplit getFirstAndLastName(String fullname) {
-        String[] nameParts = fullname.split("\\s+");
-        if (nameParts.length == 1) {
-            return new NameSplit(nameParts[0], "");
+    private static class NameSplit {
+        private final String firstName;
+        private final String lastName;
+
+        public NameSplit(String firstName, String lastName) {
+            this.firstName = firstName;
+            this.lastName = lastName;
         }
-        String firstName = nameParts[nameParts.length - 1];
-        String lastName = String.join(" ", java.util.Arrays.copyOfRange(nameParts, 0, nameParts.length - 1));
-        return new NameSplit(firstName, lastName);
+
+        public String getFirstName() {
+            return firstName;
+        }
+
+        public String getLastName() {
+            return lastName;
+        }
     }
 }

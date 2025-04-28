@@ -2,6 +2,7 @@ package com.cryptobank.backend.DTO.request;
 
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -24,6 +25,7 @@ public class EmployeeCreateRequest {
     private String phoneNumber;
     private OffsetDateTime hireDate = OffsetDateTime.now();
     @Digits(integer = 8, fraction = 2)
+    @Min(1)
     private BigDecimal salary;
     private String taxCode;
     private String emergencyContactName;

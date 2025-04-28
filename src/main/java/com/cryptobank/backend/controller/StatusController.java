@@ -5,6 +5,7 @@ import com.cryptobank.backend.DTO.request.PageParamRequest;
 import com.cryptobank.backend.services.StatusService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping(value = "/api/status", produces = MediaType.APPLICATION_JSON_VALUE)
 @RequiredArgsConstructor
 @Tag(name = "Status", description = "Trạng thái")
+@SecurityRequirement(name = "Bearer Authorization")
 public class StatusController {
 
     private final StatusService statusService;
