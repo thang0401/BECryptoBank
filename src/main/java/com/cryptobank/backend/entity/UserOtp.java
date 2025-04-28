@@ -3,16 +3,7 @@ package com.cryptobank.backend.entity;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.MapsId;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -29,7 +20,7 @@ public class UserOtp {
 	private String id; // Khóa chính
 
 	@OneToOne
-	@JoinColumn(name = "user_id")
+	@JoinColumn(name = "user_id", nullable = false)
 	private User user;
 
 	@Column(name = "time_start")
@@ -47,7 +38,7 @@ public class UserOtp {
 			this.id = UUID.randomUUID().toString(); // Tạo id tự động trước khi lưu
 		}
 	}
-	
+
 	public void randomId()
 	{
 		this.id = UUID.randomUUID().toString(); // Tạo id tự động thủ công

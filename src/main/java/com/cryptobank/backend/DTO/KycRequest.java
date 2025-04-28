@@ -10,7 +10,6 @@ public class KycRequest {
 	private String firstName;
 	private String middleName;
 	private String lastName;
-	private String email;
 	private String address;
 	private OffsetDateTime dateOfBirth;
 	private String gender;

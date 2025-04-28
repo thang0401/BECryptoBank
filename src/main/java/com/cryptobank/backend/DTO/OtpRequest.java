@@ -5,6 +5,6 @@ import lombok.Data;
 @Data
 public class OtpRequest {
 	private String otp;
-    private String user_id;
+    private String gmail;
     private boolean rememberMe;
 }
