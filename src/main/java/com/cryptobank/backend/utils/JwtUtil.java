@@ -48,6 +48,8 @@ public class JwtUtil {
             .claim("avatar", userInformation.getAvatar())
             .claim("kycStatus", userInformation.getKycStatus())
             .claim("walletAddress", userInformation.getWalletAddress())
+            .claim("isBankAccount", userInformation.getIsBankAccount())
+            .claim("isReferralCode", userInformation.getIsReferralCode())
             .issuedAt(new Date())
             .expiration(new Date(System.currentTimeMillis() + expiration))
             .signWith(getSigningKey(), Jwts.SIG.HS256)

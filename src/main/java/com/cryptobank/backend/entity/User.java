@@ -96,6 +96,12 @@ public class User extends BaseEntity {
     @Column(name = "wallet_address", columnDefinition = "TEXT")
     private String walletAddress;
 
+    @Column(name = "is_bank_account")
+    private Boolean isBankAccount = false;
+
+    @Column(name = "is_referral_code")
+    private Boolean isReferralCode = false;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "status_id", nullable = false)
     private Status status;
@@ -119,7 +125,7 @@ public class User extends BaseEntity {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<UserBankAccount> bankAccounts;
 
-    @OneToOne(mappedBy = "user")
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, optional = true)
     private UserOtp userOtp;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, optional = true)
