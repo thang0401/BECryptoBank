@@ -32,12 +32,12 @@ public class RoleService {
 
     public RoleDTO toDTOFromId(String id) {
         Role role = getById(id);
-        return role == null ? null : mapper.toDTO(role);
+        return mapper.toDTO(role);
     }
 
     public RoleDTO toResponseFromName(String name) {
         Role role = getByName(name);
-        return role == null ? null : mapper.toDTO(role);
+        return mapper.toDTO(role);
     }
 
     public Role getById(String id) {
@@ -61,6 +61,8 @@ public class RoleService {
         Role created = mapper.fromCreateRequest(request);
         if (request.getStatusId() != null && !request.getStatusId().isBlank()) {
             created.setStatus(statusService.getById(request.getStatusId()));
+        } else {
+            created.setStatus(statusService.getById("cvvvgqbme6nnaun2s4ng"));
         }
         return mapper.toDTO(dao.save(created));
     }

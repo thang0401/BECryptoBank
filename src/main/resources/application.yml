@@ -1,3 +1,14 @@
+DB_HOST: 14.225.206.68
+DB_PORT: 5555
+DB_NAME: CryptoBank
+DB_USER: postgresql
+DB_PASS: CjZwTK1f03pY
+
+MINIO_BUCKET: dev
+MINIO_URL: http://14.225.206.68:9000
+MINIO_ACCESS_KEY: 1hkspc33thRWpKkIj69U
+MINIO_SECRET_KEY: HqZzeNaRIuzg08oGsUQ8T2LUxSWecY7j37dVilU4
+
 server:
   port: 8000
 
@@ -57,3 +68,5 @@ payos:
   checksum-key: dfda5b835554e9cc18e175da23d1ffd3ef9382bf04bff0b4aacfd3cd56eddeb4
   base-url: https://api-merchant.payos.vn
 
+jwt:
+  secret-key: your-jwt-secret-key-here

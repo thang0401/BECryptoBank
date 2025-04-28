@@ -1,6 +1,8 @@
 package com.cryptobank.backend.entity;
 
 import jakarta.persistence.*;
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import lombok.Data;
 
 import java.time.OffsetDateTime;
@@ -101,6 +103,8 @@ public class User extends BaseEntity {
 
     @Column(name = "is_referral_code")
     private Boolean isReferralCode = false;
+    @Column(name = "bonus_amount", columnDefinition = "numeric(38, 2)")
+    private BigDecimal bonusAmount = BigDecimal.ZERO;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "status_id", nullable = false)
@@ -131,5 +135,7 @@ public class User extends BaseEntity {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, optional = true)
     private GoogleAuth googleAuth;
 
+    @OneToMany(mappedBy = "user")
+    private List<UserRole> userRoles = new ArrayList<>();
 
 }

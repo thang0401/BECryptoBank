@@ -76,6 +76,9 @@ public class BankTransferService2 {
 
 	@Autowired
 	private PayOSService payosService;
+	
+    @Autowired
+    private DebitWalletDAO debitWalletDAO;
 
 	public BankTransferService2(RestTemplate restTemplate, UserService userService) {
 		this.restTemplate = restTemplate;
@@ -239,16 +242,28 @@ public class BankTransferService2 {
     	            }
 
     	            // Nếu không chọn bankAccountId, lấy tài khoản ngân hàng mới nhất
-    	            UserBankAccount bankAccount = userBankAccountRepository.findById(bankAccountId)
-    	            	    .orElseGet(() -> userBankAccountRepository
-    	            	        .findFirstByUserIdOrderByUpdatedAtDescCreatedAtDesc(debitWallet.getUser().getId())
-    	            	        .orElseThrow(() -> new RuntimeException("Người dùng chưa có tài khoản ngân hàng nào!"))
-    	            	    );
+    	            UserBankAccount bankAccount;
+    	            if (bankAccountId != null) {
+    	                bankAccount = userBankAccountRepository.findById(bankAccountId)
+    	                    .orElseGet(() -> userBankAccountRepository
+    	                        .findFirstByUserIdOrderByUpdatedAtDescCreatedAtDesc(debitWallet.getUser().getId())
+    	                        .orElseThrow(() -> new RuntimeException("Người dùng chưa có tài khoản ngân hàng nào!")));
+    	            } else {
+    	                bankAccount = userBankAccountRepository
+    	                    .findFirstByUserIdOrderByUpdatedAtDescCreatedAtDesc(debitWallet.getUser().getId())
+    	                    .orElseThrow(() -> new RuntimeException("Người dùng chưa có tài khoản ngân hàng nào!"));
+    	            }
+    	            
+    	            String userId=debitWallet.getUser().getId();
+    	            BigDecimal usdcOld=debitWalletDAO.findByUserId(userId).getFirst().getBalance();
+    	            BigDecimal usdcNew=debitWalletDAO.findByUserId(userId).getFirst().getBalance().add(usdcAmount);
 
 
     	            // Trừ số dư USDC trong ví
     	            debitWallet.setBalance(debitWallet.getBalance().subtract(usdcAmount));
-    	            debitWalletRepository.save(debitWallet);
+    	            debitWalletService.decreaseBalance(debitWallet.getUser().getId(), usdcAmount);
+    	            debitWalletService.UpdateVNDBalance(usdcOld, usdcNew);
+//    	            debitWalletRepository.save(debitWallet);
 
     	            // Gửi yêu cầu rút tiền đến PayOS
 //    	            Map<String, String> payosResponse = payosService.withdraw(

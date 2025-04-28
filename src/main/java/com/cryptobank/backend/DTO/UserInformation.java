@@ -32,5 +32,5 @@ public class UserInformation {
     private OffsetDateTime lastLoginAt;
     private Boolean  isBankAccount;
     private Boolean  isReferralCode;
-
+    private OffsetDateTime createdAt;
 }

@@ -34,6 +34,7 @@ public class UserService {
     private final UserRoleDAO userRoleDAO;
     private final BCryptPasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
+    private final StatusService statusService;
 
     public UserInformation convertToUserInformation(User user) {
         UserInformation dto = new UserInformation();
@@ -42,8 +43,13 @@ public class UserService {
     }
 
     public User getUserEntity(String id) {
-        return repository.findOne(ignoreDeleted())
+        return repository.findOne(ignoreDeleted().and((root, query, cb) -> cb.equal(root.get("id"), id)))
             .orElseThrow(() -> new ResourceNotFoundException("User with id " + id + " not found or deleted"));
+    }
+    
+    public User getUserById(String id)
+    {
+    	return repository.findById(id).get();
     }
 
     public UserInformation get(String id) {
@@ -92,6 +98,7 @@ public class UserService {
         user.setHomeAddress(request.getHomeAddress());
         user.setDeleted(false);
         user.setCreatedAt(OffsetDateTime.now());
+        user.setStatus(statusService.getById("cvvvhlbme6nnaun2s4qg"));
         User savedUser = repository.save(user);
         return convertToUserInformation(savedUser);
     }

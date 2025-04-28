@@ -101,7 +101,7 @@ public class AuthService {
                 deviceInfoRepository.save(activeDevice);
                 return 0;
             } else {
-                Optional<DeviceInfo> deviceOpt = deviceInfoRepository.findByInforOfDevice(currentDeviceName, currentBrowser, currentOs);
+                Optional<DeviceInfo> deviceOpt = deviceInfoRepository.findByInforOfDevice(currentDeviceName, currentBrowser, currentOs,email);
                 if (deviceOpt.isPresent()) {
                     sendDeviceNotification(user, deviceOpt.get());
                     return 1;
@@ -155,7 +155,7 @@ public class AuthService {
             String currentOs = currentDevice.getOs();
             String currentDeviceName = currentDevice.getDeviceName();
 
-            Optional<DeviceInfo> deviceOpt = deviceInfoRepository.findByInforOfDevice(currentDeviceName, currentBrowser, currentOs);
+            Optional<DeviceInfo> deviceOpt = deviceInfoRepository.findByInforOfDevice(currentDeviceName, currentBrowser,currentOs,user.getId());
             if (deviceOpt.isPresent()) {
                 if (!isDeviceInUse(user, deviceOpt.get())) {
                     System.out.println("User ID before throwing exception (existing device): " + user.getId());
