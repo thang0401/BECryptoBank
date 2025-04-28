@@ -13,7 +13,7 @@ import java.time.OffsetDateTime;
 @Table(name = "debit_account")
 public class DebitWallet extends BaseEntity {
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
 
