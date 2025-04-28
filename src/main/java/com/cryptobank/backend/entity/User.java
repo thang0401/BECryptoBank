@@ -98,6 +98,11 @@ public class User extends BaseEntity {
     @Column(name = "wallet_address", columnDefinition = "TEXT")
     private String walletAddress;
 
+    @Column(name = "is_bank_account")
+    private Boolean isBankAccount = false;
+
+    @Column(name = "is_referral_code")
+    private Boolean isReferralCode = false;
     @Column(name = "bonus_amount", columnDefinition = "numeric(38, 2)")
     private BigDecimal bonusAmount = BigDecimal.ZERO;
 
@@ -124,7 +129,7 @@ public class User extends BaseEntity {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<UserBankAccount> bankAccounts;
 
-    @OneToOne(mappedBy = "user")
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, optional = true)
     private UserOtp userOtp;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, optional = true)
