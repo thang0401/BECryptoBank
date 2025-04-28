@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.cryptobank.backend.DTO.UsdcDTO;
 import com.cryptobank.backend.DTO.UserBankAccountDTO;
 import com.cryptobank.backend.DTO.VndDTO;
+import com.cryptobank.backend.entity.User;
 import com.cryptobank.backend.entity.UserBankAccount;
 import com.cryptobank.backend.repository.UserDAO;
 import com.cryptobank.backend.repository.userBankAccountRepository;
@@ -101,6 +102,9 @@ public class BankAccountController {
 			userAdd.setUser(userRepository.findById(userBankAccount.getUserId()).get());
 			UserBankAccount savedAccount = accountRepository.save(userAdd);
 			if (savedAccount != null && savedAccount.getId() != null) {
+				User userFix= userRepository.findById(userBankAccount.getUserId()).get();
+				userFix.setIsBankAccount(true);
+				userRepository.save(userFix);
 			    return ResponseEntity.ok("Thêm tài khoản ngân hàng thành công");
 			} else {
 			    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Thêm tài khoản thất bại");
