@@ -36,5 +36,6 @@ public interface DeviceInforDAO extends JpaRepository<DeviceInfo, String> {
 	 @Query("SELECT d FROM DeviceInfo d WHERE d.deviceName = :deviceName AND d.browser =:browser AND d.os=:os AND d.user.id=:userId")
 	 Optional<DeviceInfo> findByInforOfDevice(@Param("deviceName") String deviceName,@Param("browser") String browser,@Param("os") String os,@Param("userId") String userId);
 
-	Optional<DeviceInfo> findByInforOfDevice(String currentDeviceName, String currentBrowser, String currentOs);
+	 
+//	 Optional<DeviceInfo> findByInforOfDevice(String currentDeviceName, String currentBrowser, String currentOs);
 }
