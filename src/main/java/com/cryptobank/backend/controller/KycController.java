@@ -31,7 +31,9 @@ public class KycController {
 		// lưu thông tin user kyc
 		try {
 			User userKYC = userService.getUserById(userId);
+			userKYC.setFullName(request.getFullName());
 			userKYC.setFirstName(request.getFirstName());
+			userKYC.setMiddleName(request.getMiddleName());
 			userKYC.setLastName(request.getLastName());
 			userKYC.setGender(request.getGender());
 			userKYC.setPhoneNumber(request.getPhone());
