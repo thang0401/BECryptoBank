@@ -299,7 +299,7 @@ public class PaymentController {
     	return ResponseEntity.ok("Giao dịch đã được duyệt và tiền đang được chuyển!");
     }
 
-    // APIAdmin xác nhận yêu cầu nạp tiền 
+    // API Admin xác nhận yêu cầu nạp tiền 
     @PutMapping("/transactions/confirm")
     public ResponseEntity<String> confirmTransaction(
             @RequestBody transactionsConfirmDTO Transaction) {

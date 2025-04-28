@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.simpleframework.xml.Path;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,6 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.cryptobank.backend.DTO.DebitTransactionDTO;
 import com.cryptobank.backend.DTO.SavingTransactionDTO;
 import com.cryptobank.backend.DTO.UsdcVndTransactionDTO;
+import com.cryptobank.backend.DTO.UserDebitAmountDTO;
+import com.cryptobank.backend.entity.DebitWallet;
 import com.cryptobank.backend.repository.DebitTransactionRepository;
 import com.cryptobank.backend.repository.DebitWalletDAO;
 import com.cryptobank.backend.repository.SavingAccountDAO;
@@ -98,6 +101,14 @@ public class transactionHistoryController {
 		} catch (Exception e) {
 			return ResponseEntity.badRequest().body("Không thể lấy được các giao dịch Saving Transaction");
 		}
+	}
+	
+	@GetMapping("/GetUserDebitAmount/{userId}")
+	public ResponseEntity<?> GetUserDebitAmount(@PathVariable String userId)
+	{
+		DebitWallet user = debitWalletdao.findByOneUserId(userId);
+		UserDebitAmountDTO userDebit = new UserDebitAmountDTO(user);
+		return ResponseEntity.ok(userDebit);
 	}
 	
 }
