@@ -59,17 +59,20 @@ public class Employee extends BaseEntity {
     @Column(name = "is_change_pass")
     private boolean isChangePass = false;
 
-    @Column(name = "insurance_number", columnDefinition = "text", unique = true)
+    @Column(name = "insurance_number", columnDefinition = "TEXT", unique = true)
     private String insuranceNumber;
 
-    @Column(name = "tax_code", columnDefinition = "text", unique = true)
+    @Column(name = "tax_code", columnDefinition = "TEXT", unique = true)
     private String taxCode;
 
-    @Column(name = "emergency_contact_name")
+    @Column(name = "emergency_contact_name", columnDefinition = "TEXT")
     private String emergencyContactName;
 
-    @Column(name = "emergency_contact_phone")
+    @Column(name = "emergency_contact_phone", columnDefinition = "TEXT")
     private String emergencyContactPhone;
+
+    @Column(name = "avatar", columnDefinition = "TEXT")
+    private String avatar;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "marital_status")
