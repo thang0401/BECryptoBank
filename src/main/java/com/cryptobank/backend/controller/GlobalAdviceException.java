@@ -46,6 +46,12 @@ public class GlobalAdviceException {
     }
 
     @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<ErrorMessage> handleRuntimeException(RuntimeException ex) {
+        log.error("Unexpected runtime exception occurred", ex);
+        return new ResponseEntity<>(new ErrorMessage(ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorMessage> handleAnyException(Exception ex) {
         log.error("Unexpected exception occurred", ex);
         return new ResponseEntity<>(new ErrorMessage("Lỗi hệ thống"), HttpStatus.INTERNAL_SERVER_ERROR);
