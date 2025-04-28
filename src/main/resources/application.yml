@@ -69,4 +69,4 @@ payos:
   base-url: https://api-merchant.payos.vn
 
 jwt:
-  secret-key: your-jwt-secret-key-here
+  secret-key: this-is-a-very-long-secret-key-for-jwt-hmac-sha256-algorithm-1234567890

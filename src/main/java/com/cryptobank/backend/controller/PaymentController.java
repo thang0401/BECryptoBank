@@ -217,6 +217,8 @@ public class PaymentController {
 	        UsdcVndTransaction transaction = transactionRepository.findById(transactionId)
 	            .orElseThrow(() -> new RuntimeException("Không tìm thấy giao dịch với ID: " + transactionId));
 	        
+	        DebitWallet debitWallet = transaction.getDebitWallet();
+            BigDecimal usdcAmount = transaction.getUsdcAmount();
 	        System.out.println("Lấy trạng thái mới từ db");
 	        // Lấy trạng thái mới từ DB
 	        Status status = statusService.getById(newStatus);
@@ -225,6 +227,13 @@ public class PaymentController {
 	        if(transaction.getStatus().getName().equalsIgnoreCase(status.getName()))
 	        {
 	        	return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Đơn yêu cầu trên vốn đã được duyệt");
+	        }
+	        else if(debitWallet.getBalance().compareTo(usdcAmount) < 0)
+	        {
+	        	Status statusFailed=statusService.getById("cvvvevrme6nnaun2s4cg");
+	        	transaction.setStatus(statusFailed);
+    	        transactionRepository.save(transaction);
+	        	return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Số dư không đủ!");
 	        }
 	        else
 	        {
@@ -235,12 +244,6 @@ public class PaymentController {
 	        System.out.println("Thực hiện rút tiền");
 	        // Nếu giao dịch được duyệt, thực hiện rút tiền
 	        if ("cvvvehbme6nnaun2s4ag".equals(newStatus)) { //Transaction Status
-	            DebitWallet debitWallet = transaction.getDebitWallet();
-	            BigDecimal usdcAmount = transaction.getUsdcAmount();
-
-	            if (debitWallet.getBalance().compareTo(usdcAmount) < 0) {
-	                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Số dư không đủ!");
-	            }
 
 	            System.out.println("thực hiện truy vấn user_bank_account");
 	            System.out.println("BankAccountID: "+bankAccountId);
