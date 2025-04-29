@@ -9,9 +9,9 @@ spring:
   application:
     name: BE-Crypto-Bank
   datasource:
-    url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
-    username: ${DB_USER}
-    password: ${DB_PASS}
+    url: jdbc:postgresql://14.225.206.68:5555/CryptoBank
+    username: postgresql
+    password: CjZwTK1f03pY
   servlet:
     multipart:
       enabled: true
@@ -51,3 +51,9 @@ payos:
   api-key: 43460806-5853-4ea8-982b-dec5c15d9b10
   checksum-key: dfda5b835554e9cc18e175da23d1ffd3ef9382bf04bff0b4aacfd3cd56eddeb4
   base-url: https://api-merchant.payos.vn
+
+
+
+
+jwt:
+  secret-key: 151321

@@ -10,5 +10,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 @Repository
 public interface CustomerReportDAO extends JpaRepository<CustomerReport,String>{
-    List<CustomerReport> findAllByReportedByAndDeleted(String userId,boolean deleted);
+    List<CustomerReport> findByReportedByAndDeleted(String userId,boolean deleted);
 }
