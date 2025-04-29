@@ -365,7 +365,8 @@ public class PaymentController {
                         tx.getUsdcAmount(),
                         tx.getExchangeRate(),
                         tx.getType(),
-                        tx.getStatus().getName()
+                        tx.getStatus().getName(),
+                        tx.getCreatedAt().toLocalDateTime()
                 ))
                 .collect(Collectors.toList());
 
@@ -389,7 +390,8 @@ public class PaymentController {
                         tx.getUsdcAmount(),
                         tx.getExchangeRate(),
                         tx.getType(),
-                        tx.getStatus().getName()
+                        tx.getStatus().getName(),
+                        tx.getCreatedAt().toLocalDateTime()
                 ))
                 .collect(Collectors.toList());
 
@@ -415,7 +417,8 @@ public class PaymentController {
                         tx.getUsdcAmount(),
                         tx.getExchangeRate(),
                         tx.getType(),
-                        tx.getStatus().getName()
+                        tx.getStatus().getName(),
+                        tx.getCreatedAt().toLocalDateTime()
                 ))
                 .collect(Collectors.toList());
 
