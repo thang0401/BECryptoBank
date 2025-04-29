@@ -96,7 +96,7 @@ public class PaymentController {
 
     // API Webhook nhận phản hồi từ PayOS
     @PostMapping("/webhook/payos")
-    public ResponseEntity<String> handlePayOSWebhook(@RequestBody Map<String, Object> payload) {
+    public ResponseEntity<?> handlePayOSWebhook(@RequestBody Map<String, Object> payload) {
         try {
             System.out.println("Raw Payload: " + payload);
 
@@ -129,7 +129,7 @@ public class PaymentController {
             BigDecimal amountVND = BigDecimal.valueOf(data.getAmount());
             String description = data.getDescription();
 
-            String userId = extractUserIdFromDescription(description);
+            String userId = description;
             if (userId == null) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                         .body("Không thể trích xuất user_id từ description: " + description);
@@ -148,26 +148,39 @@ public class PaymentController {
 
             // Dùng orderCode làm transactionId
             String transactionId = String.valueOf(data.getOrderCode());
-
-            // Mặc định status là PAID vì webhook không có trường statusp
-            String transactionStatus = "Pending";
-            Status dbStatus = statusService.getById(transactionStatus);
+            String transactionStatus;
+            Status dbStatus;
+            if(data.getCode().equalsIgnoreCase("00"))
+            {
+            	// Mặc định status là PAID vì webhook không có trường statusp
+                 transactionStatus = statusService.getById("cvvveejme6nnaun2s4a0").getName();
+                 dbStatus = statusService.getById("cvvveejme6nnaun2s4a0");
+            }
+            else
+            {
+            	// Mặc định status là PAID vì webhook không có trường statusp
+                 transactionStatus = statusService.getById("cvvvem3me6nnaun2s4b0").getName();
+                 dbStatus = statusService.getById("cvvvem3me6nnaun2s4b0");
+            }
+            
 
             if (transactionRepository.findById(transactionId).isPresent()) {
                 return ResponseEntity.ok("Giao dịch đã được xử lý trước đó: " + transactionStatus);
             }
 
-            paymentService.saveTransaction(
+            UsdcVndTransaction transave=paymentService.saveTransaction(
                     transactionId,
                     user.getId(),
                     amountVND,
                     amountUSDC,
                     exchangeRate,
                     "DEPOSIT",
-                    transactionStatus
+                    dbStatus.getId()
             );
-
-            return ResponseEntity.ok("Webhook xử lý thành công: " + transactionStatus);
+            
+            ResponseEntity<?> entity=confirmTransactionFunction(transave.getId(),user.getId(),"cvvvehbme6nnaun2s4ag");
+            //return ResponseEntity.ok("Webhook xử lý thành công: " + transactionStatus);
+            return entity;
 
         } catch (Exception e) {
             System.err.println("Lỗi Webhook: " + e.getMessage());
@@ -420,4 +433,45 @@ public class PaymentController {
 //    	return ResponseEntity.ok(listBankAccount);
 //    }
     
+    public ResponseEntity<?> confirmTransactionFunction(String transactionId,String userId,String statusId)
+    {
+    	System.out.println("Xử lý nạp tiền confirm");
+    	 // Tìm giao dịch theo ID
+        UsdcVndTransaction transaction = transactionRepository.findById(transactionId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy giao dịch với ID: " + transactionId));
+
+        System.out.println("Kiểm tra xem giao dịch có thuộc về user không");
+        // Kiểm tra xem giao dịch có thuộc về user không
+        if (!transaction.getDebitWallet().getUser().getId().equals(userId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Giao dịch không thuộc về user này!");
+        }
+
+        System.out.println("Tìm Status theo tên");
+        // Tìm Status theo tên
+        Status status = statusService.getById(statusId);
+
+        System.out.println("Cập nhật trạng thái");
+        // Cập nhật trạng thái
+        if(!status.getName().equalsIgnoreCase(transaction.getStatus().getName()))
+        {
+        	 transaction.setStatus(status);
+             transactionRepository.save(transaction);
+        }
+        else
+        {
+        	return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Trạng thái hiện tại đã là Success");
+        }
+       
+        BigDecimal usdcOld=debitWalletDAO.findByUserId(userId).getFirst().getBalance();
+        BigDecimal usdcNew=debitWalletDAO.findByUserId(userId).getFirst().getBalance().add(transaction.getUsdcAmount());
+        System.out.println("Nếu trạng thái mới là \"SUCCESS\", cập nhật số dư");
+        // Nếu trạng thái mới là "SUCCESS", cập nhật số dư
+        if ("cvvvehbme6nnaun2s4ag".equalsIgnoreCase(statusId)) {
+        	//debitWalletService.updateUsdcBalance();
+            debitWalletService.updateBalance(userId, transaction.getUsdcAmount());
+            debitWalletService.UpdateVNDBalance(usdcOld, usdcNew);
+        }
+
+        return ResponseEntity.ok("Nạp tiền vào tài khoản thành công");
+    }
 }
