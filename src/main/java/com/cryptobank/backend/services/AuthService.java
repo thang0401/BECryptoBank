@@ -101,7 +101,7 @@ public class AuthService {
                 deviceInfoRepository.save(activeDevice);
                 return 0;
             } else {
-                Optional<DeviceInfo> deviceOpt = deviceInfoRepository.findByInforOfDevice(currentDeviceName, currentBrowser, currentOs,email);
+                Optional<DeviceInfo> deviceOpt = deviceInfoRepository.findByInforOfDevice(currentDeviceName, currentBrowser, currentOs,user.getId());
                 if (deviceOpt.isPresent()) {
                     sendDeviceNotification(user, deviceOpt.get());
                     return 1;
