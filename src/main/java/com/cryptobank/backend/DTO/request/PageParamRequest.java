@@ -21,8 +21,8 @@ public class PageParamRequest {
     @Parameter(description = "Số lượng phần tử mỗi trang [1-100]")
     @Min(1)
     @Max(100)
-    @Schema(defaultValue = "10")
-    private int size = 10;
+    @Schema(defaultValue = "20")
+    private int size = 20;
 
     public Pageable toPageable() {
         return PageRequest.of(page - 1, size);
