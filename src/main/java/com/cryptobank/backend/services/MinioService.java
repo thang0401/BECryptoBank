@@ -19,9 +19,13 @@ import org.springframework.stereotype.Service;
 public class MinioService {
 
     private final MinioClient minioClient;
+    private final MinioConfig minioConfig;
 
     @SneakyThrows(Exception.class)
     public String getUrl(String object, String bucket) {
+        if (bucket == null || bucket.isBlank()) {
+            bucket = minioConfig.getBucket();
+        }
         GetPresignedObjectUrlArgs args = GetPresignedObjectUrlArgs.builder()
             .bucket(bucket)
             .object(object)
@@ -33,6 +37,9 @@ public class MinioService {
     @SneakyThrows(Exception.class)
     public String uploadFile(String object, String bucket, InputStream inputStream, String contentType) {
         String filename = UUID.randomUUID() + getFileType(object);
+        if (bucket == null || bucket.isBlank()) {
+            bucket = minioConfig.getBucket();
+        }
         createBucket(bucket);
         minioClient.putObject(PutObjectArgs.builder()
             .bucket(bucket)
@@ -45,6 +52,9 @@ public class MinioService {
 
     @SneakyThrows(Exception.class)
     public void deleteFile(String object, String bucket) {
+        if (bucket == null || bucket.isBlank()) {
+            bucket = minioConfig.getBucket();
+        }
         isBucketExists(bucket);
         minioClient.removeObject(RemoveObjectArgs.builder().bucket(bucket).object(object).build());
     }

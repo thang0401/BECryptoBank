@@ -178,7 +178,16 @@ public class PaymentController {
                     dbStatus.getId()
             );
             
-            ResponseEntity<?> entity=confirmTransactionFunction(transave.getId(),user.getId(),"cvvvehbme6nnaun2s4ag");
+            ResponseEntity<?> entity;
+            if(!dbStatus.getId().equalsIgnoreCase("cvvvem3me6nnaun2s4b0"))
+            {
+            	entity=confirmTransactionFunction(transave.getId(),user.getId(),"cvvvehbme6nnaun2s4ag");
+            }
+            else
+            {
+            	entity=failedTransactionFunction(transave.getId(),user.getId(),"cvvvem3me6nnaun2s4b0");
+            }
+            
             //return ResponseEntity.ok("Webhook xử lý thành công: " + transactionStatus);
             return entity;
 
@@ -476,5 +485,28 @@ public class PaymentController {
         }
 
         return ResponseEntity.ok("Nạp tiền vào tài khoản thành công");
+    }
+
+    public ResponseEntity<?> failedTransactionFunction(String transactionId,String userId,String statusId)
+    {
+    	UsdcVndTransaction transactionFailed=transactionRepository.findById(transactionId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy giao dịch với ID: " + transactionId));
+    	
+    	 System.out.println("Kiểm tra xem giao dịch có thuộc về user không");
+         // Kiểm tra xem giao dịch có thuộc về user không
+         if (!transactionFailed.getDebitWallet().getUser().getId().equals(userId)) {
+             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Giao dịch không thuộc về user này!");
+         }
+    	
+    	//Lấy status theo ID
+    	Status statusNew=statusService.getById(statusId);
+    	transactionFailed.setStatus(statusNew);
+    	
+    	 System.out.println("Cập nhật trạng thái");
+         // Cập nhật trạng thái
+    	 transactionFailed.setStatus(statusNew);
+    	 transactionRepository.save(transactionFailed);
+    	 
+    	 return ResponseEntity.badRequest().body("Giao dịch thất bại");
     }
 }

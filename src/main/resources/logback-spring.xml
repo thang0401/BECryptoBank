@@ -5,7 +5,7 @@
     <conversionRule conversionWord="clrLevelText" class="com.cryptobank.backend.logback.ColorLogLevelText"/>
     <conversionRule conversionWord="wEx" class="org.springframework.boot.logging.logback.ExtendedWhitespaceThrowableProxyConverter" />
 
-    <property name="LOG_PATTERN" value="%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){green} %clr(|){faint} %clrLevel(%-5p) %clr(| %-15.15t |){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %clrLevelText(%m%n%wEx)"/>
+    <property name="LOG_PATTERN" value="%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){green} %clr(|){faint} %clrLevel(%-5p) %clr(| %-15.15t |){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %clrLevelText(%m%n%wEx) %clr(){default}"/>
 
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
