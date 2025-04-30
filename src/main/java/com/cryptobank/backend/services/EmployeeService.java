@@ -108,9 +108,10 @@ public class EmployeeService {
         Employee created = mapper.fromCreateRequest(request);
         String encodePassword = passwordEncoder.encode(created.getPassword());
         created.setPassword(encodePassword);
-        created.setStatus(statusService.getById(request.getStatusId()));
-        if (request.getMaritalStatusId() != null && !request.getMaritalStatusId().isBlank()) {
-            created.setMaritalStatus(statusService.getById(request.getMaritalStatusId()));
+        if (request.getStatusId() != null && !request.getStatusId().isBlank()) {
+            created.setStatus(statusService.getById(request.getStatusId()));
+        } else {
+            created.setStatus(statusService.getById("cvvvg2rme6nnaun2s4j0"));
         }
         if (request.getMaritalStatusId() != null && !request.getMaritalStatusId().isBlank()) {
             created.setMaritalStatus(statusService.getById(request.getMaritalStatusId()));
@@ -127,8 +128,8 @@ public class EmployeeService {
             return mapper.toDTO(found);
         }
         Employee updated = mapper.fromUpdateRequest(found, request);
-        if (request.getMaritalStatusId() != null && !request.getMaritalStatusId().isBlank()) {
-            updated.setMaritalStatus(statusService.getById(request.getMaritalStatusId()));
+        if (request.getStatusId() != null && !request.getStatusId().isBlank()) {
+            updated.setStatus(statusService.getById(request.getStatusId()));
         }
         if (request.getMaritalStatusId() != null && !request.getMaritalStatusId().isBlank()) {
             updated.setMaritalStatus(statusService.getById(request.getMaritalStatusId()));

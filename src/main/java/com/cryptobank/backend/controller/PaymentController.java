@@ -1,14 +1,16 @@
 package com.cryptobank.backend.controller;
 
+import com.cryptobank.backend.DTO.DepositDTO;
 import com.cryptobank.backend.DTO.UsdcVndTransactionDTO;
 import com.cryptobank.backend.DTO.transactionsConfirmDTO;
 import com.cryptobank.backend.DTO.withdrawDTO;
 import com.cryptobank.backend.DTO.withdrawStatusDTO;
+import com.cryptobank.backend.entity.DebitWallet;
 import com.cryptobank.backend.entity.Status;
 import com.cryptobank.backend.entity.UsdcVndTransaction;
 import com.cryptobank.backend.entity.User;
 import com.cryptobank.backend.entity.UserBankAccount;
-import com.cryptobank.backend.repository.StatusDAO;
+import com.cryptobank.backend.repository.DebitWalletDAO;
 import com.cryptobank.backend.repository.UsdcVndTransactionRepository;
 import com.cryptobank.backend.repository.UserDAO;
 import com.cryptobank.backend.repository.userBankAccountRepository;
@@ -16,10 +18,10 @@ import com.cryptobank.backend.services.BankTransferService2;
 import com.cryptobank.backend.services.DebitWalletService;
 import com.cryptobank.backend.services.ExchangeRateService;
 import com.cryptobank.backend.services.PaymentService;
+import com.cryptobank.backend.services.StatusService;
 import com.cryptobank.backend.services.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import org.simpleframework.xml.Path;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,7 +34,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -63,41 +64,39 @@ public class PaymentController {
     private UsdcVndTransactionRepository transactionRepository;
 
     @Autowired
-    private StatusDAO statusRepository;
+    private StatusService statusService;
 
     @Autowired
     private PayOS payos;
     
     @Autowired
     private userBankAccountRepository userBankAccountRepository;
+    
+    @Autowired
+    private DebitWalletDAO debitWalletDAO;
 
     @PostMapping("/deposit")
-    public ResponseEntity<Map<String, String>> deposit(@RequestBody Map<String, Object> requestBody) {
-        String orderId = (String) requestBody.get("orderId");
-        Double amount = Double.valueOf(requestBody.get("amount").toString());
-        String description = (String) requestBody.get("description");
-        String returnUrl = (String) requestBody.get("returnUrl");
-        String cancelUrl = (String) requestBody.get("cancelUrl");
-        String userId = (String) requestBody.get("userId"); // Lấy user_id từ requestBody
+    public ResponseEntity<Map<String, String>> deposit(@RequestBody DepositDTO requestBody) {
+       
 
         // Kiểm tra user_id
-        if (userId == null || userId.trim().isEmpty()) {
+        if (requestBody.getUserId() == null || requestBody.getUserId().trim().isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("error", "userId không được để trống"));
         }
 
         // Kiểm tra user trong DB
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy user với ID: " + userId));
+        User user = userRepository.findById(requestBody.getUserId())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy user với ID: " + requestBody.getUserId()));
 
         // Gọi depositToPayOS với userId
-        Map<String, String> response = bankTransferService.depositToPayOS(orderId, amount, description, returnUrl, cancelUrl, userId);
+        Map<String, String> response = bankTransferService.depositToPayOS(requestBody.getOrderId(), requestBody.getAmount(), requestBody.getDescription(), requestBody.getReturnUrl(), requestBody.getCancelUrl(), requestBody.getUserId());
         return ResponseEntity.ok(response);
     }
 
     // API Webhook nhận phản hồi từ PayOS
     @PostMapping("/webhook/payos")
-    public ResponseEntity<String> handlePayOSWebhook(@RequestBody Map<String, Object> payload) {
+    public ResponseEntity<?> handlePayOSWebhook(@RequestBody Map<String, Object> payload) {
         try {
             System.out.println("Raw Payload: " + payload);
 
@@ -130,7 +129,7 @@ public class PaymentController {
             BigDecimal amountVND = BigDecimal.valueOf(data.getAmount());
             String description = data.getDescription();
 
-            String userId = extractUserIdFromDescription(description);
+            String userId = description;
             if (userId == null) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                         .body("Không thể trích xuất user_id từ description: " + description);
@@ -149,27 +148,39 @@ public class PaymentController {
 
             // Dùng orderCode làm transactionId
             String transactionId = String.valueOf(data.getOrderCode());
-
-            // Mặc định status là PAID vì webhook không có trường statusp
-            String transactionStatus = "Pending";
-            Status dbStatus = statusRepository.findByName(transactionStatus)
-                    .orElseThrow(() -> new RuntimeException("Không tìm thấy trạng thái: " + transactionStatus));
+            String transactionStatus;
+            Status dbStatus;
+            if(data.getCode().equalsIgnoreCase("00"))
+            {
+            	// Mặc định status là PAID vì webhook không có trường statusp
+                 transactionStatus = statusService.getById("cvvveejme6nnaun2s4a0").getName();
+                 dbStatus = statusService.getById("cvvveejme6nnaun2s4a0");
+            }
+            else
+            {
+            	// Mặc định status là PAID vì webhook không có trường statusp
+                 transactionStatus = statusService.getById("cvvvem3me6nnaun2s4b0").getName();
+                 dbStatus = statusService.getById("cvvvem3me6nnaun2s4b0");
+            }
+            
 
             if (transactionRepository.findById(transactionId).isPresent()) {
                 return ResponseEntity.ok("Giao dịch đã được xử lý trước đó: " + transactionStatus);
             }
 
-            paymentService.saveTransaction(
+            UsdcVndTransaction transave=paymentService.saveTransaction(
                     transactionId,
                     user.getId(),
                     amountVND,
                     amountUSDC,
                     exchangeRate,
                     "DEPOSIT",
-                    transactionStatus
+                    dbStatus.getId()
             );
-
-            return ResponseEntity.ok("Webhook xử lý thành công: " + transactionStatus);
+            
+            ResponseEntity<?> entity=confirmTransactionFunction(transave.getId(),user.getId(),"cvvvehbme6nnaun2s4ag");
+            //return ResponseEntity.ok("Webhook xử lý thành công: " + transactionStatus);
+            return entity;
 
         } catch (Exception e) {
             System.err.println("Lỗi Webhook: " + e.getMessage());
@@ -206,14 +217,99 @@ public class PaymentController {
 
     //API Admin xác nhận yêu cầu rút tiền
     @PostMapping("/transactions/update-status")
-    public ResponseEntity<Map<String, String>> updateTransactionStatus(
+    public ResponseEntity<String> updateTransactionStatus(
             @RequestBody withdrawStatusDTO withdrawStatus) {
 
-        Map<String, String> response = bankTransferService.updateTransactionStatus(withdrawStatus.getTransactionId(), withdrawStatus.getNewStatus(), withdrawStatus.getBankAccountId());
-        return ResponseEntity.ok(response);
+//        Map<String, String> response = bankTransferService.updateTransactionStatus(withdrawStatus.getTransactionId(), withdrawStatus.getNewStatus(), withdrawStatus.getBankAccountId());
+//        return ResponseEntity.ok(response);
+    	String transactionId=withdrawStatus.getTransactionId();
+    	String newStatus=withdrawStatus.getNewStatus();
+    	Long bankAccountId=withdrawStatus.getBankAccountId();
+    	try {
+		 	// Tìm giao dịch
+	        UsdcVndTransaction transaction = transactionRepository.findById(transactionId)
+	            .orElseThrow(() -> new RuntimeException("Không tìm thấy giao dịch với ID: " + transactionId));
+	        
+	        DebitWallet debitWallet = transaction.getDebitWallet();
+            BigDecimal usdcAmount = transaction.getUsdcAmount();
+	        System.out.println("Lấy trạng thái mới từ db");
+	        // Lấy trạng thái mới từ DB
+	        Status status = statusService.getById(newStatus);
+
+	        // Cập nhật trạng thái giao dịch
+	        if(transaction.getStatus().getName().equalsIgnoreCase(status.getName()))
+	        {
+	        	return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Đơn yêu cầu trên vốn đã được duyệt");
+	        }
+	        else if(debitWallet.getBalance().compareTo(usdcAmount) < 0)
+	        {
+	        	Status statusFailed=statusService.getById("cvvvevrme6nnaun2s4cg");
+	        	transaction.setStatus(statusFailed);
+    	        transactionRepository.save(transaction);
+	        	return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Số dư không đủ!");
+	        }
+	        else
+	        {
+	        	transaction.setStatus(status);
+    	        transactionRepository.save(transaction);
+	        }
+	        
+	        System.out.println("Thực hiện rút tiền");
+	        // Nếu giao dịch được duyệt, thực hiện rút tiền
+	        if ("cvvvehbme6nnaun2s4ag".equals(newStatus)) { //Transaction Status
+
+	            System.out.println("thực hiện truy vấn user_bank_account");
+	            System.out.println("BankAccountID: "+bankAccountId);
+	            
+	            // Nếu không chọn bankAccountId, lấy tài khoản ngân hàng mới nhất
+	            UserBankAccount bankAccount;
+	            if (bankAccountId != null) {
+	                bankAccount = userBankAccountRepository.findById(bankAccountId)
+	                    .orElseGet(() -> userBankAccountRepository
+	                        .findFirstByUserIdOrderByUpdatedAtDescCreatedAtDesc(debitWallet.getUser().getId())
+	                        .orElseThrow(() -> new RuntimeException("Người dùng chưa có tài khoản ngân hàng nào!")));
+	            } else {
+	                bankAccount = userBankAccountRepository
+	                    .findFirstByUserIdOrderByUpdatedAtDescCreatedAtDesc(debitWallet.getUser().getId())
+	                    .orElseThrow(() -> new RuntimeException("Người dùng chưa có tài khoản ngân hàng nào!"));
+	            }
+	            System.out.println("debitWalletuser: "+debitWallet.getUser().getId());
+	            System.out.println("thực hiện truy vấn user");
+	            String userId=debitWallet.getUser().getId();
+	            BigDecimal usdcOld=debitWalletDAO.findByUserId(userId).getFirst().getBalance();
+	            BigDecimal usdcNew=debitWalletDAO.findByUserId(userId).getFirst().getBalance().subtract(usdcAmount);
+	            System.out.println("USDC Cũ: "+usdcOld);
+	            System.out.println("USDC Mới: "+usdcNew);
+	            System.out.println("Trừ số dư USDC trong ví");
+	            // Trừ số dư USDC trong ví
+	            //debitWallet.setBalance(debitWallet.getBalance().subtract(usdcAmount));
+	            debitWalletService.decreaseBalance(debitWallet.getUser().getId(), usdcAmount);
+	            debitWalletService.UpdateVNDBalance(usdcOld, usdcNew);
+//	            debitWalletRepository.save(debitWallet);
+
+	            // Gửi yêu cầu rút tiền đến PayOS
+//	            Map<String, String> payosResponse = payosService.withdraw(
+//	                transaction.getVndAmount(), 
+//	                bankAccount.getAccountNumber(), 
+//	                bankAccount.getBankCode()
+//	            );
+//
+//	            if (payosResponse.containsKey("error")) {
+//	                responseBody.put("error", "Lỗi khi gửi yêu cầu rút tiền: " + payosResponse.get("error"));
+//	                return responseBody;
+//	            }
+	        } else if ("cvvvem3me6nnaun2s4b0".equalsIgnoreCase(newStatus)) {
+	            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Giao dịch đã bị từ chối!");
+	        }
+
+	        
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Lỗi khi tạo giao dịch: " + e.getMessage());
+		}
+    	return ResponseEntity.ok("Giao dịch đã được duyệt và tiền đang được chuyển!");
     }
 
-    // API để cập nhật trạng thái và cập nhật số dư nạp tiền 
+    // API Admin xác nhận yêu cầu nạp tiền 
     @PutMapping("/transactions/confirm")
     public ResponseEntity<String> confirmTransaction(
             @RequestBody transactionsConfirmDTO Transaction) {
@@ -228,8 +324,7 @@ public class PaymentController {
         }
 
         // Tìm Status theo tên
-        Status status = statusRepository.findByName(Transaction.getNewStatus())
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy trạng thái: " + Transaction.getNewStatus()));
+        Status status = statusService.getById(Transaction.getNewStatus());
 
         // Cập nhật trạng thái
         if(!status.getName().equalsIgnoreCase(transaction.getStatus().getName()))
@@ -242,13 +337,16 @@ public class PaymentController {
         	return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Trạng thái hiện tại đã là Success");
         }
        
-
+        BigDecimal usdcOld=debitWalletDAO.findByUserId(Transaction.getUserId()).getFirst().getBalance();
+        BigDecimal usdcNew=debitWalletDAO.findByUserId(Transaction.getUserId()).getFirst().getBalance().add(transaction.getUsdcAmount());
         // Nếu trạng thái mới là "SUCCESS", cập nhật số dư
-        if ("Sucesss".equalsIgnoreCase(Transaction.getNewStatus())) {
+        if ("cvvvehbme6nnaun2s4ag".equalsIgnoreCase(Transaction.getNewStatus())) {
+        	//debitWalletService.updateUsdcBalance();
             debitWalletService.updateBalance(Transaction.getUserId(), transaction.getUsdcAmount());
+            debitWalletService.UpdateVNDBalance(usdcOld, usdcNew);
         }
 
-        return ResponseEntity.ok("Trạng thái giao dịch đã được cập nhật thành: " + Transaction.getNewStatus());
+        return ResponseEntity.ok("Trạng thái giao dịch đã được cập nhật thành: " + status.getName());
     }
     
  // API lấy tất cả giao dịch của một userId
@@ -267,7 +365,8 @@ public class PaymentController {
                         tx.getUsdcAmount(),
                         tx.getExchangeRate(),
                         tx.getType(),
-                        tx.getStatus().getName()
+                        tx.getStatus().getName(),
+                        tx.getCreatedAt().toLocalDateTime()
                 ))
                 .collect(Collectors.toList());
 
@@ -291,7 +390,8 @@ public class PaymentController {
                         tx.getUsdcAmount(),
                         tx.getExchangeRate(),
                         tx.getType(),
-                        tx.getStatus().getName()
+                        tx.getStatus().getName(),
+                        tx.getCreatedAt().toLocalDateTime()
                 ))
                 .collect(Collectors.toList());
 
@@ -305,8 +405,7 @@ public class PaymentController {
     // API lấy tất cả giao dịch có trạng thái PENDING
     @GetMapping("/transactions/pending")
     public ResponseEntity<List<UsdcVndTransactionDTO>> getPendingTransactions() {
-        Status pendingStatus = Optional.ofNullable(statusRepository.findById("cvvveejme6nnaun2s4a0"))
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy trạng thái: PENDING")).get();
+        Status pendingStatus = statusService.getById("cvvveejme6nnaun2s4a0"); //success
 
         List<UsdcVndTransaction> pendingTransactions = transactionRepository.findByStatus(pendingStatus);
         List<UsdcVndTransactionDTO> transactionDTOs = pendingTransactions.stream()
@@ -318,7 +417,8 @@ public class PaymentController {
                         tx.getUsdcAmount(),
                         tx.getExchangeRate(),
                         tx.getType(),
-                        tx.getStatus().getName()
+                        tx.getStatus().getName(),
+                        tx.getCreatedAt().toLocalDateTime()
                 ))
                 .collect(Collectors.toList());
 
@@ -336,4 +436,45 @@ public class PaymentController {
 //    	return ResponseEntity.ok(listBankAccount);
 //    }
     
+    public ResponseEntity<?> confirmTransactionFunction(String transactionId,String userId,String statusId)
+    {
+    	System.out.println("Xử lý nạp tiền confirm");
+    	 // Tìm giao dịch theo ID
+        UsdcVndTransaction transaction = transactionRepository.findById(transactionId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy giao dịch với ID: " + transactionId));
+
+        System.out.println("Kiểm tra xem giao dịch có thuộc về user không");
+        // Kiểm tra xem giao dịch có thuộc về user không
+        if (!transaction.getDebitWallet().getUser().getId().equals(userId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Giao dịch không thuộc về user này!");
+        }
+
+        System.out.println("Tìm Status theo tên");
+        // Tìm Status theo tên
+        Status status = statusService.getById(statusId);
+
+        System.out.println("Cập nhật trạng thái");
+        // Cập nhật trạng thái
+        if(!status.getName().equalsIgnoreCase(transaction.getStatus().getName()))
+        {
+        	 transaction.setStatus(status);
+             transactionRepository.save(transaction);
+        }
+        else
+        {
+        	return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Trạng thái hiện tại đã là Success");
+        }
+       
+        BigDecimal usdcOld=debitWalletDAO.findByUserId(userId).getFirst().getBalance();
+        BigDecimal usdcNew=debitWalletDAO.findByUserId(userId).getFirst().getBalance().add(transaction.getUsdcAmount());
+        System.out.println("Nếu trạng thái mới là \"SUCCESS\", cập nhật số dư");
+        // Nếu trạng thái mới là "SUCCESS", cập nhật số dư
+        if ("cvvvehbme6nnaun2s4ag".equalsIgnoreCase(statusId)) {
+        	//debitWalletService.updateUsdcBalance();
+            debitWalletService.updateBalance(userId, transaction.getUsdcAmount());
+            debitWalletService.UpdateVNDBalance(usdcOld, usdcNew);
+        }
+
+        return ResponseEntity.ok("Nạp tiền vào tài khoản thành công");
+    }
 }

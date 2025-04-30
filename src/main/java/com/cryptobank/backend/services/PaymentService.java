@@ -29,7 +29,7 @@ public class PaymentService {
     }
 
     @Transactional
-    public void saveTransaction(String transactionId, String userId, BigDecimal vndAmount, BigDecimal usdcAmount, BigDecimal exchangeRate, String type, String statusName) {
+    public UsdcVndTransaction saveTransaction(String transactionId, String userId, BigDecimal vndAmount, BigDecimal usdcAmount, BigDecimal exchangeRate, String type, String statusid) {
         // Tìm ví của người dùng
         DebitWallet debitWallet = debitWalletRepository.findByUserId(userId)
                 .stream()
@@ -37,8 +37,9 @@ public class PaymentService {
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy ví của user: " + userId));
 
         // Tìm trạng thái
-        Status status = statusRepository.findByName(statusName)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy trạng thái: " + statusName));
+        String currentStatus=statusRepository.getById(statusid).getName();
+        Status status = statusRepository.findById(statusid)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy trạng thái: " + currentStatus));
 
 
         // Tạo giao dịch mới
@@ -51,7 +52,7 @@ public class PaymentService {
         transaction.setStatus(status);
 
         // Lưu giao dịch
-        transactionRepository.save(transaction);
+        return transactionRepository.save(transaction);
     }
 
 }

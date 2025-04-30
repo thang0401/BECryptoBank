@@ -1,6 +1,7 @@
 package com.cryptobank.backend.DTO;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,4 +19,5 @@ public class UsdcVndTransactionDTO {
 	    private BigDecimal exchangeRate;
 	    private String transactionType;
 	    private String status;
+	    private LocalDateTime createAt;
 }

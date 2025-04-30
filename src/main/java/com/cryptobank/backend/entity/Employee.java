@@ -56,21 +56,31 @@ public class Employee extends BaseEntity {
     @Digits(integer = 10, fraction = 2)
     private BigDecimal bonus = BigDecimal.ZERO;
 
-    @Column(name = "insurance_number", columnDefinition = "text", unique = true)
+    @Column(name = "is_change_pass")
+    private boolean isChangePass = false;
+
+    @Column(name = "insurance_number", columnDefinition = "TEXT", unique = true)
     private String insuranceNumber;
 
-    @Column(name = "tax_code", columnDefinition = "text", unique = true)
+    @Column(name = "tax_code", columnDefinition = "TEXT", unique = true)
     private String taxCode;
 
-    @Column(name = "emergency_contact_name")
+    @Column(name = "emergency_contact_name", columnDefinition = "TEXT")
     private String emergencyContactName;
 
-    @Column(name = "emergency_contact_phone")
+    @Column(name = "emergency_contact_phone", columnDefinition = "TEXT")
     private String emergencyContactPhone;
+
+    @Column(name = "avatar", columnDefinition = "TEXT")
+    private String avatar;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "marital_status")
     private Status maritalStatus;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "role_id")
+    private Role role;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "status_id", nullable = false)

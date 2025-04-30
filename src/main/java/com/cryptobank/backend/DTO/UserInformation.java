@@ -30,4 +30,7 @@ public class UserInformation {
     private Boolean kycStatus;
     private Boolean hasAcceptedTerms;
     private OffsetDateTime lastLoginAt;
+    private Boolean  isBankAccount;
+    private Boolean  isReferralCode;
+    private OffsetDateTime createdAt;
 }

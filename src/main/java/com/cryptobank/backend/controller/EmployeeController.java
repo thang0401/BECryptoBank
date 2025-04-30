@@ -7,6 +7,7 @@ import com.cryptobank.backend.DTO.request.EmployeeUpdateRequest;
 import com.cryptobank.backend.DTO.request.PageParamRequest;
 import com.cryptobank.backend.services.EmployeeService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(value = "/api/employees", produces = MediaType.APPLICATION_JSON_VALUE)
 @RequiredArgsConstructor
 @Tag(name = "Employee", description = "Nhân viên")
+@SecurityRequirement(name = "Bearer Authorization")
 public class EmployeeController {
 
     private final EmployeeService employeeService;

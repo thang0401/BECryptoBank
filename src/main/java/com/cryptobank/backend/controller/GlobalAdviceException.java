@@ -1,7 +1,10 @@
 package com.cryptobank.backend.controller;
 
 import com.cryptobank.backend.exception.AlreadyExistException;
+import com.cryptobank.backend.exception.JwtEmptyException;
 import com.cryptobank.backend.exception.ResourceNotFoundException;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
@@ -37,17 +40,23 @@ public class GlobalAdviceException {
         return new ResponseEntity<>(new ErrorMessage(ex.getMessage()), HttpStatus.CONFLICT);
     }
 
-    @ExceptionHandler(UsernameNotFoundException.class)
-    public ResponseEntity<ErrorMessage> handleUsernameNotFound(UsernameNotFoundException ex) {
+    @ExceptionHandler({UsernameNotFoundException.class, JwtException.class, JwtEmptyException.class})
+    public ResponseEntity<ErrorMessage> handleUnauthorized(RuntimeException ex) {
         return new ResponseEntity<>(new ErrorMessage(ex.getMessage()), HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<ErrorMessage> handleRuntimeException(RuntimeException ex) {
+        log.error("Unexpected runtime exception occurred", ex);
+        return new ResponseEntity<>(new ErrorMessage(ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorMessage> handleAnyException(Exception ex) {
         log.error("Unexpected exception occurred", ex);
         return new ResponseEntity<>(new ErrorMessage("Lỗi hệ thống"), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    public record ErrorMessage(Object message) { }
+    public record ErrorMessage(Object error) { }
 
 }

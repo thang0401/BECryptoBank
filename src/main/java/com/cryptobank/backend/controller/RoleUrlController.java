@@ -7,8 +7,10 @@ import com.cryptobank.backend.DTO.request.RoleUrlUpdateRequest;
 import com.cryptobank.backend.services.RoleUrlService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.web.PagedModel;
 import org.springframework.http.HttpStatus;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping(value = "/api/role/url", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Role Url", description = "Đường dẫn url cho từng vai trò tương ứng")
+@SecurityRequirement(name = "Bearer Authorization")
 public class RoleUrlController {
 
     private final RoleUrlService roleUrlService;
@@ -27,13 +30,12 @@ public class RoleUrlController {
     @ResponseStatus(HttpStatus.OK)
     @Operation(
         summary = "Lấy danh sách role url",
-        description = "Trả về danh sách các role url được phân trang với tham số page và size, có thể tìm kiếm cụ thể theo role id"
+        description = "Trả về danh sách các role url, có thể tìm kiếm cụ thể theo role id"
     )
-    public PagedModel<RoleUrlDTO> getAllRoleRoleUrls(
-        @Parameter(description = "ID role") @RequestParam(required = false) String roleId,
-        @Valid PageParamRequest request
+    public List<RoleUrlDTO> getAllRoleRoleUrls(
+        @Parameter(description = "ID role") @RequestParam(required = false) String roleId
     ) {
-        return new PagedModel<>(roleUrlService.getAll(roleId, request.toPageable()));
+        return roleUrlService.getAll(roleId);
     }
 
     @GetMapping("/{id}")

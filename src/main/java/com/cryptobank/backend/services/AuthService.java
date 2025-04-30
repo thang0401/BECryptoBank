@@ -1,6 +1,7 @@
 package com.cryptobank.backend.services;
 
 import com.cryptobank.backend.DTO.AuthResponse;
+import com.cryptobank.backend.DTO.AuthenticationResponse;
 import com.cryptobank.backend.DTO.UserAuthResponse;
 import com.cryptobank.backend.entity.*;
 import com.cryptobank.backend.exception.AuthException;
@@ -8,25 +9,23 @@ import com.cryptobank.backend.repository.*;
 import com.cryptobank.backend.utils.JwtUtil;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
-
 import eu.bitwalker.useragentutils.Browser;
 import eu.bitwalker.useragentutils.OperatingSystem;
 import eu.bitwalker.useragentutils.UserAgent;
-
+import jakarta.persistence.EntityManager;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-
 import org.apache.commons.lang3.RandomStringUtils;
-
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
@@ -46,79 +45,67 @@ public class AuthService {
     private final JwtUtil jwtUtil;
     private final GoogleIdTokenVerifier googleTokenVerifier;
     private final UserService userService;
+    private final EntityManager entityManager;
 
     // ---------------- LOGIN with Email/Password ------------------
     public UserAuthResponse loginWithEmail(String email, String password, boolean rememberMe, HttpServletRequest request,
-            HttpSession session) {
+                                           HttpSession session) {
         try {
             int loginResult = handleLogin(email, password, request, session);
-            User user = Optional.ofNullable(userRepository.findByEmail(email))
-                .orElseThrow(() -> new AuthException("User not found"));
+            User user = userRepository.findByEmail(email);
+            if (user == null) {
+                throw new AuthException("User not found");
+            }
 
             if (loginResult == 0) {
                 String role = userService.getUserRole(user.getId())
-                    .map(userRole -> userRole.getRole().getName())
-                    .orElse("USER");
+                        .map(userRole -> userRole.getRole().getName())
+                        .orElse("USER");
                 return buildUserAuthResponse(user, role, rememberMe);
             } else if (loginResult == 1) {
-                throw new AuthException("OTP verification required");
+                throw new AuthException("OTP verification required", user.getId());
             } else {
                 throw new AuthException("Invalid Email or Password");
             }
         } catch (Exception e) {
-            throw new AuthException( e.getMessage());
+            throw new AuthException(e.getMessage());
         }
     }
 
     private int handleLogin(String email, String password, HttpServletRequest request, HttpSession session) {
-        User user =Optional.ofNullable(userRepository.findByEmail(email)).orElse(null);
-        System.out.println(password);
-        System.out.println(passwordEncoder.encode(password));
+        User user = userRepository.findByEmail(email);
         if (user == null) {
             throw new AuthException("Invalid Email");
+        } else if (!passwordEncoder.matches(password, user.getPassword())) {
+            throw new AuthException("Invalid Password");
         }
-        else if(!passwordEncoder.matches(password, user.getPassword()))
-        {
-        	throw new AuthException("Invalid Password");
-        }
-//        System.out.println("Before "+user.getPassword());
-//        user.setPassword(new BCryptPasswordEncoder().encode("123456"));
-//        userRepository.save(user);
-//        System.out.println("After "+user.getPassword());
 
         String userAgent = request.getHeader("User-Agent");
         UserAgent ua = UserAgent.parseUserAgentString(userAgent);
         Browser browser = ua.getBrowser();
         OperatingSystem os = ua.getOperatingSystem();
 
-        // Tạo thông tin thiết bị hiện tại (chưa lưu vào DB)
         DeviceInfo currentDevice = createDeviceInfo(session, browser, os, user, request);
         String currentBrowser = currentDevice.getBrowser();
         String currentOs = currentDevice.getOs();
         String currentDeviceName = currentDevice.getDeviceName();
 
-        // Lấy tất cả thiết bị của user có in_use = true
         Optional<DeviceInfo> activeDeviceOpt = deviceInfoRepository.findByUserAndDeviceInUse(user.getId());
         if (activeDeviceOpt.isPresent()) {
             DeviceInfo activeDevice = activeDeviceOpt.get();
-            // So sánh thiết bị hiện tại với thiết bị active
             boolean isSameDevice = activeDevice.getBrowser().equals(currentBrowser) &&
-                                   activeDevice.getOs().equals(currentOs) &&
-                                   activeDevice.getDeviceName().equals(currentDeviceName);
+                    activeDevice.getOs().equals(currentOs) &&
+                    activeDevice.getDeviceName().equals(currentDeviceName);
             if (isSameDevice) {
-                // Nếu là cùng thiết bị, cập nhật lastLoginAt và không cần OTP
-                activeDevice.setLastLoginAt(OffsetDateTime.now());
+                activeDevice.setLastLoginAt(OffsetDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
                 deviceInfoRepository.save(activeDevice);
                 return 0;
             } else {
-                // Nếu là thiết bị khác, tìm thiết bị theo device_id
-                Optional<DeviceInfo> deviceOpt = deviceInfoRepository.findByInforOfDevice(currentDeviceName,currentBrowser,currentOs);
+                Optional<DeviceInfo> deviceOpt = deviceInfoRepository.findByInforOfDevice(currentDeviceName, currentBrowser, currentOs,email);
                 if (deviceOpt.isPresent()) {
-                    // Thiết bị đã tồn tại nhưng chưa xác thực
                     sendDeviceNotification(user, deviceOpt.get());
                     return 1;
                 } else {
-                    // Thiết bị mới, lưu và gửi thông báo
                     DeviceInfo newDevice = createDeviceInfo(session, browser, os, user, request);
                     deviceInfoRepository.save(newDevice);
                     sendFirstLoginNotification(user, newDevice);
@@ -126,7 +113,6 @@ public class AuthService {
                 }
             }
         } else {
-            // Không có thiết bị nào active, coi đây là thiết bị mới
             DeviceInfo newDevice = createDeviceInfo(session, browser, os, user, request);
             deviceInfoRepository.save(newDevice);
             sendFirstLoginNotification(user, newDevice);
@@ -135,52 +121,64 @@ public class AuthService {
     }
 
     // ---------------- LOGIN with Google ------------------
+    @Transactional(rollbackOn = Exception.class, dontRollbackOn  = AuthException.class)
     public UserAuthResponse loginWithGoogle(String idToken, boolean rememberMe, HttpServletRequest request,
-            HttpSession session) {
+                                            HttpSession session) {
         try {
             GoogleIdToken token = googleTokenVerifier.verify(idToken);
             if (token == null) {
-                throw new AuthException("Invalid Google ID Token");
+                throw new AuthException("Invalid Google ID Token !!");
             }
 
             GoogleIdToken.Payload payload = token.getPayload();
             String email = payload.getEmail();
             String googleId = token.getPayload().getSubject();
 
-            User user = getOrCreateGoogleUser(payload, googleId);
-            user.setLastLoginAt(OffsetDateTime.now());
-            userRepository.save(user);
+            User user = getOrCreateGoogleUser(payload, googleId); // Sửa lỗi: thay 'angiosperm' bằng 'getOrCreateGoogleUser'
+            user.setLastLoginAt(OffsetDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
+            user = userRepository.save(user);
+            entityManager.flush();
+            entityManager.refresh(user);
+            System.out.println("User saved, userId: " + user.getId());
+            if (user.getId() == null) {
+                System.err.println("Error: userId is null after saving user");
+                throw new IllegalStateException("User ID is null after saving");
+            }
 
             String userAgent = request.getHeader("User-Agent");
             UserAgent ua = UserAgent.parseUserAgentString(userAgent);
             Browser browser = ua.getBrowser();
             OperatingSystem os = ua.getOperatingSystem();
-            
+
             DeviceInfo currentDevice = createDeviceInfo(session, browser, os, user, request);
             String currentBrowser = currentDevice.getBrowser();
             String currentOs = currentDevice.getOs();
             String currentDeviceName = currentDevice.getDeviceName();
 
-            Optional<DeviceInfo> deviceOpt = deviceInfoRepository.findByInforOfDevice(currentDeviceName, currentBrowser,currentOs);
+            Optional<DeviceInfo> deviceOpt = deviceInfoRepository.findByInforOfDevice(currentDeviceName, currentBrowser,currentOs,user.getId());
             if (deviceOpt.isPresent()) {
                 if (!isDeviceInUse(user, deviceOpt.get())) {
+                    System.out.println("User ID before throwing exception (existing device): " + user.getId());
                     sendDeviceNotification(user, deviceOpt.get());
-                    throw new AuthException("OTP verification required");
+                    session.setAttribute("otpUserId", user.getId());
+                    throw new AuthException("OTP verification required", user.getId());
                 } else {
                     DeviceInfo device = deviceOpt.get();
-                    device.setLastLoginAt(OffsetDateTime.now());
+                    device.setLastLoginAt(OffsetDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
                     deviceInfoRepository.save(device);
                 }
             } else {
                 DeviceInfo newDevice = createDeviceInfo(session, browser, os, user, request);
                 deviceInfoRepository.save(newDevice);
+                System.out.println("User ID before throwing exception (new device): " + user.getId());
                 sendFirstLoginNotification(user, newDevice);
-                throw new AuthException("OTP verification required");
+                session.setAttribute("otpUserId", user.getId());
+                throw new AuthException("OTP verification required", user.getId());
             }
 
             String role = userService.getUserRole(user.getId())
-                .map(userRole -> userRole.getRole().getName())
-                .orElse("USER");
+                    .map(userRole -> userRole.getRole().getName())
+                    .orElse("USER");
 
             return buildUserAuthResponse(user, role, rememberMe);
         } catch (Exception e) {
@@ -191,7 +189,9 @@ public class AuthService {
     private User getOrCreateGoogleUser(GoogleIdToken.Payload payload, String googleId) {
         Optional<GoogleAuth> googleAuth = googleAuthRepository.findByGoogleId(googleId);
         if (googleAuth.isPresent()) {
-            return googleAuth.get().getUser();
+            User user = googleAuth.get().getUser();
+            System.out.println("Found existing GoogleAuth, userId: " + user.getId());
+            return user;
         }
 
         String email = payload.getEmail();
@@ -205,9 +205,13 @@ public class AuthService {
             user.setUsername(email.split("@")[0]);
             user.setAvatar((String) payload.get("picture"));
             user.setPassword(passwordEncoder.encode(RandomStringUtils.randomAlphanumeric(10)));
-            user.setCreatedAt(OffsetDateTime.now());
-            user = userRepository.save(user);
+            user.setCreatedAt(OffsetDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
         }
+
+        user = userRepository.save(user);
+        entityManager.flush();
+        entityManager.refresh(user);
+        System.out.println("User saved in getOrCreateGoogleUser, userId: " + user.getId());
 
         GoogleAuth newAuth = new GoogleAuth();
         newAuth.setGoogleId(googleId);
@@ -226,18 +230,26 @@ public class AuthService {
     public boolean verifyOTP(User user, String otp) {
         UserOtp userOtp = userOtpRepository.findByUserId(user.getId());
         if (userOtp == null) {
+            System.out.println("No OTP found for user: " + user.getId());
             return false;
         }
-        return otp.equals(userOtp.getOtpCode());
+        LocalDateTime currentTime = LocalDateTime.now();
+        System.out.println("Verifying OTP for user: " + user.getId() + ", currentTime: " + currentTime + ", otpEndTime: " + userOtp.getTimeEnd());
+        if (userOtp.getTimeEnd().isBefore(currentTime)) {
+            System.out.println("OTP expired for user: " + user.getId());
+            return false;
+        }
+        boolean isValid = otp.equals(userOtp.getOtpCode());
+
+        return isValid;
     }
 
     public Optional<DeviceInfo> findDeviceByIdAndUser(String deviceId, User user) {
         return deviceInfoRepository.findByDeviceIdAndUser(deviceId, user);
     }
-    
-    public Optional<DeviceInfo> findByInforOfDevice(String currentDeviceName,String currentBrowser,String currentOs)
-    {
-    	return deviceInfoRepository.findByInforOfDevice(currentDeviceName, currentBrowser, currentOs);
+
+    public Optional<DeviceInfo> findByInforOfDevice(String currentDeviceName, String currentBrowser, String currentOs,String userId) {
+        return deviceInfoRepository.findByInforOfDevice(currentDeviceName, currentBrowser, currentOs,userId);
     }
 
     public void saveDevice(DeviceInfo device) {
@@ -245,87 +257,137 @@ public class AuthService {
     }
 
     private DeviceInfo createDeviceInfo(HttpSession session, Browser browser, OperatingSystem os, User user,
-            HttpServletRequest request) {
+                                        HttpServletRequest request) {
+        if (user == null || user.getId() == null) {
+            System.err.println("Error: User or userId is null in createDeviceInfo");
+            throw new IllegalArgumentException("User cannot be null");
+        }
         DeviceInfo deviceInfo = new DeviceInfo();
         deviceInfo.setDeviceId(session.getId());
         deviceInfo.setUser(user);
         deviceInfo.setIpAddress(request.getRemoteAddr());
 
-        // Gán browser
-        String browserName = "Unknown Browser";
-        if (browser != null && browser != Browser.UNKNOWN) {
-            browserName = browser.getName();  
-        }
+        String browserName = browser != null && browser != Browser.UNKNOWN ? browser.getName() : "Unknown Browser";
         deviceInfo.setBrowser(browserName);
 
-        // Gán OS
-        String osName = "Unknown OS";
-        if (os != null && os != OperatingSystem.UNKNOWN) {
-            osName = os.getName();
-        }
+        String osName = os != null && os != OperatingSystem.UNKNOWN ? os.getName() : "Unknown OS";
         deviceInfo.setOs(osName);
-        
-     // Gán deviceName
+
         String deviceName = "Unknown Device";
         String userAgent = request.getHeader("User-Agent");
         if (userAgent != null && !userAgent.isBlank()) {
-            // Suy ra loại thiết bị từ User-Agent
             if (userAgent.toLowerCase().contains("mobile")) {
                 deviceName = "Mobile Device";
             } else if (userAgent.contains("Windows")) {
                 deviceName = "Windows PC";
-            } 
-            else if (userAgent.contains("iPhone")) {
+            } else if (userAgent.contains("iPhone")) {
                 deviceName = "iPhone Device";
-            }else if (userAgent.contains("Macintosh")) {
+            } else if (userAgent.contains("Macintosh")) {
                 deviceName = "Mac";
             }
-            
         }
-
-        deviceInfo.setDeviceName(deviceName); // Có thể thêm logic để lấy tên thiết bị
-        deviceInfo.setCreatedAt(OffsetDateTime.now());
-        deviceInfo.setLastLoginAt(OffsetDateTime.now());
+        deviceInfo.setDeviceName(deviceName);
+        deviceInfo.setCreatedAt(OffsetDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
+        deviceInfo.setLastLoginAt(OffsetDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
         deviceInfo.setInUse(false);
         return deviceInfo;
     }
 
-    private String createOtp(User user) {
-        int otpCode = 100000 + new Random().nextInt(900000);
-        UserOtp userOtp = userOtpRepository.findByUserId(user.getId());
-        if (userOtp == null) {
-            userOtp = new UserOtp();
-            userOtp.randomId();
+    @Transactional
+    public String createOtp(User user) {
+        if (user == null || user.getId() == null) {
+            System.err.println("Error: User or userId is null in createOtp");
+            throw new IllegalArgumentException("User cannot be null");
         }
+        System.out.println("Creating OTP for userId: " + user.getId());
+        int otpCode = 100000 + new Random().nextInt(900000);
+        try {
+            System.out.println("Attempting to delete OTP for user: " + user.getId());
 
-        userOtp.setUser(user);
-        userOtp.setOtpCode(String.valueOf(otpCode));
-        userOtp.setTimeStart(LocalDateTime.now());
-        userOtp.setTimeEnd(LocalDateTime.now().plusMinutes(2));
-        userOtpRepository.save(userOtp);
+            UserOtp checkAfterDelete = userOtpRepository.findByUserId(user.getId());
+            System.out.println("After delete, OTP record: " + (checkAfterDelete == null ? "none" : checkAfterDelete.getTimeEnd()));
+            
+            UserOtp userOtp;
+            if(userOtpRepository.findByUser(user).isEmpty())
+            {
+            	 userOtp = new UserOtp();
+                 userOtp.randomId();
+                 userOtp.setUser(user);
+                 userOtp.setOtpCode(String.valueOf(otpCode));
+                 LocalDateTime startTime = LocalDateTime.now();
+                 LocalDateTime endTime = startTime.plusMinutes(5);
+                 userOtp.setTimeStart(startTime);
+                 userOtp.setTimeEnd(endTime);
+                 System.out.println("Creating OTP for user: " + user.getId() + ", startTime: " + startTime + ", endTime: " + endTime);
 
-        return String.valueOf(otpCode);
+                 UserOtp savedOtp = userOtpRepository.saveAndFlush(userOtp);
+                 System.out.println("Saved OTP for user: " + user.getId() + ", savedTimeEnd: " + (savedOtp != null ? savedOtp.getTimeEnd() : "null"));
+                 if (savedOtp == null) {
+                     throw new RuntimeException("Failed to save OTP for user: " + user.getId());
+                 }
+            }
+            else
+            {
+            	userOtp=userOtpRepository.findByUser(user).get();
+                userOtp.setUser(user);
+                userOtp.setOtpCode(String.valueOf(otpCode));
+                LocalDateTime startTime = LocalDateTime.now();
+                LocalDateTime endTime = startTime.plusMinutes(5);
+                userOtp.setTimeStart(startTime);
+                userOtp.setTimeEnd(endTime);
+                System.out.println("Update OTP for user: " + user.getId() + ", startTime: " + startTime + ", endTime: " + endTime);
+
+                UserOtp savedOtp = userOtpRepository.saveAndFlush(userOtp);
+                System.out.println("Saved OTP for user: " + user.getId() + ", savedTimeEnd: " + (savedOtp != null ? savedOtp.getTimeEnd() : "null"));
+                if (savedOtp == null) {
+                    throw new RuntimeException("Failed to save OTP for user: " + user.getId());
+                }
+            }
+            
+           
+            return String.valueOf(otpCode);
+        } catch (Exception e) {
+            System.err.println("Error in createOtp for user: " + user.getId() + ", message: " + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Failed to create OTP", e);
+        }
     }
 
     private void sendDeviceNotification(User user, DeviceInfo device) {
-        String otp = createOtp(user);
-        String subject = "Đăng nhập từ thiết bị khác!";
-        String message = buildDeviceMessage(user, device, otp, false);
-        emailDeviceService.sendEmail(user.getEmail(), subject, message);
+        if (user == null || user.getId() == null || user.getEmail() == null) {
+            System.err.println("Error: Invalid user data in sendDeviceNotification");
+            throw new IllegalArgumentException("User or user email cannot be null");
+        }
+        try {
+            String otp = createOtp(user);
+            emailDeviceService.sendOtpEmail(user, device, otp);
+            System.out.println("Sent device notification for user: " + user.getId() + ", email: " + user.getEmail());
+        } catch (Exception e) {
+            System.err.println("Error sending device notification for user: " + user.getId() + ", message: " + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Failed to send device notification", e);
+        }
     }
 
     private void sendFirstLoginNotification(User user, DeviceInfo device) {
-        String otp = createOtp(user);
-        String subject = "Lần đầu đăng nhập!";
-        String message = buildDeviceMessage(user, device, otp, true);
-        emailDeviceService.sendEmail(user.getEmail(), subject, message);
+        if (user == null || user.getId() == null || user.getEmail() == null) {
+            System.err.println("Error: Invalid user data in sendFirstLoginNotification");
+            throw new IllegalArgumentException("User or user email cannot be null");
+        }
+        try {
+            String otp = createOtp(user);
+            emailDeviceService.sendOtpEmail(user, device, otp);
+            System.out.println("Sent first login notification for user: " + user.getId() + ", email: " + user.getEmail());
+        } catch (Exception e) {
+            System.err.println("Error sending first login notification for user: " + user.getId() + ", message: " + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Failed to send first login notification", e);
+        }
     }
 
     private String buildDeviceMessage(User user, DeviceInfo device, String otp, boolean isFirstLogin) {
         String title = isFirstLogin ? "Chúng tôi nhận thấy bạn là người dùng mới"
                 : "Tài khoản của bạn đang đăng nhập từ thiết bị khác";
-        
-     // Xử lý trường hợp deviceName là null
         String deviceName = device.getDeviceName() != null ? device.getDeviceName() : "Unknown Device";
 
         return String.format("""
@@ -339,10 +401,10 @@ public class AuthService {
                 🔹 IP: %s
                 🔹 Thời gian: %s
 
-                🔹 Mã OTP (hiệu lực 2 phút): %s
+                🔹 Mã OTP (hiệu lực 5 phút): %s
 
                 Nếu không phải bạn, vui lòng đổi mật khẩu ngay!
-                """, user.getFullName(), title, deviceName, device.getOs(),
+                """, user.getFullName() != null ? user.getFullName() : "User", title, deviceName, device.getOs(),
                 device.getBrowser(), device.getIpAddress(),
                 device.getLastLoginAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")), otp);
     }
@@ -373,7 +435,6 @@ public class AuthService {
         response.setEmail(user.getEmail());
         response.setFullName(user.getFullName());
         response.setUsername(user.getUsername());
-        response.setPassword(user.getPassword());
         response.setAvatar(user.getAvatar());
         response.setKycStatus(user.getKycStatus());
         response.setWalletAddress(user.getWalletAddress());
@@ -381,4 +442,38 @@ public class AuthService {
         response.setRememberMe(rememberMe);
         return response;
     }
+
+    @Transactional
+    public AuthenticationResponse verifyOtp(String otp, String email, DeviceInfo deviceInfo) {
+        User user = userRepository.findByEmail(email);
+        if (user == null) {
+            throw new IllegalArgumentException("User not found with email: " + email);
+        }
+        UserOtp userOtp = userOtpRepository.findByUserId(user.getId());
+        System.out.println("Found OTP for user: " + user.getId() + ", otpId: " + (userOtp != null ? userOtp.getId() : "null") + ", otpCode: " + (userOtp != null ? userOtp.getOtpCode() : "null") + ", timeEnd: " + (userOtp != null ? userOtp.getTimeEnd() : "null"));
+        if (userOtp == null) {
+            throw new IllegalArgumentException("No OTP found for user");
+        }
+        LocalDateTime currentTime = LocalDateTime.now();
+        System.out.println("Verifying OTP for user: " + user.getId() + ", currentTime: " + currentTime + ", otpEndTime: " + userOtp.getTimeEnd());
+        if (userOtp.getTimeEnd().isBefore(currentTime)) {
+            throw new IllegalArgumentException("Mã OTP đã hết hạn");
+        }
+        if (!userOtp.getOtpCode().equals(otp)) {
+            throw new IllegalArgumentException("Mã OTP không đúng");
+        }
+
+        DeviceInfo savedDeviceInfo = emailDeviceService.updateDeviceInfo(deviceInfo, user.getId());
+        String role = userService.getUserRole(user.getId())
+                .map(userRole -> userRole.getRole().getName())
+                .orElse("USER");
+        UserAuthResponse userResponse = buildUserAuthResponse(user, role, true);
+        return AuthenticationResponse.builder()
+                .accessToken(jwtUtil.generateAccessToken(user.getId()))
+                .refreshToken(jwtUtil.generateRefreshToken(user.getId()))
+                .deviceInfo(savedDeviceInfo)
+                .user(userResponse)
+                .build();
+    }
+
 }
