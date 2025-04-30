@@ -33,4 +33,7 @@ public class UserInformation {
     private Boolean  isBankAccount;
     private Boolean  isReferralCode;
     private OffsetDateTime createdAt;
+    private String idCardFrontImgUrl;
+    private String idCardBackImgUrl;
+    private String idCardNumber;
 }
