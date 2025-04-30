@@ -3,8 +3,12 @@ package com.cryptobank.backend.services;
 import com.cryptobank.backend.entity.DeviceInfo;
 import com.cryptobank.backend.entity.User;
 import com.cryptobank.backend.repository.DeviceInforDAO;
+
+import jakarta.mail.internet.MimeMessage;
+
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
@@ -21,57 +25,68 @@ public class EmailDeviceService {
 		this.deviceInfoRepository = deviceInfoRepository;
 	}
 
-	public void sendEmail(String to, String subject, String text) {
-		try {
-			SimpleMailMessage message = new SimpleMailMessage();
-			message.setTo(to);
-			message.setSubject(subject);
-			message.setText(text);
-			mailSender.send(message);
-			System.out.println("Email sent successfully to: " + to);
-		} catch (Exception e) {
-			System.err.println("Error sending email to: " + to + ", message: " + e.getMessage());
-			e.printStackTrace();
-			throw new RuntimeException("Failed to send email", e);
-		}
+	public void sendEmail(String to, String subject, String text, boolean isHtml) {
+	    try {
+	        MimeMessage mimeMessage = mailSender.createMimeMessage();
+	        MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+
+	        helper.setTo(to);
+	        helper.setSubject(subject);
+	        helper.setText(text, isHtml); // isHtml = true để gửi nội dung HTML
+	        helper.setFrom("phongpvps36848@fpt.edu.vn"); 
+
+	        mailSender.send(mimeMessage);
+	        System.out.println("Email sent successfully to: " + to);
+	    } catch (Exception e) {
+	        System.err.println("Error sending email to: " + to + ", message: " + e.getMessage());
+	        e.printStackTrace();
+	        throw new RuntimeException("Failed to send email", e);
+	    }
 	}
 
 	public void sendOtpEmail(User user, DeviceInfo deviceInfo, String otp) {
-		if (user == null || user.getId() == null || user.getEmail() == null) {
-			System.err.println("Error: Invalid user data for sending OTP");
-			throw new IllegalArgumentException("User or user email cannot be null");
-		}
-		if (deviceInfo == null) {
-			System.err.println("Error: DeviceInfo is null for sending OTP");
-			throw new IllegalArgumentException("DeviceInfo cannot be null");
-		}
-		try {
-			String subject = "Đăng nhập từ thiết bị khác!?";
-			String content = String.format("""
-                    Xin chào %s,
+	    if (user == null || user.getId() == null || user.getEmail() == null) {
+	        System.err.println("Error: Invalid user data for sending OTP");
+	        throw new IllegalArgumentException("User or user email cannot be null");
+	    }
+	    if (deviceInfo == null) {
+	        System.err.println("Error: DeviceInfo is null for sending OTP");
+	        throw new IllegalArgumentException("DeviceInfo cannot be null");
+	    }
+	    try {
+	        String subject = "Đăng nhập từ thiết bị khác!?";
+	        String content = String.format("""
+	                <html>
+	                <body style="font-family: Arial, sans-serif; line-height: 1.6;">
+	                    <h3>Xin chào %s,</h3>
+	                    <p>Tài khoản của bạn đang đăng nhập từ thiết bị khác:</p>
+	                    <ul>
+	                        <li><strong>Thiết bị:</strong> %s</li>
+	                        <li><strong>Hệ điều hành:</strong> %s</li>
+	                        <li><strong>Trình duyệt:</strong> %s</li>
+	                        <li><strong>IP:</strong> %s</li>
+	                        <li><strong>Thời gian:</strong> %s</li>
+	                        <li><strong>Mã OTP (hiệu lực 5 phút):</strong> <span style="font-weight: bold; color: #d32f2f;">%s</span></li>
+	                    </ul>
+	                    <p>Nếu không phải bạn, vui lòng đổi mật khẩu ngay!</p>
+	                </body>
+	                </html>
+	                """, 
+	                user.getFullName() != null ? user.getFullName() : "User",
+	                deviceInfo.getDeviceName() != null ? deviceInfo.getDeviceName() : "Unknown Device",
+	                deviceInfo.getOs() != null ? deviceInfo.getOs() : "Unknown OS",
+	                deviceInfo.getBrowser() != null ? deviceInfo.getBrowser() : "Unknown Browser",
+	                deviceInfo.getIpAddress() != null ? deviceInfo.getIpAddress() : "Unknown IP",
+	                OffsetDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
+	                otp);
 
-                    Tài khoản của bạn đang đăng nhập từ thiết bị khác:
-
-                    🔹 Thiết bị: %s
-                    🔹 Hệ điều hành: %s
-                    🔹 Trình duyệt: %s
-                    🔹 IP: %s
-                    🔹 Thời gian: %s
-
-                    🔹 Mã OTP (hiệu lực 5 phút): %s
-
-                    Nếu không phải bạn, vui lòng đổi mật khẩu ngay!
-                    """, user.getFullName() != null ? user.getFullName() : "User",
-					deviceInfo.getDeviceName() != null ? deviceInfo.getDeviceName() : "Unknown Device",
-					deviceInfo.getOs(), deviceInfo.getBrowser(), deviceInfo.getIpAddress(),
-					OffsetDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")), otp);
-			sendEmail(user.getEmail(), subject, content);
-			System.out.println("Sent OTP email for user: " + user.getId() + ", email: " + user.getEmail());
-		} catch (Exception e) {
-			System.err.println("Error sending OTP email for user: " + user.getId() + ", message: " + e.getMessage());
-			e.printStackTrace();
-			throw new RuntimeException("Failed to send OTP email", e);
-		}
+	        sendEmail(user.getEmail(), subject, content, true); // true để chỉ định nội dung là HTML
+	        System.out.println("Sent OTP email for user: " + user.getId() + ", email: " + user.getEmail());
+	    } catch (Exception e) {
+	        System.err.println("Error sending OTP email for user: " + user.getId() + ", message: " + e.getMessage());
+	        e.printStackTrace();
+	        throw new RuntimeException("Failed to send OTP email", e);
+	    }
 	}
 
 	public DeviceInfo updateDeviceInfo(DeviceInfo deviceInfo, String userId) {
