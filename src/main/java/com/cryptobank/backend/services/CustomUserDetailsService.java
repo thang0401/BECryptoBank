@@ -3,6 +3,8 @@ package com.cryptobank.backend.services;
 import com.cryptobank.backend.model.CustomerUserDetails;
 import com.cryptobank.backend.repository.UserDAO;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -12,7 +14,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
-
+    @Autowired
     private final UserDAO repository;
     private final PasswordEncoder encoder;
 

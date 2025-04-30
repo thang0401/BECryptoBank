@@ -8,12 +8,26 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import com.cryptobank.backend.DTO.*;
+import com.cryptobank.backend.DTO.AuthResponse;
+import com.cryptobank.backend.DTO.GoogleLoginRequest;
+import com.cryptobank.backend.DTO.LoginRequestAuth;
+import com.cryptobank.backend.DTO.NameSplit;
+import com.cryptobank.backend.DTO.OtpRequest;
+import com.cryptobank.backend.DTO.ResetPasswordRequest;
+import com.cryptobank.backend.DTO.UserAuthResponse;
 import com.cryptobank.backend.entity.DeviceInfo;
 import com.cryptobank.backend.entity.User;
 import com.cryptobank.backend.entity.UserOtp;
+
 import com.cryptobank.backend.repository.DeviceInforDAO;
 import com.cryptobank.backend.repository.UserDAO;
 import com.cryptobank.backend.repository.UserOtpRepository;
@@ -23,11 +37,9 @@ import com.cryptobank.backend.services.UserService;
 import jakarta.security.auth.message.AuthException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-
-import eu.bitwalker.useragentutils.UserAgent;
 import eu.bitwalker.useragentutils.Browser;
 import eu.bitwalker.useragentutils.OperatingSystem;
+import eu.bitwalker.useragentutils.UserAgent;
 
 @RestController
 @RequestMapping("/api/auth")

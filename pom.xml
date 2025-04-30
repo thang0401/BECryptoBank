@@ -136,14 +136,20 @@
 			<version>6.8</version>
 		</dependency>
 		<dependency>
-		    <groupId>eu.bitwalker</groupId>
-		    <artifactId>UserAgentUtils</artifactId>
-		    <version>1.21</version>
+			<groupId>eu.bitwalker</groupId>
+			<artifactId>UserAgentUtils</artifactId>
+			<version>1.21</version>
+		</dependency>
+
+		<dependency>
+			<groupId>vn.payos</groupId>
+			<artifactId>payos-java</artifactId>
+			<version>1.0.3</version>
 		</dependency>
 		<dependency>
-    <groupId>vn.payos</groupId>
-    <artifactId>payos-java</artifactId>
-    <version>1.0.3</version>
+    <groupId>io.github.cdimascio</groupId>
+    <artifactId>java-dotenv</artifactId>
+    <version>5.2.2</version>
 </dependency>
 	</dependencies>
 

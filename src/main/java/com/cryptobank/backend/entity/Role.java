@@ -6,7 +6,6 @@ import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 @Getter
 @Setter
@@ -29,23 +28,5 @@ public class Role extends BaseEntity {
 
     @OneToMany(mappedBy = "role")
     private List<UserRole> userRoles = new ArrayList<>();
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
-
-        Role role = (Role) o;
-        return name.equals(role.name) && Objects.equals(note, role.note);
-    }
-
-    @Override
-    public int hashCode() {
-        int result = super.hashCode();
-        result = 31 * result + name.hashCode();
-        result = 31 * result + Objects.hashCode(note);
-        return result;
-    }
 
 }

@@ -11,7 +11,9 @@ import com.cryptobank.backend.repository.UserDAO;
 import com.cryptobank.backend.repository.userBankAccountRepository;
 import jakarta.transaction.Transactional;
 import java.math.BigDecimal;
+import java.net.http.HttpResponse;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
@@ -25,260 +27,250 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import vn.payos.*;
+import vn.payos.exception.PayOSException;
+import vn.payos.type.CheckoutResponseData;
+import vn.payos.type.PaymentData;
 
 @Service
 public class BankTransferService2 {
 
-    @Value("${payos.base-url}")
-    private String payosBaseUrl;
+	@Value("${payos.base-url}")
+	private String payosBaseUrl;
 
-    @Value("${payos.client-id}")
-    private String payosClientId;
+	@Value("${payos.client-id}")
+	private String payosClientId;
 
-    @Value("${payos.api-key}")
-    private String payosApiKey;
-    
-    @Autowired
-    private PaymentService paymentService;
-    
-    @Autowired
-    private DebitWalletService debitWalletService;
-    
-    @Autowired
-    private ExchangeRateService exchangeRateService;
-    
-    @Autowired
-    private DebitWalletDAO debitWalletRepository;
-    
-    @Autowired
-    private StatusDAO statusRepository;
-    
-    @Autowired
-    private UserDAO userRepository;
-    
-    @Autowired 
-    private UsdcVndTransactionRepository transactionRepository;
-    
-    @Autowired
-    private userBankAccountRepository userBankAccountRepository;
+	@Value("${payos.api-key}")
+	private String payosApiKey;
 
-    private final RestTemplate restTemplate;
-    private final UserService userService;
-    
-    @Autowired
-    private PayOSService payosService;
+	@Value("${payos.checksum-key}")
+	private String checksumKey;
 
-    public BankTransferService2(RestTemplate restTemplate, UserService userService) {
-        this.restTemplate = restTemplate;
-        this.userService = userService;
-    }
+	@Autowired
+	private PaymentService paymentService;
 
-    // API nạp tiền - Trả về mã QR
-    public Map<String, String> depositToPayOS(String orderId, Double amount, String description, String returnUrl, String cancelUrl) {
-        String url = payosBaseUrl.endsWith("/") ? payosBaseUrl + "v2/payment-requests" : payosBaseUrl + "/v2/payment-requests";
-        Map<String, String> responseBody = new HashMap<>();
+	@Autowired
+	private DebitWalletService debitWalletService;
 
-        try {
-            // Kiểm tra đầu vào
-            if (amount == null || amount <= 0) {
-                responseBody.put("error", "amount phải lớn hơn 0");
-                return responseBody;
-            }
-            if (description == null || description.trim().isEmpty()) {
-                responseBody.put("error", "description không được để trống");
-                return responseBody;
-            }
-            if (returnUrl == null || returnUrl.trim().isEmpty()) {
-                responseBody.put("error", "returnUrl không được để trống");
-                return responseBody;
-            }
-            if (cancelUrl == null || cancelUrl.trim().isEmpty()) {
-                responseBody.put("error", "cancelUrl không được để trống");
-                return responseBody;
-            }
+	@Autowired
+	private ExchangeRateService exchangeRateService;
 
-            // Xử lý orderCode
-            int orderCode;
-            if ("auto".equalsIgnoreCase(orderId)) {
-                // Tạo orderCode ngẫu nhiên 6 chữ số (100000-999999)
-                orderCode = 100000 + new Random().nextInt(900000);
-            } else {
-                try {
-                    // Thử ép kiểu orderId thành số nguyên
-                    orderCode = Integer.parseInt(orderId);
-                } catch (NumberFormatException e) {
-                    // Nếu không phải số, tạo orderCode ngẫu nhiên 6 chữ số
-                    orderCode = 100000 + new Random().nextInt(900000);
-                }
-            }
+	@Autowired
+	private DebitWalletDAO debitWalletRepository;
 
-            // Tạo body theo yêu cầu của PayOS
-            Map<String, Object> requestBody = new HashMap<>();
-            requestBody.put("orderCode", orderCode);
-            requestBody.put("amount", amount.intValue()); // amount là số nguyên (VND)
-            requestBody.put("description", description);
-            requestBody.put("returnUrl", returnUrl);
-            requestBody.put("cancelUrl", cancelUrl);
+	@Autowired
+	private StatusDAO statusRepository;
 
-            // Thiết lập headers
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.set("x-client-id", payosClientId);
-            headers.set("x-api-key", payosApiKey);
+	@Autowired
+	private UserDAO userRepository;
 
-            // Ghi log để debug
-            System.out.println("PayOS Request URL: " + url);
-            System.out.println("PayOS Request Headers: " + headers);
-            System.out.println("PayOS Request Body: " + requestBody);
+	@Autowired
+	private UsdcVndTransactionRepository transactionRepository;
 
-            // Gửi yêu cầu
-            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
-            ResponseEntity<Map> response;
-            try {
-                response = restTemplate.exchange(url, HttpMethod.POST, entity, Map.class);
-            } catch (HttpClientErrorException e) {
-                System.err.println("PayOS Error: " + e.getStatusCode() + " - " + e.getResponseBodyAsString());
-                responseBody.put("error", "Lỗi khi gọi API PayOS: " + e.getResponseBodyAsString());
-                return responseBody;
-            }
+	@Autowired
+	private userBankAccountRepository userBankAccountRepository;
 
-            // Xử lý phản hồi
-            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
-                System.out.println("PayOS Response Body: " + response.getBody());
-                Map<String, Object> responseData = response.getBody();
-                String checkoutUrl = null;
+	private final RestTemplate restTemplate;
+	private final UserService userService;
 
-                // Kiểm tra các trường có thể chứa link thanh toán
-                if (responseData.containsKey("data")) {
-                    Map<String, Object> data = (Map<String, Object>) responseData.get("data");
-                    checkoutUrl = (String) data.get("checkoutUrl");
-                    if (checkoutUrl == null) {
-                        checkoutUrl = (String) data.get("paymentLink");
-                    }
-                } else {
-                    checkoutUrl = (String) responseData.get("checkoutUrl");
-                    if (checkoutUrl == null) {
-                        checkoutUrl = (String) responseData.get("paymentLink");
-                    }
-                }
+	@Autowired
+	private PayOSService payosService;
 
-                if (checkoutUrl != null) {
-                    responseBody.put("checkoutUrl", checkoutUrl);
-                    responseBody.put("qrCodeUrl", "https://chart.googleapis.com/chart?chs=250x250&cht=qr&chl=" + checkoutUrl);
-                    responseBody.put("orderCode", String.valueOf(orderCode));
-                } else {
-                    responseBody.put("error", "Không tìm thấy checkoutUrl hoặc paymentLink trong phản hồi từ PayOS");
-                }
-            } else {
-                responseBody.put("error", "Lỗi khi tạo giao dịch: Phản hồi không hợp lệ từ PayOS");
-            }
+	public BankTransferService2(RestTemplate restTemplate, UserService userService) {
+		this.restTemplate = restTemplate;
+		this.userService = userService;
+	}
 
-        } catch (Exception e) {
-            System.err.println("PayOS Error: " + e.getMessage());
-            e.printStackTrace();
-            responseBody.put("error", "Lỗi khi tạo giao dịch: " + e.getMessage());
-        }
+	// API nạp tiền - Trả về mã QR
+	public Map<String, String> depositToPayOS(String orderId, Double amount, String description, String returnUrl,
+			String cancelUrl, String userId) {
+		Map<String, String> responseBody = new HashMap<>();
 
-        return responseBody;
-    }
+		try {
+			// Validate inputs
+			if (amount == null || amount <= 0) {
+				responseBody.put("error", "amount phải lớn hơn 0");
+				return responseBody;
+			}
+			if (description == null || description.trim().isEmpty()) {
+				description = "" + userId; // Nhúng user_id vào description
+			} else {
+				description = description + "" + userId; // Thêm user_id vào description
+			}
+			if (returnUrl == null || returnUrl.trim().isEmpty()) {
+				responseBody.put("error", "returnUrl không được để trống");
+				return responseBody;
+			}
+			if (cancelUrl == null || cancelUrl.trim().isEmpty()) {
+				responseBody.put("error", "cancelUrl không được để trống");
+				return responseBody;
+			}
 
-    // API rút tiền - Xử lý yêu cầu rút tiền
-    @Transactional
-    public Map<String, String> requestWithdraw(String userId, BigDecimal usdcAmount, String bankAccount, String bankCode) {
-        Map<String, String> responseBody = new HashMap<>();
+			// Generate unique orderCode
+			Integer orderCode;
+			if ("auto".equalsIgnoreCase(orderId)) {
+				String uniqueId = System.currentTimeMillis() + String.valueOf(new Random().nextInt(10000));
+				orderCode = Integer.parseInt(uniqueId.substring(uniqueId.length() - 9));
+			} else {
+				try {
+					orderCode = Integer.parseInt(orderId);
+				} catch (NumberFormatException e) {
+					String uniqueId = System.currentTimeMillis() + String.valueOf(new Random().nextInt(10000));
+					orderCode = Integer.parseInt(uniqueId.substring(uniqueId.length() - 9));
+				}
+			}
 
-        // Kiểm tra số dư USDC của user
-        DebitWallet debitWallet = debitWalletRepository.findByUserId(userId)
-                .stream()
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy ví của user: " + userId));
+			// Initialize PayOS
+			final PayOS payos = new PayOS(payosClientId, payosApiKey, checksumKey);
 
-        if (debitWallet.getBalance().compareTo(usdcAmount) < 0) {
-            responseBody.put("error", "Số dư không đủ!");
-            return responseBody;
-        }
+			// Build PaymentData
+			PaymentData paymentData = PaymentData.builder().orderCode(Long.parseLong(orderCode.toString()))
+					.amount(amount.intValue()).description(description) // Sử dụng description có user_id
+					.returnUrl(returnUrl).cancelUrl(cancelUrl).build();
 
-        // Lấy tỷ giá USDC/VND
-        BigDecimal exchangeRate = BigDecimal.valueOf(exchangeRateService.getUsdcVndRate());
-        if (exchangeRate.compareTo(BigDecimal.ZERO) <= 0) {
-            responseBody.put("error", "Không thể lấy tỷ giá USDC/VND!");
-            return responseBody;
-        }
+			// Log for debugging
+			System.out.println("PayOS Client ID: " + payosClientId);
+			System.out.println("PaymentData: " + paymentData);
 
-        // Chuyển đổi USDC → VND
-        BigDecimal vndAmount = usdcAmount.multiply(exchangeRate);
+			// Call PayOS API
+			CheckoutResponseData result = payos.createPaymentLink(paymentData);
 
-        // Lấy trạng thái "PENDING"
-        Status pendingStatus = Optional.ofNullable(statusRepository.findByName("PENDING"))
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy trạng thái PENDING"));
+			// Process response
+			responseBody.put("checkoutUrl", result.getCheckoutUrl());
+			responseBody.put("qrCodeUrl",
+					"https://chart.googleapis.com/chart?chs=250x250&cht=qr&chl=" + result.getCheckoutUrl());
+			responseBody.put("orderCode", String.valueOf(orderCode));
 
-        // Tạo giao dịch rút tiền (chờ duyệt)
-        UsdcVndTransaction transaction = new UsdcVndTransaction();
-        transaction.setDebitWallet(debitWallet);
-        transaction.setVndAmount(vndAmount);
-        transaction.setUsdcAmount(usdcAmount);
-        transaction.setExchangeRate(exchangeRate);
-        transaction.setType("WITHDRAW");
-        transaction.setStatus(pendingStatus);
-        transactionRepository.save(transaction);
+		} catch (PayOSException e) {
+			System.err.println("PayOS Error: " + e.getMessage());
+			e.printStackTrace();
+			responseBody.put("error", "Lỗi khi gọi API PayOS: " + e.getMessage());
+			if (e.getMessage().contains("231") || e.getMessage().contains("Đơn thanh toán đã tồn tại")) {
+				responseBody.put("error", "Đơn thanh toán đã tồn tại. Vui lòng sử dụng orderCode khác.");
+			}
+		} catch (Exception e) {
+			System.err.println("Unexpected Error: " + e.getMessage());
+			e.printStackTrace();
+			responseBody.put("error", "Lỗi khi tạo giao dịch: " + e.getMessage());
+		}
 
-        responseBody.put("message", "Yêu cầu rút tiền đã được gửi, đang chờ xét duyệt!");
-        return responseBody;
-    }
-    
-    @Transactional
+		return responseBody;
+	}
+
+	// API rút tiền - Xử lý yêu cầu rút tiền
+	@Transactional
+	public Map<String, String> requestWithdraw(String userId, BigDecimal usdcAmount) {
+		Map<String, String> responseBody = new HashMap<>();
+
+		// Kiểm tra số dư USDC của user
+		DebitWallet debitWallet = debitWalletRepository.findByUserId(userId).stream().findFirst()
+				.orElseThrow(() -> new RuntimeException("Không tìm thấy ví của user: " + userId));
+
+		if (debitWallet.getBalance().compareTo(usdcAmount) < 0) {
+			responseBody.put("error", "Số dư không đủ!");
+			return responseBody;
+		}
+
+		// Lấy tỷ giá USDC/VND
+		BigDecimal exchangeRate = BigDecimal.valueOf(exchangeRateService.getUsdcVndRate());
+		if (exchangeRate.compareTo(BigDecimal.ZERO) <= 0) {
+			responseBody.put("error", "Không thể lấy tỷ giá USDC/VND!");
+			return responseBody;
+		}
+
+		// Chuyển đổi USDC → VND
+		BigDecimal vndAmount = usdcAmount.multiply(exchangeRate);
+
+		// Lấy trạng thái "PENDING"
+		Status pendingStatus = Optional.ofNullable(statusRepository.findById("cvvveejme6nnaun2s4a0"))
+				.orElseThrow(() -> new RuntimeException("Không tìm thấy trạng thái PENDING")).get();
+
+		// Tạo giao dịch rút tiền (chờ duyệt)
+		UsdcVndTransaction transaction = new UsdcVndTransaction();
+		transaction.setDebitWallet(debitWallet);
+		transaction.setVndAmount(vndAmount);
+		transaction.setUsdcAmount(usdcAmount);
+		transaction.setExchangeRate(exchangeRate);
+		transaction.setType("WITHDRAW");
+		transaction.setStatus(pendingStatus);
+		transactionRepository.save(transaction);
+
+		responseBody.put("message", "Yêu cầu rút tiền đã được gửi, đang chờ xét duyệt!");
+		return responseBody;
+	}
+
+	@Transactional
     public Map<String, String> updateTransactionStatus(String transactionId, String newStatus, Long bankAccountId) {
-        Map<String, String> responseBody = new HashMap<>();
+       
+    	Map<String, String> responseBody = new HashMap<>();
+    	 try {
+    		 	// Tìm giao dịch
+    	        UsdcVndTransaction transaction = transactionRepository.findById(transactionId)
+    	            .orElseThrow(() -> new RuntimeException("Không tìm thấy giao dịch với ID: " + transactionId));
 
-        // Tìm giao dịch
-        UsdcVndTransaction transaction = transactionRepository.findById(transactionId)
-            .orElseThrow(() -> new RuntimeException("Không tìm thấy giao dịch với ID: " + transactionId));
+    	        // Lấy trạng thái mới từ DB
+    	        Status status = statusRepository.findByName(newStatus)
+    	        		.stream()
+    	        		.findFirst()
+    	        	    .orElseThrow(() -> new RuntimeException("Không tìm thấy trạng thái: " + newStatus));
 
-        // Lấy trạng thái mới từ DB
-        Status status = Optional.ofNullable(statusRepository.findByName(newStatus))
-            .orElseThrow(() -> new RuntimeException("Không tìm thấy trạng thái: " + newStatus));
+    	        // Cập nhật trạng thái giao dịch
+    	        if(transaction.getStatus().getName().equalsIgnoreCase(status.getName()))
+    	        {
+    	        	responseBody.put("error", "Đơn yêu cầu trên vốn đã được duyệt");
+    	        	return responseBody;
+    	        }
+    	        else
+    	        {
+    	        	transaction.setStatus(status);
+        	        transactionRepository.save(transaction);
 
-        // Cập nhật trạng thái giao dịch
-        transaction.setStatus(status);
-        transactionRepository.save(transaction);
+    	        }
+    	        
+    	        // Nếu giao dịch được duyệt, thực hiện rút tiền
+    	        if ("Sucesss".equals(newStatus)) {
+    	            DebitWallet debitWallet = transaction.getDebitWallet();
+    	            BigDecimal usdcAmount = transaction.getUsdcAmount();
 
-        // Nếu giao dịch được duyệt, thực hiện rút tiền
-        if ("SUCCESS".equals(newStatus)) {
-            DebitWallet debitWallet = transaction.getDebitWallet();
-            BigDecimal usdcAmount = transaction.getUsdcAmount();
+    	            if (debitWallet.getBalance().compareTo(usdcAmount) < 0) {
+    	                responseBody.put("error", "Số dư không đủ!");
+    	                return responseBody;
+    	            }
 
-            if (debitWallet.getBalance().compareTo(usdcAmount) < 0) {
-                responseBody.put("error", "Số dư không đủ!");
-                return responseBody;
-            }
+    	            // Nếu không chọn bankAccountId, lấy tài khoản ngân hàng mới nhất
+    	            UserBankAccount bankAccount = userBankAccountRepository.findById(bankAccountId)
+    	            	    .orElseGet(() -> userBankAccountRepository
+    	            	        .findFirstByUserIdOrderByUpdatedAtDescCreatedAtDesc(debitWallet.getUser().getId())
+    	            	        .orElseThrow(() -> new RuntimeException("Người dùng chưa có tài khoản ngân hàng nào!"))
+    	            	    );
 
-            // Nếu không chọn bankAccountId, lấy tài khoản ngân hàng mới nhất
-            UserBankAccount bankAccount = userBankAccountRepository.findById(bankAccountId)
-                    .orElseGet(() -> userBankAccountRepository.findFirstByUserIdOrderByUpdatedAtDescCreatedAtDesc(
-                        debitWallet.getUser().getId()
-                    ).orElseThrow(() -> new RuntimeException("Người dùng chưa có tài khoản ngân hàng nào!")));
 
-            // Trừ số dư USDC trong ví
-            debitWallet.setBalance(debitWallet.getBalance().subtract(usdcAmount));
-            debitWalletRepository.save(debitWallet);
+    	            // Trừ số dư USDC trong ví
+    	            debitWallet.setBalance(debitWallet.getBalance().subtract(usdcAmount));
+    	            debitWalletRepository.save(debitWallet);
 
-            // Gửi yêu cầu rút tiền đến PayOS
-            Map<String, String> payosResponse = payosService.withdraw(
-                transaction.getVndAmount(), 
-                bankAccount.getAccountNumber(), 
-                bankAccount.getBankCode()
-            );
+    	            // Gửi yêu cầu rút tiền đến PayOS
+//    	            Map<String, String> payosResponse = payosService.withdraw(
+//    	                transaction.getVndAmount(), 
+//    	                bankAccount.getAccountNumber(), 
+//    	                bankAccount.getBankCode()
+//    	            );
+//
+//    	            if (payosResponse.containsKey("error")) {
+//    	                responseBody.put("error", "Lỗi khi gửi yêu cầu rút tiền: " + payosResponse.get("error"));
+//    	                return responseBody;
+//    	            }
 
-            if (payosResponse.containsKey("error")) {
-                responseBody.put("error", "Lỗi khi gửi yêu cầu rút tiền: " + payosResponse.get("error"));
-                return responseBody;
-            }
+    	            responseBody.put("message", "Giao dịch đã được duyệt và tiền đang được chuyển!");
+    	        } else if ("FAILED".equals(newStatus)) {
+    	            responseBody.put("message", "Giao dịch đã bị từ chối!");
+    	        }
 
-            responseBody.put("message", "Giao dịch đã được duyệt và tiền đang được chuyển!");
-        } else if ("FAILED".equals(newStatus)) {
-            responseBody.put("message", "Giao dịch đã bị từ chối!");
-        }
-
+    	        
+ 		} catch (Exception e) {
+ 			responseBody.put("error", "Lỗi khi tạo giao dịch: " + e.getMessage());
+ 		}
         return responseBody;
     }
 }
