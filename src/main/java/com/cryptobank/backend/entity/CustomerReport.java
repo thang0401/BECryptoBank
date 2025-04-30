@@ -1,6 +1,8 @@
 package com.cryptobank.backend.entity;
 
 
+import java.time.OffsetTime;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -45,4 +47,13 @@ public class CustomerReport extends BaseEntity{
      private int priority;
      @Column(name="reported_by")
      private String reportedBy;
+     @Column(name="cusomter_email")
+     private String customerEmail;
+     @Column(name="customer_phone")
+     private String customerPhone;
+     @Column(name="contact_type")
+     private String contactType;
+     @Column(name="contact_time")
+     private OffsetTime contactTime;
+
 }
