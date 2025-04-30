@@ -76,6 +76,12 @@ public class UserService {
         if (request.getGender() != null) user.setGender(request.getGender());
         if (request.getDateOfBirth() != null) user.setDateOfBirth(request.getDateOfBirth());
         if (request.getHomeAddress() != null) user.setHomeAddress(request.getHomeAddress());
+        if (request.getWard() != null) user.setWard(request.getWard());
+        if (request.getDistrict() != null) user.setDistrict(request.getDistrict());
+        if (request.getProvince() != null) user.setProvince(request.getProvince());
+        if (request.getNation() != null) user.setNation(request.getNation());
+        if (request.getKycStatus() != null) user.setKycStatus(request.getKycStatus());
+        if (request.getStatusId() != null) user.setStatus(statusService.getById(request.getStatusId()));
         user.setModifiedAt(OffsetDateTime.now());
         user.setModifiedBy(modifiedBy);
         User updatedUser = repository.save(user);
