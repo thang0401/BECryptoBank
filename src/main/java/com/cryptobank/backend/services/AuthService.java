@@ -101,7 +101,7 @@ public class AuthService {
                 deviceInfoRepository.save(activeDevice);
                 return 0;
             } else {
-                Optional<DeviceInfo> deviceOpt = deviceInfoRepository.findByInforOfDevice(currentDeviceName, currentBrowser, currentOs,email);
+                Optional<DeviceInfo> deviceOpt = deviceInfoRepository.findByInforOfDevice(currentDeviceName, currentBrowser, currentOs,user.getId());
                 if (deviceOpt.isPresent()) {
                     sendDeviceNotification(user, deviceOpt.get());
                     return 1;
@@ -121,13 +121,13 @@ public class AuthService {
     }
 
     // ---------------- LOGIN with Google ------------------
-    @Transactional
+    @Transactional(rollbackOn = Exception.class, dontRollbackOn  = AuthException.class)
     public UserAuthResponse loginWithGoogle(String idToken, boolean rememberMe, HttpServletRequest request,
                                             HttpSession session) {
         try {
             GoogleIdToken token = googleTokenVerifier.verify(idToken);
             if (token == null) {
-                throw new AuthException("Invalid Google ID Token");
+                throw new AuthException("Invalid Google ID Token !!");
             }
 
             GoogleIdToken.Payload payload = token.getPayload();
@@ -160,6 +160,7 @@ public class AuthService {
                 if (!isDeviceInUse(user, deviceOpt.get())) {
                     System.out.println("User ID before throwing exception (existing device): " + user.getId());
                     sendDeviceNotification(user, deviceOpt.get());
+                    session.setAttribute("otpUserId", user.getId());
                     throw new AuthException("OTP verification required", user.getId());
                 } else {
                     DeviceInfo device = deviceOpt.get();
@@ -171,6 +172,7 @@ public class AuthService {
                 deviceInfoRepository.save(newDevice);
                 System.out.println("User ID before throwing exception (new device): " + user.getId());
                 sendFirstLoginNotification(user, newDevice);
+                session.setAttribute("otpUserId", user.getId());
                 throw new AuthException("OTP verification required", user.getId());
             }
 
@@ -246,8 +248,8 @@ public class AuthService {
         return deviceInfoRepository.findByDeviceIdAndUser(deviceId, user);
     }
 
-    public Optional<DeviceInfo> findByInforOfDevice(String currentDeviceName, String currentBrowser, String currentOs) {
-        return deviceInfoRepository.findByInforOfDevice(currentDeviceName, currentBrowser, currentOs);
+    public Optional<DeviceInfo> findByInforOfDevice(String currentDeviceName, String currentBrowser, String currentOs,String userId) {
+        return deviceInfoRepository.findByInforOfDevice(currentDeviceName, currentBrowser, currentOs,userId);
     }
 
     public void saveDevice(DeviceInfo device) {
@@ -304,22 +306,45 @@ public class AuthService {
 
             UserOtp checkAfterDelete = userOtpRepository.findByUserId(user.getId());
             System.out.println("After delete, OTP record: " + (checkAfterDelete == null ? "none" : checkAfterDelete.getTimeEnd()));
+            
+            UserOtp userOtp;
+            if(userOtpRepository.findByUser(user).isEmpty())
+            {
+            	 userOtp = new UserOtp();
+                 userOtp.randomId();
+                 userOtp.setUser(user);
+                 userOtp.setOtpCode(String.valueOf(otpCode));
+                 LocalDateTime startTime = LocalDateTime.now();
+                 LocalDateTime endTime = startTime.plusMinutes(5);
+                 userOtp.setTimeStart(startTime);
+                 userOtp.setTimeEnd(endTime);
+                 System.out.println("Creating OTP for user: " + user.getId() + ", startTime: " + startTime + ", endTime: " + endTime);
 
-            UserOtp userOtp = new UserOtp();
-            userOtp.randomId();
-            userOtp.setUser(user);
-            userOtp.setOtpCode(String.valueOf(otpCode));
-            LocalDateTime startTime = LocalDateTime.now();
-            LocalDateTime endTime = startTime.plusMinutes(5);
-            userOtp.setTimeStart(startTime);
-            userOtp.setTimeEnd(endTime);
-            System.out.println("Creating OTP for user: " + user.getId() + ", startTime: " + startTime + ", endTime: " + endTime);
-
-            UserOtp savedOtp = userOtpRepository.saveAndFlush(userOtp);
-            System.out.println("Saved OTP for user: " + user.getId() + ", savedTimeEnd: " + (savedOtp != null ? savedOtp.getTimeEnd() : "null"));
-            if (savedOtp == null) {
-                throw new RuntimeException("Failed to save OTP for user: " + user.getId());
+                 UserOtp savedOtp = userOtpRepository.saveAndFlush(userOtp);
+                 System.out.println("Saved OTP for user: " + user.getId() + ", savedTimeEnd: " + (savedOtp != null ? savedOtp.getTimeEnd() : "null"));
+                 if (savedOtp == null) {
+                     throw new RuntimeException("Failed to save OTP for user: " + user.getId());
+                 }
             }
+            else
+            {
+            	userOtp=userOtpRepository.findByUser(user).get();
+                userOtp.setUser(user);
+                userOtp.setOtpCode(String.valueOf(otpCode));
+                LocalDateTime startTime = LocalDateTime.now();
+                LocalDateTime endTime = startTime.plusMinutes(5);
+                userOtp.setTimeStart(startTime);
+                userOtp.setTimeEnd(endTime);
+                System.out.println("Update OTP for user: " + user.getId() + ", startTime: " + startTime + ", endTime: " + endTime);
+
+                UserOtp savedOtp = userOtpRepository.saveAndFlush(userOtp);
+                System.out.println("Saved OTP for user: " + user.getId() + ", savedTimeEnd: " + (savedOtp != null ? savedOtp.getTimeEnd() : "null"));
+                if (savedOtp == null) {
+                    throw new RuntimeException("Failed to save OTP for user: " + user.getId());
+                }
+            }
+            
+           
             return String.valueOf(otpCode);
         } catch (Exception e) {
             System.err.println("Error in createOtp for user: " + user.getId() + ", message: " + e.getMessage());

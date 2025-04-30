@@ -75,7 +75,8 @@ public class transactionHistoryController {
 																				 transaction.getUsdcAmount(),
 																				 transaction.getExchangeRate(),
 																				 transaction.getType(),
-																				 transaction.getStatus().getName()
+																				 transaction.getStatus().getName(),
+																				 transaction.getCreatedAt().toLocalDateTime()
 											)).collect(Collectors.toList());
 			
 			return ResponseEntity.ok(ListUsdcVndtran);

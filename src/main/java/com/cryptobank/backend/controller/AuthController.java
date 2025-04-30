@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -40,6 +41,7 @@ import eu.bitwalker.useragentutils.UserAgent;
 
 @RestController
 @RequestMapping("/api/auth")
+@CrossOrigin(origins = {"http://127.0.0.1:5500", "http://localhost:5500"}, allowCredentials = "true")
 public class AuthController {
 
     @Autowired
@@ -67,30 +69,6 @@ public class AuthController {
         return passwordEncoder.encode(password);
     }
 
-    @PostMapping("/login/email")
-    public ResponseEntity<?> loginWithEmail(
-            @RequestBody LoginRequestAuth login,
-            HttpServletRequest request,
-            HttpSession session) {
-        try {
-            UserAuthResponse response = authService.loginWithEmail(
-                    login.getEmail(),
-                    login.getPassword(),
-                    login.isRememberMe(),
-                    request,
-                    session
-            );
-            return ResponseEntity.ok(response);
-        } catch (com.cryptobank.backend.exception.AuthException e) {
-            if (e.getMessage().contains("OTP verification required")) {
-                return ResponseEntity.status(HttpStatus.ACCEPTED).body("Đưa đến trang nhập mã OTP xác thực");
-            }
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Đăng nhập thất bại: " + e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Login failed: " + e.getMessage());
-        }
-    }
-
     @PostMapping("/login/google")
     public ResponseEntity<?> loginWithGoogle(
             @RequestBody GoogleLoginRequest request,
@@ -109,11 +87,12 @@ public class AuthController {
             return ResponseEntity.ok(response);
         } catch (com.cryptobank.backend.exception.AuthException e) {
             if ("Google login failed: OTP verification required".contains(e.getMessage())) {
+            	String userId = (String) session.getAttribute("otpUserId");
                 System.out.println("OTP required, user_id: " + e.getUserId());
                 Map<String, String> responseBody = new HashMap<>();
                 responseBody.put("message", "Đưa đến trang nhập mã OTP xác thực");
                 if (e.getUserId() != null) {
-                    session.setAttribute("otpUserId", e.getUserId());
+                    session.setAttribute("otpUserId",userId);
                 }
                 return ResponseEntity.status(HttpStatus.ACCEPTED).body(responseBody);
             }
@@ -175,8 +154,8 @@ public class AuthController {
                     currentDeviceName = "Mac";
                 }
             }
-
-            Optional<DeviceInfo> deviceOpt = authService.findByInforOfDevice(currentDeviceName, currentBrowser, currentOs);
+            
+            Optional<DeviceInfo> deviceOpt = authService.findByInforOfDevice(currentDeviceName, currentBrowser, currentOs,user.getId());
             if (!deviceOpt.isPresent()) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Không tìm thấy thiết bị");
             }
@@ -211,6 +190,30 @@ public class AuthController {
         }
     }
 
+    @PostMapping("/login/email")
+    public ResponseEntity<?> loginWithEmail(
+            @RequestBody LoginRequestAuth login,
+            HttpServletRequest request,
+            HttpSession session) {
+        try {
+            UserAuthResponse response = authService.loginWithEmail(
+                    login.getEmail(),
+                    login.getPassword(),
+                    login.isRememberMe(),
+                    request,
+                    session
+            );
+            return ResponseEntity.ok(response);
+        } catch (com.cryptobank.backend.exception.AuthException e) {
+            if (e.getMessage().contains("OTP verification required")) {
+                return ResponseEntity.status(HttpStatus.ACCEPTED).body("Đưa đến trang nhập mã OTP xác thực");
+            }
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Đăng nhập thất bại: " + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Login failed: " + e.getMessage());
+        }
+    }
+    
     @PostMapping("/login/email/OTP")
     public ResponseEntity<?> verifyEmailOTP(
             @RequestBody OtpRequest request,
@@ -260,7 +263,7 @@ public class AuthController {
                 }
             }
 
-            Optional<DeviceInfo> deviceOpt = authService.findByInforOfDevice(currentDeviceName, currentBrowser, currentOs);
+            Optional<DeviceInfo> deviceOpt = authService.findByInforOfDevice(currentDeviceName, currentBrowser, currentOs,user.getId());
             if (!deviceOpt.isPresent()) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Không tìm thấy thiết bị");
             }
