@@ -34,5 +34,7 @@ public class EmployeeCreateRequest {
     private String maritalStatusId;
     private String employmentTypeId;
     private String avatar;
+    private String gender;
+    private String address;
 
 }

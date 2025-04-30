@@ -18,6 +18,8 @@ public class EmployeeUpdateRequest {
     private String lastName;
     private String phoneNumber;
     private String avatar;
+    private String address;
+    private String gender;
     @Digits(integer = 8, fraction = 2)
     private BigDecimal salary;
     @Digits(integer = 10, fraction = 2)
@@ -38,6 +40,8 @@ public class EmployeeUpdateRequest {
             (lastName != null && lastName.equals(employee.getLastName())) &&
             (phoneNumber != null && phoneNumber.equals(employee.getPhoneNumber())) &&
             (avatar != null && avatar.equals(employee.getAvatar())) &&
+            (address != null && address.equals(employee.getAddress())) &&
+            (gender != null && gender.equals(employee.getGender())) &&
             (salary != null && salary.equals(employee.getSalary())) &&
             (bonus != null && bonus.equals(employee.getBonus())) &&
             (taxCode != null && taxCode.equals(employee.getTaxCode())) &&
