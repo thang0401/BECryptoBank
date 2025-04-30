@@ -11,6 +11,7 @@ import com.cryptobank.backend.mapper.RoleUrlMapper;
 import com.cryptobank.backend.repository.RoleUrlDAO;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -23,9 +24,7 @@ public class RoleUrlService {
     private final RoleUrlMapper mapper;
 
     public List<RoleUrlDTO> getAll(String roleId) {
-        Specification<RoleUrl> spec = ignoreDeleted();
-        if (roleId != null && !roleId.isBlank())
-            spec = spec.and((root, query, cb) -> cb.equal(root.get("role").get("id"), roleId));
+        Specification<RoleUrl> spec = findById(roleId);
         return dao.findAll(spec).stream().map(mapper::toDTO).toList();
     }
 
@@ -77,4 +76,16 @@ public class RoleUrlService {
         return (root, query, criteriaBuilder) -> criteriaBuilder.notEqual(root.get("deleted"), true);
     }
 
+    public List<String> getUrlOnly(String roleId) {
+        Specification<RoleUrl> spec = findById(roleId);
+        return dao.findAll(spec).stream().map(RoleUrl::getFunctionUrl).toList();
+    }
+
+    @NotNull
+    private Specification<RoleUrl> findById(String roleId) {
+        Specification<RoleUrl> spec = ignoreDeleted();
+        if (roleId != null && !roleId.isBlank())
+            spec = spec.and((root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("role").get("id"), roleId));
+        return spec;
+    }
 }
