@@ -9,6 +9,7 @@ import com.cryptobank.backend.exception.AlreadyExistException;
 import com.cryptobank.backend.exception.ResourceNotFoundException;
 import com.cryptobank.backend.mapper.RoleUrlMapper;
 import com.cryptobank.backend.repository.RoleUrlDAO;
+import java.time.OffsetDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
@@ -55,10 +56,11 @@ public class RoleUrlService {
     }
 
     public RoleUrlDTO update(String id, RoleUrlUpdateRequest request) {
-        Role role = roleService.getById(request.getRoleId());
         RoleUrl found = getById(id);
         RoleUrl updated = mapper.fromUpdateRequest(found, request);
-        updated.setRole(role);
+        if (request.getRoleId() != null && !request.getRoleId().isBlank())
+            updated.setRole(roleService.getById(request.getRoleId()));
+        updated.setModifiedAt(OffsetDateTime.now());
         return mapper.toDTO(dao.save(updated));
     }
 
@@ -66,6 +68,7 @@ public class RoleUrlService {
         RoleUrl roleUrl = getById(id);
         if (roleUrl != null) {
             roleUrl.setDeleted(true);
+            roleUrl.setModifiedAt(OffsetDateTime.now());
             dao.save(roleUrl);
             return true;
         }
