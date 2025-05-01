@@ -136,6 +136,16 @@
 			<artifactId>commons-lang3</artifactId>
 			<version>3.17.0</version>
 		</dependency>
+		<dependency>
+			<groupId>org.web3j</groupId>
+			<artifactId>core</artifactId>
+			<version>4.9.8</version>
+		</dependency>
+		<dependency>
+			<groupId>org.web3j</groupId>
+			<artifactId>contracts</artifactId>
+			<version>4.9.8</version>
+		</dependency>
 	</dependencies>
 
 	<build>
