@@ -30,10 +30,11 @@ public class UserInformation {
     private Boolean kycStatus;
     private Boolean hasAcceptedTerms;
     private OffsetDateTime lastLoginAt;
-    private Boolean  isBankAccount;
-    private Boolean  isReferralCode;
+    private Boolean isBankAccount;
+    private Boolean isReferralCode;
     private OffsetDateTime createdAt;
     private String idCardFrontImgUrl;
     private String idCardBackImgUrl;
     private String idCardNumber;
+    private String status;
 }
