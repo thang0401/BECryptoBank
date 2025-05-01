@@ -7,6 +7,12 @@ pipeline {
     }
 
     stages {
+        stage("Get commit info") {
+            steps {
+                sh 'chmod +x generate-git-info.sh'
+                sh './generate-git-info.sh'
+            }
+        }
         stage("Build") {
             steps {
                 sh "mvn clean package -DskipTests"
