@@ -138,13 +138,15 @@ public class PaymentController {
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy user với ID: " + userId));
 
-            BigDecimal exchangeRate = BigDecimal.valueOf(exchangeRateService.getUsdcVndRate());
+            //BigDecimal exchangeRate = BigDecimal.valueOf(exchangeRateService.getUsdcVndRate());
+            BigDecimal exchangeRate = BigDecimal.valueOf(25850.00);
             if (exchangeRate.compareTo(BigDecimal.ZERO) <= 0) {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                         .body("Không thể lấy tỷ giá USDC/VND");
             }
 
             BigDecimal amountUSDC = amountVND.divide(exchangeRate, 6, RoundingMode.HALF_UP);
+            System.out.println("tổng số usdc: "+amountUSDC);
 
             // Dùng orderCode làm transactionId
             String transactionId = String.valueOf(data.getOrderCode());
