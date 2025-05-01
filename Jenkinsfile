@@ -10,6 +10,7 @@ pipeline {
         stage("Get commit info") {
             steps {
                 sh 'chmod +x generate-git-info.sh'
+                sh 'chmod +x .env'
                 sh './generate-git-info.sh'
             }
         }
