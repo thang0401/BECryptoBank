@@ -1,10 +1,14 @@
 package com.cryptobank.backend.utils;
 
+import com.cryptobank.backend.DTO.AuthResponse;
 import com.cryptobank.backend.DTO.UserInformation;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
+import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -36,6 +40,7 @@ public class JwtUtil {
                 .signWith(getSigningKey(), Jwts.SIG.HS256)
                 .compact();
     }
+
     public String generateToken(UserInformation userInformation, long expiration) {
         return Jwts.builder()
             .header()
@@ -54,6 +59,21 @@ public class JwtUtil {
             .expiration(new Date(System.currentTimeMillis() + expiration))
             .signWith(getSigningKey(), Jwts.SIG.HS256)
             .compact();
+    }
+
+    public AuthResponse generateToken(Map<String, ?> claims) {
+        Validate.notNull(claims.get("id"), "Require 'id' in claims");
+        JwtBuilder jwtBuilder = Jwts.builder()
+            .header()
+            .type("JWT")
+            .and()
+            .claims(claims)
+            .subject(claims.get("id").toString())
+            .issuedAt(new Date())
+            .signWith(getSigningKey(), Jwts.SIG.HS256);
+        return new AuthResponse(claims.get("id").toString(),
+            jwtBuilder.expiration(new Date(System.currentTimeMillis() + ACCESS_TOKEN_EXPIRATION)).compact(),
+            jwtBuilder.expiration(new Date(System.currentTimeMillis() + REFRESH_TOKEN_EXPIRATION)).compact());
     }
 
     // Generate access token with default expiration (30 minutes)

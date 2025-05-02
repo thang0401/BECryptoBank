@@ -1,31 +1,28 @@
 package com.cryptobank.backend.controller;
 
+import com.cryptobank.backend.DTO.AuthResponse;
+import com.cryptobank.backend.services.EmployeeService;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.cryptobank.backend.DTO.EmployeeLogin;
-import com.cryptobank.backend.entity.Employee;
-import com.cryptobank.backend.repository.EmployeeDAO;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-
 @RestController
-@RequestMapping("/api/authEmployee")
+@RequestMapping("/api/employee/auth")
+@RequiredArgsConstructor
+@Tag(name = "Auth Employee", description = "Xác thực nhân viên")
 public class AuthEmployeeController {
+
+	private final EmployeeService employeeService;
 	
-	@Autowired
-	private EmployeeDAO employeeDAO;
-	
-//	@PostMapping("/login")
-//	public ResponseEntity<?> postMethodName(@RequestBody EmployeeLogin employee) {
-//		
-//		Employee employeeInfor=employeeDAO.findby
-//		
-//		return entity;
-//	}
+	@PostMapping("/login")
+	public AuthResponse login(@RequestBody EmployeeLogin request) {
+		return employeeService.login(request);
+	}
 	
 }
