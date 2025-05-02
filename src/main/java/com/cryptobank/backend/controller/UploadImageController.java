@@ -1,5 +1,6 @@
 package com.cryptobank.backend.controller;
 
+import com.cryptobank.backend.DTO.UrlImage;
 import com.cryptobank.backend.DTO.UserInformation;
 import com.cryptobank.backend.entity.User;
 import com.cryptobank.backend.services.MinioService;
@@ -37,11 +38,11 @@ public class UploadImageController {
     @Operation(
         summary = "Lấy đường dẫn từ tên file hình ảnh"
     )
-    public String getUrlImage(
+    public UrlImage getUrlImage(
         @Parameter(description = "Tên file") @RequestParam String fileName,
         @Parameter(description = "Tên bucket") @RequestParam(required = false) String bucket
     ) {
-        return minioService.getUrl(fileName, bucket);
+        return new UrlImage(minioService.getUrl(fileName, bucket));
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -49,11 +50,11 @@ public class UploadImageController {
     @Operation(
         summary = "Tải một file hình ảnh lên server"
     )
-    public String uploadImage(
+    public UrlImage uploadImage(
         @Parameter(description = "File hình ảnh") @RequestParam MultipartFile file,
-        @Parameter(description = "Tên bucket")@RequestParam(required = false) String bucket
+        @Parameter(description = "Tên bucket") @RequestParam(required = false) String bucket
     ) throws IOException {
-        return minioService.uploadFile(file.getOriginalFilename(), bucket, file.getInputStream(), file.getContentType());
+        return new UrlImage(minioService.uploadFile(file.getOriginalFilename(), bucket, file.getInputStream(), file.getContentType()));
     }
 
     @DeleteMapping

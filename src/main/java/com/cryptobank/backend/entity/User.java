@@ -103,6 +103,7 @@ public class User extends BaseEntity {
 
     @Column(name = "is_referral_code")
     private Boolean isReferralCode = false;
+
     @Column(name = "bonus_amount", columnDefinition = "numeric(38, 2)")
     private BigDecimal bonusAmount = BigDecimal.ZERO;
 
@@ -136,7 +137,7 @@ public class User extends BaseEntity {
     private GoogleAuth googleAuth;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
-    private DebitWallet debitWalletList;
+    private DebitWallet debitWallet;
   
     @OneToMany(mappedBy = "user")
     private List<UserRole> userRoles = new ArrayList<>();

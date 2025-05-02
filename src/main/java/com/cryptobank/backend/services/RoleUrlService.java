@@ -9,8 +9,10 @@ import com.cryptobank.backend.exception.AlreadyExistException;
 import com.cryptobank.backend.exception.ResourceNotFoundException;
 import com.cryptobank.backend.mapper.RoleUrlMapper;
 import com.cryptobank.backend.repository.RoleUrlDAO;
+import java.time.OffsetDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -23,9 +25,7 @@ public class RoleUrlService {
     private final RoleUrlMapper mapper;
 
     public List<RoleUrlDTO> getAll(String roleId) {
-        Specification<RoleUrl> spec = ignoreDeleted();
-        if (roleId != null && !roleId.isBlank())
-            spec = spec.and((root, query, cb) -> cb.equal(root.get("role").get("id"), roleId));
+        Specification<RoleUrl> spec = findById(roleId);
         return dao.findAll(spec).stream().map(mapper::toDTO).toList();
     }
 
@@ -56,10 +56,11 @@ public class RoleUrlService {
     }
 
     public RoleUrlDTO update(String id, RoleUrlUpdateRequest request) {
-        Role role = roleService.getById(request.getRoleId());
         RoleUrl found = getById(id);
         RoleUrl updated = mapper.fromUpdateRequest(found, request);
-        updated.setRole(role);
+        if (request.getRoleId() != null && !request.getRoleId().isBlank())
+            updated.setRole(roleService.getById(request.getRoleId()));
+        updated.setModifiedAt(OffsetDateTime.now());
         return mapper.toDTO(dao.save(updated));
     }
 
@@ -67,6 +68,7 @@ public class RoleUrlService {
         RoleUrl roleUrl = getById(id);
         if (roleUrl != null) {
             roleUrl.setDeleted(true);
+            roleUrl.setModifiedAt(OffsetDateTime.now());
             dao.save(roleUrl);
             return true;
         }
@@ -77,4 +79,16 @@ public class RoleUrlService {
         return (root, query, criteriaBuilder) -> criteriaBuilder.notEqual(root.get("deleted"), true);
     }
 
+    public List<String> getUrlOnly(String roleId) {
+        Specification<RoleUrl> spec = findById(roleId);
+        return dao.findAll(spec).stream().map(RoleUrl::getFunctionUrl).toList();
+    }
+
+    @NotNull
+    private Specification<RoleUrl> findById(String roleId) {
+        Specification<RoleUrl> spec = ignoreDeleted();
+        if (roleId != null && !roleId.isBlank())
+            spec = spec.and((root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("role").get("id"), roleId));
+        return spec;
+    }
 }

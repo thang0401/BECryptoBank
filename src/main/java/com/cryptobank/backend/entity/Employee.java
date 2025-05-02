@@ -74,6 +74,12 @@ public class Employee extends BaseEntity {
     @Column(name = "avatar", columnDefinition = "TEXT")
     private String avatar;
 
+    @Column(name = "address", columnDefinition = "TEXT")
+    private String address;
+
+    @Column(name = "gender", columnDefinition = "TEXT")
+    private String gender;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "marital_status")
     private Status maritalStatus;

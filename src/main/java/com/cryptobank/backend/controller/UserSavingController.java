@@ -69,8 +69,7 @@ public class UserSavingController {
         System.out.println(userId);
         System.out.println(entity.toString());
         User user=getUserAccount(userId);
-        String debitWalletAdress=getUserWalletAddress(user);
-        DebitWallet account=debitWalletDAO.findByWalletAddress(debitWalletAdress);
+        DebitWallet account=user.getDebitWallet();
         
 
         //Get selected Term instance
@@ -146,9 +145,6 @@ public class UserSavingController {
         return user;
     }
 
-    private DebitWallet getUserDebitWalletAddress(User user){
-        return debitWalletDAO.findByWalletAddress(user.getWalletAddress());
-    }
     private String getUserWalletAddress(User user){
         return user.getWalletAddress();
     }

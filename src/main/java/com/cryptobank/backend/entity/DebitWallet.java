@@ -20,7 +20,4 @@ public class DebitWallet extends BaseEntity {
     @Column(name = "balance")
     private BigDecimal balance = BigDecimal.ZERO;
 
-//    @Column(name = "wallet_address", columnDefinition = "TEXT")
-//    private String walletAddress;
-
 }

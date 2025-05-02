@@ -1,9 +1,8 @@
 package com.cryptobank.backend.mapper;
 
-import com.cryptobank.backend.DTO.UserInformation;
-import com.cryptobank.backend.entity.User;
+import com.cryptobank.backend.DTO.GroupStatusDTO;
+import com.cryptobank.backend.entity.GroupStatus;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
 @Mapper(
@@ -11,9 +10,8 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
     nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
     uses = ConvertStringStrip.class
 )
-public interface UserMapper {
+public interface GroupStatusMapper {
 
-    @Mapping(target = "status", source = "status.name")
-    UserInformation toDTO(User user);
+    GroupStatusDTO toDTO(GroupStatus group);
 
 }

@@ -1,7 +1,6 @@
 package com.cryptobank.backend.controller;
 
 import com.cryptobank.backend.DTO.RoleUrlDTO;
-import com.cryptobank.backend.DTO.request.PageParamRequest;
 import com.cryptobank.backend.DTO.request.RoleUrlCreateRequest;
 import com.cryptobank.backend.DTO.request.RoleUrlUpdateRequest;
 import com.cryptobank.backend.services.RoleUrlService;
@@ -12,7 +11,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.web.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -36,6 +34,15 @@ public class RoleUrlController {
         @Parameter(description = "ID role") @RequestParam(required = false) String roleId
     ) {
         return roleUrlService.getAll(roleId);
+    }
+
+    @GetMapping("/list/{roleId}")
+    @Operation(
+        summary = "Lấy danh sách url của role",
+        description = "Trả về danh sách các url của role muốn tìm"
+    )
+    public List<String> getAllRoleUrlOnly(@PathVariable String roleId) {
+        return roleUrlService.getUrlOnly(roleId);
     }
 
     @GetMapping("/{id}")

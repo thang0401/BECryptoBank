@@ -1,6 +1,7 @@
 package com.cryptobank.backend.controller;
 
 import com.cryptobank.backend.exception.AlreadyExistException;
+import com.cryptobank.backend.exception.AuthException;
 import com.cryptobank.backend.exception.JwtEmptyException;
 import com.cryptobank.backend.exception.ResourceNotFoundException;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -40,7 +41,7 @@ public class GlobalAdviceException {
         return new ResponseEntity<>(new ErrorMessage(ex.getMessage()), HttpStatus.CONFLICT);
     }
 
-    @ExceptionHandler({UsernameNotFoundException.class, JwtException.class, JwtEmptyException.class})
+    @ExceptionHandler({UsernameNotFoundException.class, JwtException.class, JwtEmptyException.class, AuthException.class})
     public ResponseEntity<ErrorMessage> handleUnauthorized(RuntimeException ex) {
         return new ResponseEntity<>(new ErrorMessage(ex.getMessage()), HttpStatus.UNAUTHORIZED);
     }
@@ -48,7 +49,7 @@ public class GlobalAdviceException {
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ErrorMessage> handleRuntimeException(RuntimeException ex) {
         log.error("Unexpected runtime exception occurred", ex);
-        return new ResponseEntity<>(new ErrorMessage(ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(new ErrorMessage(ex.getMessage()), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(Exception.class)
