@@ -16,6 +16,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.transaction.Transactional;
+import java.math.BigDecimal;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -36,6 +37,7 @@ import java.util.Random;
 public class AuthService {
 
     private final UserDAO userRepository;
+    private final DebitWalletDAO debitWalletRepository;
     private final DeviceInforDAO deviceInfoRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserOtpRepository userOtpRepository;
@@ -217,6 +219,12 @@ public class AuthService {
         newAuth.setGoogleId(googleId);
         newAuth.setUser(user);
         googleAuthRepository.save(newAuth);
+
+        DebitWallet debitWallet = new DebitWallet();
+        debitWallet.setUser(user);
+        debitWallet.setBalance(BigDecimal.ZERO);
+        debitWalletRepository.save(debitWallet);
+
         return user;
     }
 
