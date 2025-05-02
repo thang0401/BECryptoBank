@@ -78,7 +78,7 @@ public class AuthController {
             return ResponseEntity.badRequest().body("Missing required parameter: idToken");
         }
         try {
-            UserAuthResponse response = authService.loginWithGoogle(
+        	 Map<String, Object> response = authService.loginWithGoogle(
                     request.getIdToken(),
                     request.isRememberMe(),
                     servletRequest,
