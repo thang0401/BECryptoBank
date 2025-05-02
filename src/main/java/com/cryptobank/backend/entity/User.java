@@ -137,7 +137,7 @@ public class User extends BaseEntity {
     private GoogleAuth googleAuth;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
-    private DebitWallet debitWalletList;
+    private DebitWallet debitWallet;
   
     @OneToMany(mappedBy = "user")
     private List<UserRole> userRoles = new ArrayList<>();

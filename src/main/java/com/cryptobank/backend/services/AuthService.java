@@ -220,10 +220,7 @@ public class AuthService {
         newAuth.setUser(user);
         googleAuthRepository.save(newAuth);
 
-        DebitWallet debitWallet = new DebitWallet();
-        debitWallet.setUser(user);
-        debitWallet.setBalance(BigDecimal.ZERO);
-        debitWalletRepository.save(debitWallet);
+        createDebitAccount(user);
 
         return user;
     }
@@ -482,6 +479,13 @@ public class AuthService {
                 .deviceInfo(savedDeviceInfo)
                 .user(userResponse)
                 .build();
+    }
+
+    public void createDebitAccount(User user) {
+        DebitWallet debitWallet = new DebitWallet();
+        debitWallet.setUser(user);
+        debitWallet.setBalance(BigDecimal.ZERO);
+        debitWalletRepository.save(debitWallet);
     }
 
 }

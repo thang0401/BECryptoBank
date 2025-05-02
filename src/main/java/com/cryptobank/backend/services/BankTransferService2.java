@@ -167,8 +167,9 @@ public class BankTransferService2 {
 		Map<String, String> responseBody = new HashMap<>();
 
 		// Kiểm tra số dư USDC của user
-		DebitWallet debitWallet = debitWalletRepository.findByUserId(userId).stream().findFirst()
-				.orElseThrow(() -> new RuntimeException("Không tìm thấy ví của user: " + userId));
+		DebitWallet debitWallet = debitWalletRepository.findByUserId(userId);
+		if (debitWallet == null)
+			throw new RuntimeException("Không tìm thấy ví của user: " + userId);
 
 		if (debitWallet.getBalance().compareTo(usdcAmount) < 0) {
 			responseBody.put("error", "Số dư không đủ!");
@@ -255,8 +256,8 @@ public class BankTransferService2 {
     	            }
     	            
     	            String userId=debitWallet.getUser().getId();
-    	            BigDecimal usdcOld=debitWalletDAO.findByUserId(userId).getFirst().getBalance();
-    	            BigDecimal usdcNew=debitWalletDAO.findByUserId(userId).getFirst().getBalance().add(usdcAmount);
+    	            BigDecimal usdcOld=debitWalletDAO.findByUserId(userId).getBalance();
+    	            BigDecimal usdcNew=debitWalletDAO.findByUserId(userId).getBalance().add(usdcAmount);
 
 
     	            // Trừ số dư USDC trong ví

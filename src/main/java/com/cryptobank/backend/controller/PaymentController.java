@@ -285,8 +285,8 @@ public class PaymentController {
 	            System.out.println("debitWalletuser: "+debitWallet.getUser().getId());
 	            System.out.println("thực hiện truy vấn user");
 	            String userId=debitWallet.getUser().getId();
-	            BigDecimal usdcOld=debitWalletDAO.findByUserId(userId).getFirst().getBalance();
-	            BigDecimal usdcNew=debitWalletDAO.findByUserId(userId).getFirst().getBalance().subtract(usdcAmount);
+	            BigDecimal usdcOld=debitWalletDAO.findByUserId(userId).getBalance();
+	            BigDecimal usdcNew=debitWalletDAO.findByUserId(userId).getBalance().subtract(usdcAmount);
 	            System.out.println("USDC Cũ: "+usdcOld);
 	            System.out.println("USDC Mới: "+usdcNew);
 	            System.out.println("Trừ số dư USDC trong ví");
@@ -346,8 +346,8 @@ public class PaymentController {
         	return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Trạng thái hiện tại đã là Success");
         }
        
-        BigDecimal usdcOld=debitWalletDAO.findByUserId(Transaction.getUserId()).getFirst().getBalance();
-        BigDecimal usdcNew=debitWalletDAO.findByUserId(Transaction.getUserId()).getFirst().getBalance().add(transaction.getUsdcAmount());
+        BigDecimal usdcOld=debitWalletDAO.findByUserId(Transaction.getUserId()).getBalance();
+        BigDecimal usdcNew=debitWalletDAO.findByUserId(Transaction.getUserId()).getBalance().add(transaction.getUsdcAmount());
         // Nếu trạng thái mới là "SUCCESS", cập nhật số dư
         if ("cvvvehbme6nnaun2s4ag".equalsIgnoreCase(Transaction.getNewStatus())) {
         	//debitWalletService.updateUsdcBalance();
@@ -474,8 +474,8 @@ public class PaymentController {
         	return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Trạng thái hiện tại đã là Success");
         }
        
-        BigDecimal usdcOld=debitWalletDAO.findByUserId(userId).getFirst().getBalance();
-        BigDecimal usdcNew=debitWalletDAO.findByUserId(userId).getFirst().getBalance().add(transaction.getUsdcAmount());
+        BigDecimal usdcOld=debitWalletDAO.findByUserId(userId).getBalance();
+        BigDecimal usdcNew=debitWalletDAO.findByUserId(userId).getBalance().add(transaction.getUsdcAmount());
         System.out.println("Nếu trạng thái mới là \"SUCCESS\", cập nhật số dư");
         // Nếu trạng thái mới là "SUCCESS", cập nhật số dư
         if ("cvvvehbme6nnaun2s4ag".equalsIgnoreCase(statusId)) {
