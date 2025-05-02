@@ -177,7 +177,8 @@ public class BankTransferService2 {
 		}
 
 		// Lấy tỷ giá USDC/VND
-		BigDecimal exchangeRate = BigDecimal.valueOf(exchangeRateService.getUsdcVndRate());
+		//BigDecimal exchangeRate = BigDecimal.valueOf(exchangeRateService.getUsdcVndRate());
+		BigDecimal exchangeRate = BigDecimal.valueOf(25850.00);
 		if (exchangeRate.compareTo(BigDecimal.ZERO) <= 0) {
 			responseBody.put("error", "Không thể lấy tỷ giá USDC/VND!");
 			return responseBody;

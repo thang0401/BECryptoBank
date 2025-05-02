@@ -3,6 +3,7 @@ package com.cryptobank.backend.services;
 import com.cryptobank.backend.DTO.AuthResponse;
 import com.cryptobank.backend.DTO.AuthenticationResponse;
 import com.cryptobank.backend.DTO.UserAuthResponse;
+import com.cryptobank.backend.DTO.UserInformation;
 import com.cryptobank.backend.entity.*;
 import com.cryptobank.backend.exception.AuthException;
 import com.cryptobank.backend.repository.*;
@@ -19,6 +20,7 @@ import jakarta.transaction.Transactional;
 import java.math.BigDecimal;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -28,7 +30,9 @@ import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 
@@ -124,7 +128,7 @@ public class AuthService {
 
     // ---------------- LOGIN with Google ------------------
     @Transactional(rollbackOn = Exception.class, dontRollbackOn  = AuthException.class)
-    public UserAuthResponse loginWithGoogle(String idToken, boolean rememberMe, HttpServletRequest request,
+    public  Map<String, Object> loginWithGoogle(String idToken, boolean rememberMe, HttpServletRequest request,
                                             HttpSession session) {
         try {
             GoogleIdToken token = googleTokenVerifier.verify(idToken);
@@ -168,6 +172,7 @@ public class AuthService {
                     DeviceInfo device = deviceOpt.get();
                     device.setLastLoginAt(OffsetDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
                     deviceInfoRepository.save(device);
+                    
                 }
             } else {
                 DeviceInfo newDevice = createDeviceInfo(session, browser, os, user, request);
@@ -181,8 +186,14 @@ public class AuthService {
             String role = userService.getUserRole(user.getId())
                     .map(userRole -> userRole.getRole().getName())
                     .orElse("USER");
+            UserInformation userInformation = userService.convertToUserInformation(user);
+            String accessToken = jwtUtil.generateToken(userInformation, 1000 * 60 * 30);
 
-            return buildUserAuthResponse(user, role, rememberMe);
+            Map<String, Object> response = new HashMap<>();
+            response.put("accessToken", accessToken);
+            response.put("userData", buildUserAuthResponse(user, role, rememberMe));
+            
+            return response;
         } catch (Exception e) {
             throw new AuthException("Google login failed: " + e.getMessage());
         }

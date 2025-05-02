@@ -49,7 +49,8 @@ public class DebitWalletService {
     @Transactional
     public void updateUsdcBalance() {
         // Kiểm tra exchangeRate
-    	Double exchangeRate=exchangeRateService.getUsdcVndRate();
+//    	Double exchangeRate=exchangeRateService.getUsdcVndRate();
+    	Double exchangeRate=25.850;
     	System.out.println("Tỉ giá: "+exchangeRate);
         if (exchangeRate == null || exchangeRate <= 0) {
             throw new IllegalArgumentException("Invalid exchange rate");
@@ -69,10 +70,32 @@ public class DebitWalletService {
     @Transactional
     public void UpdateVNDBalance(BigDecimal oldUsdc,BigDecimal newUsdc)
     {
+//    	entityManager.createNativeQuery("SELECT update_vndBalance(:oldUsdc, :newUsdc, :exchangeRate)")
+//        .setParameter("oldUsdc", oldUsdc)
+//        .setParameter("newUsdc", newUsdc)
+//        .setParameter("exchangeRate",BigDecimal.valueOf(exchangeRateService.getUsdcVndRate()))
+//        .getSingleResult(); // hoặc executeUpdate() nếu không trả về gì
+    	
     	entityManager.createNativeQuery("SELECT update_vndBalance(:oldUsdc, :newUsdc, :exchangeRate)")
         .setParameter("oldUsdc", oldUsdc)
         .setParameter("newUsdc", newUsdc)
-        .setParameter("exchangeRate",BigDecimal.valueOf(exchangeRateService.getUsdcVndRate()))
+        .setParameter("exchangeRate",BigDecimal.valueOf(25850.00))
+        .getSingleResult(); // hoặc executeUpdate() nếu không trả về gì
+
+    }
+    @Transactional
+    public void UpdateVNDBalanceDeposit(BigDecimal oldUsdc,BigDecimal newUsdc)
+    {
+//    	entityManager.createNativeQuery("SELECT update_vndBalance(:oldUsdc, :newUsdc, :exchangeRate)")
+//        .setParameter("oldUsdc", oldUsdc)
+//        .setParameter("newUsdc", newUsdc)
+//        .setParameter("exchangeRate",BigDecimal.valueOf(exchangeRateService.getUsdcVndRate()))
+//        .getSingleResult(); // hoặc executeUpdate() nếu không trả về gì
+    	
+    	entityManager.createNativeQuery("SELECT update_vndBalance(:oldUsdc, :newUsdc, :exchangeRate)")
+        .setParameter("oldUsdc", oldUsdc)
+        .setParameter("newUsdc", newUsdc)
+        .setParameter("exchangeRate",BigDecimal.valueOf(26150.00))
         .getSingleResult(); // hoặc executeUpdate() nếu không trả về gì
 
     }
