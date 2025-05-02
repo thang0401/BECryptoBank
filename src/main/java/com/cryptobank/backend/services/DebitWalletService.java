@@ -83,4 +83,20 @@ public class DebitWalletService {
         .getSingleResult(); // hoặc executeUpdate() nếu không trả về gì
 
     }
+    @Transactional
+    public void UpdateVNDBalanceDeposit(BigDecimal oldUsdc,BigDecimal newUsdc)
+    {
+//    	entityManager.createNativeQuery("SELECT update_vndBalance(:oldUsdc, :newUsdc, :exchangeRate)")
+//        .setParameter("oldUsdc", oldUsdc)
+//        .setParameter("newUsdc", newUsdc)
+//        .setParameter("exchangeRate",BigDecimal.valueOf(exchangeRateService.getUsdcVndRate()))
+//        .getSingleResult(); // hoặc executeUpdate() nếu không trả về gì
+    	
+    	entityManager.createNativeQuery("SELECT update_vndBalance(:oldUsdc, :newUsdc, :exchangeRate)")
+        .setParameter("oldUsdc", oldUsdc)
+        .setParameter("newUsdc", newUsdc)
+        .setParameter("exchangeRate",BigDecimal.valueOf(26150.00))
+        .getSingleResult(); // hoặc executeUpdate() nếu không trả về gì
+
+    }
 }

@@ -139,13 +139,14 @@ public class PaymentController {
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy user với ID: " + userId));
 
             //BigDecimal exchangeRate = BigDecimal.valueOf(exchangeRateService.getUsdcVndRate());
-            BigDecimal exchangeRate = BigDecimal.valueOf(25850.00);
+            BigDecimal exchangeRate = BigDecimal.valueOf(26150.00);
             if (exchangeRate.compareTo(BigDecimal.ZERO) <= 0) {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                         .body("Không thể lấy tỷ giá USDC/VND");
             }
-
-            BigDecimal amountUSDC = amountVND.divide(exchangeRate, 6, RoundingMode.HALF_UP);
+            
+            BigDecimal rate = new BigDecimal("0.0000383");
+            BigDecimal amountUSDC = amountVND.multiply(rate);
             System.out.println("tổng số usdc: "+amountUSDC);
 
             // Dùng orderCode làm transactionId
@@ -483,7 +484,7 @@ public class PaymentController {
         if ("cvvvehbme6nnaun2s4ag".equalsIgnoreCase(statusId)) {
         	//debitWalletService.updateUsdcBalance();
             debitWalletService.updateBalance(userId, transaction.getUsdcAmount());
-            debitWalletService.UpdateVNDBalance(usdcOld, usdcNew);
+            debitWalletService.UpdateVNDBalanceDeposit(usdcOld, usdcNew);
         }
 
         return ResponseEntity.ok("Nạp tiền vào tài khoản thành công");
