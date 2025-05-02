@@ -1,21 +1,27 @@
 package com.cryptobank.backend.services;
 
+import com.cryptobank.backend.DTO.AuthResponse;
 import com.cryptobank.backend.DTO.EmployeeDTO;
+import com.cryptobank.backend.DTO.EmployeeLogin;
 import com.cryptobank.backend.DTO.request.EmployeeCreateRequest;
 import com.cryptobank.backend.DTO.request.EmployeeSearchParamRequest;
 import com.cryptobank.backend.DTO.request.EmployeeUpdateRequest;
 import com.cryptobank.backend.entity.Employee;
 import com.cryptobank.backend.entity.EmploymentType;
 import com.cryptobank.backend.exception.AlreadyExistException;
+import com.cryptobank.backend.exception.AuthException;
 import com.cryptobank.backend.exception.ResourceNotFoundException;
 import com.cryptobank.backend.mapper.EmployeeMapper;
 import com.cryptobank.backend.repository.EmployeeDAO;
 import com.cryptobank.backend.repository.EmploymentTypeDAO;
+import com.cryptobank.backend.utils.JwtUtil;
 import jakarta.persistence.criteria.Predicate;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -32,6 +38,26 @@ public class EmployeeService {
     private final EmploymentTypeDAO employmentTypeDAO;
     private final StatusService statusService;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
+
+    public AuthResponse login(EmployeeLogin request) {
+        Employee employee = dao.findOne(ignoreDeleted()
+                .and((root, query, cb) -> cb.equal(root.get("username"), request.getUserName())))
+            .orElseThrow(() -> new AuthException("Wrong username or password"));
+        if (!passwordEncoder.matches(request.getPassword(), employee.getPassword())) {
+            throw new AuthException("Wrong username or password");
+        }
+        Map<String, ?> claims = new HashMap<>() {{
+            put("id", employee.getId());
+            put("username", employee.getUsername());
+            put("email", employee.getEmail());
+            put("avatar", employee.getAvatar());
+            put("isChangePass", employee.isChangePass());
+            put("role", employee.getRole() != null ? employee.getRole().getName() : null);
+            put("url", employee.getRole() != null ? employee.getRole().getRoleUrls() : new ArrayList<>());
+        }};
+        return jwtUtil.generateToken(claims);
+    }
 
     public Page<EmployeeDTO> getAll(EmployeeSearchParamRequest request, Pageable pageable) {
         Specification<Employee> spec = ignoreDeleted();

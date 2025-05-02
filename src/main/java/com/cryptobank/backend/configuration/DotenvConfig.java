@@ -11,7 +11,6 @@ public class DotenvConfig {
                 .directory("./")  // Look for .env in project root
                 .load();
         dotenv.entries().forEach(entry -> {
-            System.out.println("Loading: " + entry.getKey() + "=" + entry.getValue());
             System.setProperty(entry.getKey(), entry.getValue());
         });
     }

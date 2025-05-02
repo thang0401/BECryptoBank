@@ -31,10 +31,9 @@ public class PaymentService {
     @Transactional
     public UsdcVndTransaction saveTransaction(String transactionId, String userId, BigDecimal vndAmount, BigDecimal usdcAmount, BigDecimal exchangeRate, String type, String statusid) {
         // Tìm ví của người dùng
-        DebitWallet debitWallet = debitWalletRepository.findByUserId(userId)
-                .stream()
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy ví của user: " + userId));
+        DebitWallet debitWallet = debitWalletRepository.findByUserId(userId);
+        if (debitWallet == null)
+            throw new RuntimeException("Không tìm thấy ví của user: " + userId);
 
         // Tìm trạng thái
         String currentStatus=statusRepository.getById(statusid).getName();
