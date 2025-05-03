@@ -1,5 +1,7 @@
 package com.cryptobank.backend.controller;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -8,8 +10,11 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.cryptobank.backend.DTO.supportDTOs.CustomerReportDTO;
@@ -22,12 +27,15 @@ import com.cryptobank.backend.repository.CustomerReportDAO;
 import com.cryptobank.backend.repository.ReportCategoryDAO;
 import com.cryptobank.backend.repository.StatusDAO;
 import com.cryptobank.backend.services.CustomerReportServices;
+import com.cryptobank.backend.services.MinioService;
+import com.cryptobank.backend.utils.JwtUtil;
 
 import lombok.AllArgsConstructor;
 
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 
 
 
@@ -41,6 +49,9 @@ public class CustomerReportController {
     StatusDAO statusDAO;
     ReportCategoryDAO reportCategoryDAO;
     CustomerReportServices cusreportService;
+    MinioService minioService;
+    JwtUtil jwtUtil;
+
 
     @GetMapping("/GetAll")
     public ResponseEntity<?> getAllCustomerReport() {
@@ -62,9 +73,25 @@ public class CustomerReportController {
     }
 
     @PostMapping("/IssueReport")
-    public ResponseEntity<?> IssueReport(@RequestBody CustomerReportDTO entity) {
+    public ResponseEntity<?> IssueReport(@AuthenticationPrincipal UserDetails userDetails,@ModelAttribute CustomerReportDTO entity,@RequestParam MultipartFile[] files) {
         //TODO: process POST request
+        if(userDetails!=null){
+            String userId=userDetails.getUsername();
+        if(userId!=null){
+            entity.setReportedBy(userId);
+        }
+        }
+        if(files!=null){
+           List<String> uploadLocationLink= HandleReceiveFile(files);
+           entity.setDocumentLink(uploadLocationLink);
+           System.out.println("Have files and upload it to: "+uploadLocationLink);
+        }else{
+            System.out.println("Do not have any additional file");
+        }
         CustomerReport cusreport=initCustomerReport(entity);
+        if(cusreport==null){
+            return ResponseEntity.badRequest().build();
+        }
         reportDAO.save(cusreport);
         return ResponseEntity.ok("successfull");
     }
@@ -147,25 +174,53 @@ public class CustomerReportController {
         }
 
         //Validate valid category
-        ReportCategory reportCategory=reportCategoryDAO.findById(entity.getCategoryID()).orElse(null);
+        System.out.println(entity.getCategory());
+        ReportCategory reportCategory=reportCategoryDAO.findById(entity.getCategory()).orElse(null);
         if(reportCategory==null){
             System.out.println("Category not found!");
             return null;
         }
-       
+
+        Map<String,Integer> priorityMap=new HashMap<>();
+        priorityMap.put("medium", 2);
+        priorityMap.put("high",3);
+        priorityMap.put("low",1);
+        priorityMap.put("critical",4);
+        
         CustomerReport customerReport=new CustomerReport();
         customerReport.setId(UUID.randomUUID().toString());
-        customerReport.setTitle(entity.getTitle());
+        customerReport.setTitle(entity.getSubject());
         customerReport.setStatus(status);
         customerReport.setCategory(reportCategory);
         customerReport.setDescription(entity.getDescription());
         customerReport.setReportedBy(entity.getReportedBy());
         customerReport.setDocumentLink(entity.getDocumentLink());
-        customerReport.setPriority(entity.getPriority());
-        customerReport.setTransactionID(entity.getTransactionID());
+        customerReport.setPriority(priorityMap.get(entity.getPriority()));
+        customerReport.setTransactionID(entity.getOrderId());
+        customerReport.setCustomerEmail(entity.getEmail());
+        customerReport.setCustomerPhone(entity.getPhone());
+        customerReport.setContactTime(entity.getContactTime());
+        customerReport.setContactType(entity.getContactType());
         return customerReport; 
     }
     
+    private List<String> HandleReceiveFile(MultipartFile[] files){
+        List<String> uploadLocation=new ArrayList<>();
+        String uuid=UUID.randomUUID().toString();
+        for(MultipartFile file:files){
+            try {
+                InputStream fileInputStream=file.getInputStream();
+                uploadLocation.add(minioService.uploadFile(uuid, "customer-report", fileInputStream, file.getContentType()));
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                System.out.println("Failed to open input file");
+                continue;
+            }
+        }
+        return uploadLocation;
+    }
+
     private Boolean ChangeStatus(String statusName,String reportId){
         CustomerReport customerReport=reportDAO.findById(reportId).orElse(null);
         Status getStatus=statusDAO.findByName(statusName).orElse(null);
