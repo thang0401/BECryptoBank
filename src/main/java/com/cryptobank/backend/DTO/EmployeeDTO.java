@@ -3,6 +3,10 @@ package com.cryptobank.backend.DTO;
 import jakarta.validation.constraints.Digits;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.Value;
 /**
  * DTO for {@link com.cryptobank.backend.entity.Employee}

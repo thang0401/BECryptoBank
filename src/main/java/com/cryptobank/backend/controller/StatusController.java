@@ -1,7 +1,9 @@
 package com.cryptobank.backend.controller;
 
+import com.cryptobank.backend.DTO.GroupStatusDTO;
 import com.cryptobank.backend.DTO.StatusDTO;
 import com.cryptobank.backend.DTO.request.PageParamRequest;
+import com.cryptobank.backend.services.GroupStatusService;
 import com.cryptobank.backend.services.StatusService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -22,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 public class StatusController {
 
     private final StatusService statusService;
+    private final GroupStatusService groupStatusService;
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
@@ -34,6 +37,19 @@ public class StatusController {
         @Valid PageParamRequest request
     ) {
         return new PagedModel<>(statusService.getAll(groupId, request.toPageable()));
+    }
+
+    @GetMapping("/group")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(
+        summary = "Lấy danh sách status group",
+        description = "Trả về danh sách các status group được phân trang với tham số page và size, có thể tìm theo tên"
+    )
+    public PagedModel<GroupStatusDTO> getAllGroupStatuses(
+        @Parameter(description = "Tên") @RequestParam(required = false) String name,
+        @Valid PageParamRequest request
+    ) {
+        return new PagedModel<>(groupStatusService.getAll(name, request.toPageable()));
     }
 
 }

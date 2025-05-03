@@ -138,13 +138,16 @@ public class PaymentController {
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy user với ID: " + userId));
 
-            BigDecimal exchangeRate = BigDecimal.valueOf(exchangeRateService.getUsdcVndRate());
+            //BigDecimal exchangeRate = BigDecimal.valueOf(exchangeRateService.getUsdcVndRate());
+            BigDecimal exchangeRate = BigDecimal.valueOf(26150.00);
             if (exchangeRate.compareTo(BigDecimal.ZERO) <= 0) {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                         .body("Không thể lấy tỷ giá USDC/VND");
             }
-
-            BigDecimal amountUSDC = amountVND.divide(exchangeRate, 6, RoundingMode.HALF_UP);
+            
+            BigDecimal rate = new BigDecimal("0.0000383");
+            BigDecimal amountUSDC = amountVND.multiply(rate);
+            System.out.println("tổng số usdc: "+amountUSDC);
 
             // Dùng orderCode làm transactionId
             String transactionId = String.valueOf(data.getOrderCode());
@@ -178,7 +181,16 @@ public class PaymentController {
                     dbStatus.getId()
             );
             
-            ResponseEntity<?> entity=confirmTransactionFunction(transave.getId(),user.getId(),"cvvvehbme6nnaun2s4ag");
+            ResponseEntity<?> entity;
+            if(!dbStatus.getId().equalsIgnoreCase("cvvvem3me6nnaun2s4b0"))
+            {
+            	entity=confirmTransactionFunction(transave.getId(),user.getId(),"cvvvehbme6nnaun2s4ag");
+            }
+            else
+            {
+            	entity=failedTransactionFunction(transave.getId(),user.getId(),"cvvvem3me6nnaun2s4b0");
+            }
+            
             //return ResponseEntity.ok("Webhook xử lý thành công: " + transactionStatus);
             return entity;
 
@@ -276,8 +288,8 @@ public class PaymentController {
 	            System.out.println("debitWalletuser: "+debitWallet.getUser().getId());
 	            System.out.println("thực hiện truy vấn user");
 	            String userId=debitWallet.getUser().getId();
-	            BigDecimal usdcOld=debitWalletDAO.findByUserId(userId).getFirst().getBalance();
-	            BigDecimal usdcNew=debitWalletDAO.findByUserId(userId).getFirst().getBalance().subtract(usdcAmount);
+	            BigDecimal usdcOld=debitWalletDAO.findByUserId(userId).getBalance();
+	            BigDecimal usdcNew=debitWalletDAO.findByUserId(userId).getBalance().subtract(usdcAmount);
 	            System.out.println("USDC Cũ: "+usdcOld);
 	            System.out.println("USDC Mới: "+usdcNew);
 	            System.out.println("Trừ số dư USDC trong ví");
@@ -337,8 +349,8 @@ public class PaymentController {
         	return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Trạng thái hiện tại đã là Success");
         }
        
-        BigDecimal usdcOld=debitWalletDAO.findByUserId(Transaction.getUserId()).getFirst().getBalance();
-        BigDecimal usdcNew=debitWalletDAO.findByUserId(Transaction.getUserId()).getFirst().getBalance().add(transaction.getUsdcAmount());
+        BigDecimal usdcOld=debitWalletDAO.findByUserId(Transaction.getUserId()).getBalance();
+        BigDecimal usdcNew=debitWalletDAO.findByUserId(Transaction.getUserId()).getBalance().add(transaction.getUsdcAmount());
         // Nếu trạng thái mới là "SUCCESS", cập nhật số dư
         if ("cvvvehbme6nnaun2s4ag".equalsIgnoreCase(Transaction.getNewStatus())) {
         	//debitWalletService.updateUsdcBalance();
@@ -465,16 +477,39 @@ public class PaymentController {
         	return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Trạng thái hiện tại đã là Success");
         }
        
-        BigDecimal usdcOld=debitWalletDAO.findByUserId(userId).getFirst().getBalance();
-        BigDecimal usdcNew=debitWalletDAO.findByUserId(userId).getFirst().getBalance().add(transaction.getUsdcAmount());
+        BigDecimal usdcOld=debitWalletDAO.findByUserId(userId).getBalance();
+        BigDecimal usdcNew=debitWalletDAO.findByUserId(userId).getBalance().add(transaction.getUsdcAmount());
         System.out.println("Nếu trạng thái mới là \"SUCCESS\", cập nhật số dư");
         // Nếu trạng thái mới là "SUCCESS", cập nhật số dư
         if ("cvvvehbme6nnaun2s4ag".equalsIgnoreCase(statusId)) {
         	//debitWalletService.updateUsdcBalance();
             debitWalletService.updateBalance(userId, transaction.getUsdcAmount());
-            debitWalletService.UpdateVNDBalance(usdcOld, usdcNew);
+            debitWalletService.UpdateVNDBalanceDeposit(usdcOld, usdcNew);
         }
 
         return ResponseEntity.ok("Nạp tiền vào tài khoản thành công");
+    }
+
+    public ResponseEntity<?> failedTransactionFunction(String transactionId,String userId,String statusId)
+    {
+    	UsdcVndTransaction transactionFailed=transactionRepository.findById(transactionId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy giao dịch với ID: " + transactionId));
+    	
+    	 System.out.println("Kiểm tra xem giao dịch có thuộc về user không");
+         // Kiểm tra xem giao dịch có thuộc về user không
+         if (!transactionFailed.getDebitWallet().getUser().getId().equals(userId)) {
+             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Giao dịch không thuộc về user này!");
+         }
+    	
+    	//Lấy status theo ID
+    	Status statusNew=statusService.getById(statusId);
+    	transactionFailed.setStatus(statusNew);
+    	
+    	 System.out.println("Cập nhật trạng thái");
+         // Cập nhật trạng thái
+    	 transactionFailed.setStatus(statusNew);
+    	 transactionRepository.save(transactionFailed);
+    	 
+    	 return ResponseEntity.badRequest().body("Giao dịch thất bại");
     }
 }

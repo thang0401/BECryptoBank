@@ -37,19 +37,19 @@ public class UserService {
     private final StatusService statusService;
 
     public UserInformation convertToUserInformation(User user) {
-        UserInformation dto = new UserInformation();
-        BeanUtils.copyProperties(user, dto);
-        return dto;
+        return userMapper.toDTO(user);
     }
 
     public User getUserEntity(String id) {
-        return repository.findOne(ignoreDeleted().and((root, query, cb) -> cb.equal(root.get("id"), id)))
-            .orElseThrow(() -> new ResourceNotFoundException("User with id " + id + " not found or deleted"));
+        return getUserEntity(id, false);
     }
-    
-    public User getUserById(String id)
-    {
-    	return repository.findById(id).get();
+
+    public User getUserEntity(String id, boolean ignoreDeleted) {
+        Specification<User> spec = (root, query, cb) -> cb.equal(root.get("id"), id);
+        if (!ignoreDeleted)
+            spec = spec.and(ignoreDeleted());
+        return repository.findOne(spec)
+            .orElseThrow(() -> new ResourceNotFoundException("User with id " + id + " not found or deleted"));
     }
 
     public UserInformation get(String id) {

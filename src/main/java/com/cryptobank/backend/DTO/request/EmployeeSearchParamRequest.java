@@ -36,4 +36,7 @@ public class EmployeeSearchParamRequest {
     @Parameter(description = "ID của employee type")
     private String employmentType;
 
+    @Parameter(description = "Giới tính")
+    private String gender;
+
 }

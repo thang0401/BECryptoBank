@@ -35,4 +35,7 @@ public class DebitTransaction extends BaseEntity {
     @Column(name = "to_pub_Key", columnDefinition = "TEXT")
     private String toPubKey;
 
+    @Column(name = "blockchain_tx_hash", columnDefinition = "TEXT")
+    private String blockchainTxHash;
+
 }
