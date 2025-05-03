@@ -3,6 +3,7 @@ package com.cryptobank.backend.services;
 import com.cryptobank.backend.DTO.AuthResponse;
 import com.cryptobank.backend.DTO.EmployeeDTO;
 import com.cryptobank.backend.DTO.EmployeeLogin;
+import com.cryptobank.backend.DTO.request.EmployeeChangePassRequest;
 import com.cryptobank.backend.DTO.request.EmployeeCreateRequest;
 import com.cryptobank.backend.DTO.request.EmployeeSearchParamRequest;
 import com.cryptobank.backend.DTO.request.EmployeeUpdateRequest;
@@ -116,7 +117,7 @@ public class EmployeeService {
 
     public EmployeeDTO toDTOFromId(String id) {
         Employee employee = getById(id);
-        return employee == null ? null : mapper.toDTO(employee);
+        return mapper.toDTO(employee);
     }
 
     public Employee getById(String id) {
@@ -185,6 +186,17 @@ public class EmployeeService {
 
     private Specification<Employee> ignoreDeleted() {
         return (root, query, cb) -> cb.notEqual(root.get("deleted"), true);
+    }
+
+    public EmployeeDTO changePass(EmployeeChangePassRequest request) {
+        if (request.isChangePass()) {
+            throw new RuntimeException("Employee with id + " + request.getEmployeeId() + " changed password already");
+        }
+        Employee employee = getById(request.getEmployeeId());
+        employee.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        employee.setChangePass(true);
+        employee.setModifiedAt(OffsetDateTime.now());
+        return mapper.toDTO(dao.save(employee));
     }
 
 }
