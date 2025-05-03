@@ -50,7 +50,7 @@ public class User extends BaseEntity {
     @Column(name = "last_name", columnDefinition = "TEXT")
     private String lastName;
 
-    @Column(name = "phone_number", columnDefinition = "TEXT")
+    @Column(name = "phone_number", columnDefinition = "TEXT", unique = true)
     private String phoneNumber;
 
     @Column(name = "gender", columnDefinition = "TEXT")
@@ -136,9 +136,10 @@ public class User extends BaseEntity {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, optional = true)
     private GoogleAuth googleAuth;
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, optional = true)
     private DebitWallet debitWalletList;
-  
+
+
     @OneToMany(mappedBy = "user")
     private List<UserRole> userRoles = new ArrayList<>();
 
