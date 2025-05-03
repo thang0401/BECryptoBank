@@ -100,6 +100,7 @@ public class AuthController {
         			debitWalletNew.setBalance(BigDecimal.valueOf(0));
         			debitWalletNew.setUser(userCheck);
         			debitWalletNew.setCreatedAt(OffsetDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
+        			debitWalletNew.setDeleted(false);
         			debitWalletRepository.save(debitWalletNew);
         			System.out.println("Tạo Debit Wallet Thành Công: "+debitWalletNew);
         			return ResponseEntity.ok("Đăng ký tài khoản thành công");
