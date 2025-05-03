@@ -100,7 +100,8 @@ public class debitAccountService {
                     request.getFromPubKey(),
                     request.getToPubKey(),
                     request.getAmount(),
-                    request.getDebitAccountId()
+                    request.getDebitAccountId(),
+                    request.getTransactionHash()
             );
             Status successStatus = statusDAO.findById("cvvvehbme6nnaun2s4ag")
                     .orElseThrow(() -> new RuntimeException("Status 'Success' not found"));
