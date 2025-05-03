@@ -2,8 +2,8 @@ package com.cryptobank.backend.services;
 
 import com.cryptobank.backend.DTO.AuthResponse;
 import com.cryptobank.backend.DTO.EmployeeDTO;
-import com.cryptobank.backend.DTO.EmployeeDTOChangePass;
 import com.cryptobank.backend.DTO.EmployeeLogin;
+import com.cryptobank.backend.DTO.request.EmployeeChangePassRequest;
 import com.cryptobank.backend.DTO.request.EmployeeCreateRequest;
 import com.cryptobank.backend.DTO.request.EmployeeSearchParamRequest;
 import com.cryptobank.backend.DTO.request.EmployeeUpdateRequest;
@@ -117,7 +117,7 @@ public class EmployeeService {
 
     public EmployeeDTO toDTOFromId(String id) {
         Employee employee = getById(id);
-        return employee == null ? null : mapper.toDTO(employee);
+        return mapper.toDTO(employee);
     }
 
     public Employee getById(String id) {
@@ -187,46 +187,16 @@ public class EmployeeService {
     private Specification<Employee> ignoreDeleted() {
         return (root, query, cb) -> cb.notEqual(root.get("deleted"), true);
     }
-    
-    public Employee changePass(Employee employeeChange)
-    {
-    	return dao.save(employeeChange);
-    }
-    
-    public EmployeeDTOChangePass toDTOChangePass(Employee employee) {
-        if (employee == null) {
-            return null;
+
+    public EmployeeDTO changePass(EmployeeChangePassRequest request) {
+        if (request.isChangePass()) {
+            throw new RuntimeException("Employee with id + " + request.getEmployeeId() + " changed password already");
         }
-
-        EmployeeDTOChangePass dto = new EmployeeDTOChangePass();
-        dto.setId(employee.getId());
-        dto.setUsername(employee.getUsername());
-        dto.setEmail(employee.getEmail());
-        
-        // Combine firstName, middleName, lastName into fullName
-        String fullName = String.join(" ",
-                employee.getFirstName() != null ? employee.getFirstName() : "",
-                employee.getMiddleName() != null ? employee.getMiddleName() : "",
-                employee.getLastName() != null ? employee.getLastName() : ""
-        ).trim();
-        dto.setFullName(fullName.isEmpty() ? null : fullName);
-
-        dto.setPhoneNumber(employee.getPhoneNumber());
-        dto.setHireDate(employee.getHireDate());
-        dto.setTerminationDate(employee.getTerminationDate());
-        dto.setSalary(employee.getSalary());
-        dto.setBonus(employee.getBonus());
-        dto.setInsuranceNumber(employee.getInsuranceNumber());
-        dto.setTaxCode(employee.getTaxCode());
-        dto.setEmergencyContactName(employee.getEmergencyContactName());
-        dto.setEmergencyContactPhone(employee.getEmergencyContactPhone());
-
-        // Map relationships to avoid circular references
-        dto.setMaritalStatus(employee.getMaritalStatus() != null ? employee.getMaritalStatus().getName() : null);
-        dto.setStatus(employee.getStatus() != null ? employee.getStatus().getName() : null);
-        dto.setEmploymentType(employee.getEmploymentType() != null ? employee.getEmploymentType().getType_name() : null);
-
-        return dto;
+        Employee employee = getById(request.getEmployeeId());
+        employee.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        employee.setChangePass(true);
+        employee.setModifiedAt(OffsetDateTime.now());
+        return mapper.toDTO(dao.save(employee));
     }
 
 }
