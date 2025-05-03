@@ -3,6 +3,7 @@ package com.cryptobank.backend.services;
 import com.cryptobank.backend.DTO.AuthResponse;
 import com.cryptobank.backend.DTO.AuthenticationResponse;
 import com.cryptobank.backend.DTO.UserAuthResponse;
+import com.cryptobank.backend.DTO.UserInformation;
 import com.cryptobank.backend.entity.*;
 import com.cryptobank.backend.exception.AuthException;
 import com.cryptobank.backend.repository.*;
@@ -16,8 +17,10 @@ import jakarta.persistence.EntityManager;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.transaction.Transactional;
+import java.math.BigDecimal;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -27,7 +30,9 @@ import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 
@@ -36,6 +41,7 @@ import java.util.Random;
 public class AuthService {
 
     private final UserDAO userRepository;
+    private final DebitWalletDAO debitWalletRepository;
     private final DeviceInforDAO deviceInfoRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserOtpRepository userOtpRepository;
@@ -122,7 +128,7 @@ public class AuthService {
 
     // ---------------- LOGIN with Google ------------------
     @Transactional(rollbackOn = Exception.class, dontRollbackOn  = AuthException.class)
-    public UserAuthResponse loginWithGoogle(String idToken, boolean rememberMe, HttpServletRequest request,
+    public  Map<String, Object> loginWithGoogle(String idToken, boolean rememberMe, HttpServletRequest request,
                                             HttpSession session) {
         try {
             GoogleIdToken token = googleTokenVerifier.verify(idToken);
@@ -166,6 +172,7 @@ public class AuthService {
                     DeviceInfo device = deviceOpt.get();
                     device.setLastLoginAt(OffsetDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
                     deviceInfoRepository.save(device);
+                    
                 }
             } else {
                 DeviceInfo newDevice = createDeviceInfo(session, browser, os, user, request);
@@ -179,8 +186,14 @@ public class AuthService {
             String role = userService.getUserRole(user.getId())
                     .map(userRole -> userRole.getRole().getName())
                     .orElse("USER");
+            UserInformation userInformation = userService.convertToUserInformation(user);
+            String accessToken = jwtUtil.generateToken(userInformation, 1000 * 60 * 30);
 
-            return buildUserAuthResponse(user, role, rememberMe);
+            Map<String, Object> response = new HashMap<>();
+            response.put("accessToken", accessToken);
+            response.put("userData", buildUserAuthResponse(user, role, rememberMe));
+            
+            return response;
         } catch (Exception e) {
             throw new AuthException("Google login failed: " + e.getMessage());
         }
@@ -204,11 +217,12 @@ public class AuthService {
             user.setFullName((String) payload.get("name"));
             user.setUsername(email.split("@")[0]);
             user.setAvatar((String) payload.get("picture"));
-            user.setPassword(passwordEncoder.encode(RandomStringUtils.randomAlphanumeric(10)));
+            user.setPassword(passwordEncoder.encode("123456789"));
             user.setCreatedAt(OffsetDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
         }
 
         user = userRepository.save(user);
+        createDebitAccount(user);
         entityManager.flush();
         entityManager.refresh(user);
         System.out.println("User saved in getOrCreateGoogleUser, userId: " + user.getId());
@@ -217,6 +231,9 @@ public class AuthService {
         newAuth.setGoogleId(googleId);
         newAuth.setUser(user);
         googleAuthRepository.save(newAuth);
+
+        createDebitAccount(user);
+
         return user;
     }
 
@@ -474,6 +491,15 @@ public class AuthService {
                 .deviceInfo(savedDeviceInfo)
                 .user(userResponse)
                 .build();
+    }
+
+    public void createDebitAccount(User user) {
+        DebitWallet debitWallet = new DebitWallet();
+        debitWallet.setUser(user);
+        debitWallet.setBalance(BigDecimal.ZERO);
+        debitWallet.setCreatedAt(OffsetDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
+        debitWallet.setDeleted(false);
+        debitWalletRepository.save(debitWallet);
     }
 
 }

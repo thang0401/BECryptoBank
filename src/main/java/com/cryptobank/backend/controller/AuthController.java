@@ -1,7 +1,9 @@
 package com.cryptobank.backend.controller;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,10 +24,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.cryptobank.backend.entity.DebitWallet;
 import com.cryptobank.backend.entity.DeviceInfo;
 import com.cryptobank.backend.entity.User;
 import com.cryptobank.backend.entity.UserOtp;
-
+import com.cryptobank.backend.repository.DebitWalletDAO;
 import com.cryptobank.backend.repository.DeviceInforDAO;
 import com.cryptobank.backend.repository.UserDAO;
 import com.cryptobank.backend.repository.UserOtpRepository;
@@ -64,10 +67,56 @@ public class AuthController {
 
     @Autowired
     private JwtUtil jwtUtil;
+    
+    @Autowired
+    private DebitWalletDAO debitWalletRepository;
 
     public String encodePassword(String password) {
         return passwordEncoder.encode(password);
     }
+    
+    @PostMapping("/SignUp")
+    public ResponseEntity<?> registerNewUser(@RequestBody UserRegisterDTO userInfor)
+    {
+    	try {
+    		User userCheck=userRepository.findByEmail(userInfor.getGmail());
+    		if(userCheck==null)
+        	{
+        		User userNew=new User();
+        		userNew.setEmail(userInfor.getGmail());
+        		userNew.setPassword(passwordEncoder.encode(userInfor.getPassword()));
+        		userNew.setCreatedAt(OffsetDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
+        		userNew.setKycStatus(false);
+        		userCheck=null;
+        		userCheck=userRepository.save(userNew);
+        		if(userCheck==null)
+        		{
+        			return ResponseEntity.badRequest().body("Lỗi khi lưu thông tin user mới ");
+        		}
+        		else
+        		{
+        			System.out.println("Tạo user Thành Công"+userCheck);
+        			DebitWallet debitWalletNew=new DebitWallet();
+        			debitWalletNew.setBalance(BigDecimal.valueOf(0));
+        			debitWalletNew.setUser(userCheck);
+        			debitWalletNew.setCreatedAt(OffsetDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
+        			debitWalletNew.setDeleted(false);
+        			debitWalletRepository.save(debitWalletNew);
+        			System.out.println("Tạo Debit Wallet Thành Công: "+debitWalletNew);
+        			return ResponseEntity.ok("Đăng ký tài khoản thành công");
+        		}
+        	}
+    		else
+    		{
+    			return ResponseEntity.badRequest().body("Email đã tồn tại vui lòng thử lại");
+    		}
+		} catch (Exception e) {
+			System.out.println("Chi tiết lỗi: "+e.toString());
+			ResponseEntity.badRequest().body("Lỗi trong quá trình tạo tài khoản mới");
+		}
+		return ResponseEntity.ok("Lỗi khi đăng ký tài khoản người dùng mới");
+    }
+    
 
     @PostMapping("/login/google")
     public ResponseEntity<?> loginWithGoogle(
@@ -78,7 +127,7 @@ public class AuthController {
             return ResponseEntity.badRequest().body("Missing required parameter: idToken");
         }
         try {
-            UserAuthResponse response = authService.loginWithGoogle(
+        	 Map<String, Object> response = authService.loginWithGoogle(
                     request.getIdToken(),
                     request.isRememberMe(),
                     servletRequest,
