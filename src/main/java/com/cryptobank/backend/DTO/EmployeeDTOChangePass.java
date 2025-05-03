@@ -11,8 +11,10 @@ import lombok.Value;
 /**
  * DTO for {@link com.cryptobank.backend.entity.Employee}
  */
-@Value
-public class EmployeeDTO {
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class EmployeeDTOChangePass {
     String id;
     String username;
     String email;
