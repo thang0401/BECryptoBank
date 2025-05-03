@@ -1,13 +1,10 @@
 package com.cryptobank.backend.controller;
 
 import com.cryptobank.backend.DTO.EmployeeDTO;
-import com.cryptobank.backend.DTO.EmployeeDTOChangePass;
-import com.cryptobank.backend.DTO.request.EmployeeChangePassRequest;
 import com.cryptobank.backend.DTO.request.EmployeeCreateRequest;
 import com.cryptobank.backend.DTO.request.EmployeeSearchParamRequest;
 import com.cryptobank.backend.DTO.request.EmployeeUpdateRequest;
 import com.cryptobank.backend.DTO.request.PageParamRequest;
-import com.cryptobank.backend.entity.Employee;
 import com.cryptobank.backend.services.EmployeeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -19,7 +16,6 @@ import org.springframework.data.web.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -92,22 +88,5 @@ public class EmployeeController {
     public boolean deleteEmployee(@PathVariable String id) {
         return employeeService.delete(id);
     }
-    
-    @PutMapping("/changePassword")
-    @ResponseStatus(HttpStatus.OK)
-    @Operation(
-    	summary = "Thay đổi mật khẩu nhân viên"
-    )
-    public EmployeeDTOChangePass changePassword(@RequestBody EmployeeChangePassRequest request)
-    {
-    	try {
-    		 Employee employeeChangePass=employeeService.getById(request.getEmployeeId());
-    	        employeeChangePass.setPassword(passwordEncoder.encode(request.getNewPassword()));
-    	        employeeChangePass.setChangePass(true);
-    	    	return employeeService.toDTOChangePass(employeeService.changePass(employeeChangePass));
-		} catch (Exception e) {
-			System.out.println("Lỗi trong quá trình thay đổi mật khẩu nhân viên: "+e.toString());
-			throw new RuntimeException("Lỗi trong quá trình thay đổi mật khẩu nhân viên");
-		}
-    }
+
 }

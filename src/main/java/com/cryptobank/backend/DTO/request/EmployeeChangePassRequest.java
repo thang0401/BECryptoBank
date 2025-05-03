@@ -10,5 +10,5 @@ import lombok.NoArgsConstructor;
 public class EmployeeChangePassRequest {
 	private String employeeId;
 	private String newPassword;
-	private Boolean isChangePass;
+	private boolean isChangePass;
 }
