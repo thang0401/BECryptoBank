@@ -35,7 +35,6 @@ import com.cryptobank.backend.repository.UserOtpRepository;
 import com.cryptobank.backend.services.AuthService;
 import com.cryptobank.backend.services.UserService;
 
-import jakarta.security.auth.message.AuthException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import eu.bitwalker.useragentutils.Browser;
@@ -100,6 +99,7 @@ public class AuthController {
         			debitWalletNew.setBalance(BigDecimal.valueOf(0));
         			debitWalletNew.setUser(userCheck);
         			debitWalletNew.setCreatedAt(OffsetDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
+        			debitWalletNew.setDeleted(false);
         			debitWalletRepository.save(debitWalletNew);
         			System.out.println("Tạo Debit Wallet Thành Công: "+debitWalletNew);
         			return ResponseEntity.ok("Đăng ký tài khoản thành công");

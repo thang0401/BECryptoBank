@@ -217,7 +217,7 @@ public class AuthService {
             user.setFullName((String) payload.get("name"));
             user.setUsername(email.split("@")[0]);
             user.setAvatar((String) payload.get("picture"));
-            user.setPassword(passwordEncoder.encode(RandomStringUtils.randomAlphanumeric(10)));
+            user.setPassword(passwordEncoder.encode("123456789"));
             user.setCreatedAt(OffsetDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
         }
 
@@ -497,6 +497,8 @@ public class AuthService {
         DebitWallet debitWallet = new DebitWallet();
         debitWallet.setUser(user);
         debitWallet.setBalance(BigDecimal.ZERO);
+        debitWallet.setCreatedAt(OffsetDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
+        debitWallet.setDeleted(false);
         debitWalletRepository.save(debitWallet);
     }
 

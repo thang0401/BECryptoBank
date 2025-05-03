@@ -17,6 +17,7 @@ public class DebitWallet extends BaseEntity {
     @JoinColumn(name = "user_id")
     private User user;
 
+
     @Column(name = "balance")
     private BigDecimal balance = BigDecimal.ZERO;
 
