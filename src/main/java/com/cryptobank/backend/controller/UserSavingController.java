@@ -3,6 +3,7 @@ package com.cryptobank.backend.controller;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -20,6 +21,7 @@ import org.web3j.tx.gas.DefaultGasProvider;
 import com.cryptobank.backend.DTO.SavingHeirFormDTO.AddHeirFormDTO;
 import com.cryptobank.backend.DTO.UserSavingAccountDTO.InformationFormPostRequestDTO;
 import com.cryptobank.backend.DTO.UserSavingAccountDTO.InformationFormResponseDTO;
+import com.cryptobank.backend.DTO.UserSavingAccountDTO.UserSavingGetAllResponse;
 import com.cryptobank.backend.entity.DebitWallet;
 import com.cryptobank.backend.entity.SavingAccount;
 import com.cryptobank.backend.entity.Status;
@@ -33,6 +35,7 @@ import com.cryptobank.backend.repository.UserDAO;
 import com.cryptobank.backend.services.WithdrawService;
 import com.cryptobank.backend.smartcontract.SavingAccountTest;
 import com.cryptobank.backend.services.AccruedInterestService;
+import com.cryptobank.backend.services.SavingAccountService;
 import com.cryptobank.backend.services.Web3jService;
 
 import lombok.AllArgsConstructor;
@@ -49,6 +52,7 @@ public class UserSavingController {
    AccruedInterestService accruedInterestService;
    Web3jService web3jService;
     StatusDAO statusDAO;
+    SavingAccountService SVService;
 
    @GetMapping("/add-saving-asset")
    public ResponseEntity<InformationFormResponseDTO> getData(@RequestParam String userId) {
@@ -76,8 +80,6 @@ public class UserSavingController {
    @PostMapping("/add-saving-asset")
    public ResponseEntity<?> addUserSaving(@RequestParam(required = true) String userId,@RequestBody InformationFormPostRequestDTO entity) {
        //TODO: process POST request
-       System.out.println(userId);
-       userId="d00u86s5ig8jm25nu6q0";
        System.out.println(entity.toString());
        User user=getUserAccount(userId);
        DebitWallet account=debitWalletDAO.findByOneUserId(user.getId());    
@@ -125,7 +127,11 @@ public class UserSavingController {
            newSavingAccount.setTerm(selectedTerm);
            savingAccountDAO.save(newSavingAccount);
            //Reduce balance
-           withdrawService.TransferIntoSavingAccount(account, entity.getAmount());
+           Boolean withdrawSuccessful=withdrawService.TransferIntoSavingAccount(account, entity.getAmount());
+           if(withdrawSuccessful==false){
+            return ResponseEntity.badRequest().body("Not succesful withdrawn issue");
+           }
+           System.out.println(withdrawSuccessful);
            //Do onchain saving (WEB3)
            //Response OK
            return ResponseEntity.ok("Successful");
@@ -181,6 +187,32 @@ public class UserSavingController {
         }
         return ResponseEntity.notFound().build();
    }
+
+   @GetMapping("/get-savings")
+   public ResponseEntity<?> getUserSaving(@RequestParam String userId) {
+    List<SavingAccount> userPortfolios = SVService.getUserPortfoliosByCustomerId(userId);
+        if(userPortfolios!=null){
+            List<UserSavingGetAllResponse> responses=new ArrayList<>();
+            for(SavingAccount sv:userPortfolios){
+                UserSavingGetAllResponse res=new UserSavingGetAllResponse();
+                res.setAccountId(sv.getId());
+                res.setBalance(sv.getBalance());
+                res.setEndDate(sv.getMaturityDate().toString());
+                res.setStartDate(sv.getCreatedAt().toString());
+                res.setIsHeir(sv.getHeirStatus());
+                res.setTerm(sv.getTerm().getAmountMonth());
+                res.setUserEmail(sv.getUser().getEmail());
+                res.setUserId(sv.getUser().getId());
+                res.setUserPhone(sv.getUser().getPhoneNumber());
+                res.setUserName(sv.getUser().getFullName());
+                res.setStatus(sv.getStatus().getName());
+                responses.add(res);
+            }
+            return ResponseEntity.ok(responses);
+        }
+       return ResponseEntity.notFound().build();
+   }
+   
 
    private Boolean getUserConfirmation(){
        return null;
