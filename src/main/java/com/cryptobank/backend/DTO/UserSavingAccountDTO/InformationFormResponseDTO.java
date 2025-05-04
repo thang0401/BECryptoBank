@@ -13,6 +13,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class InformationFormResponseDTO {
-    private String walletAdress;
+    private DebitWallet walletAdress;
     private List<Term> terms;
 }

@@ -18,9 +18,9 @@ public class Web3jService {
     private final CryptoBankDeposit contract;
 
     public Web3jService(
-            @Value("${web3.provider.url}") String providerUrl,
-            @Value("${web3.private.key}") String privateKey,
-            @Value("${contract.address}") String contractAddress) {
+            @Value("${WEB3_PROVIDER_URL}") String providerUrl,
+            @Value("${WEB3_PRIVATE_KEY}") String privateKey,
+            @Value("${CONTRACT_ADDRESS1}") String contractAddress) {
         this.web3j = Web3j.build(new HttpService(providerUrl));
         this.credentials = Credentials.create(privateKey);
 
@@ -61,5 +61,10 @@ public class Web3jService {
             e.printStackTrace();
             throw e;
         }
+    }
+
+    public TransactionReceipt createSaving(){
+        
+        return null;
     }
 }
