@@ -40,6 +40,13 @@ public class UserService {
         return userMapper.toDTO(user);
     }
 
+    public User getUserByEmail(String email) {
+        Specification<User> spec = ignoreDeleted()
+            .and((root, query, cb) -> cb.equal(root.get("email"), email));
+        return repository.findOne(spec)
+            .orElseThrow(() -> new ResourceNotFoundException("User with email " + email + " not found or deleted"));
+    }
+
     public User getUserEntity(String id) {
         return getUserEntity(id, false);
     }
