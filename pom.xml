@@ -37,10 +37,6 @@
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-devtools</artifactId>
 			<scope>runtime</scope>
 			<optional>true</optional>
@@ -180,6 +176,23 @@
 					</excludes>
 				</configuration>
 			</plugin>
+			<plugin>
+            <groupId>org.web3j</groupId>
+            <artifactId>web3j-maven-plugin</artifactId>
+            <version>4.10.3</version>
+            <executions>
+                <execution>
+                    <goals>
+                        <goal>generate-sources</goal>
+                    </goals>
+                </execution>
+            </executions>
+            <configuration>
+                <packageName>com.cryptobank.backend.smartcontract</packageName>
+                <sourceDestination>${project.build.directory}/generated-sources/web3j</sourceDestination>
+                <abiDirectory>${project.basedir}\src\main\java\com\cryptobankb\backend\smartcontract</abiDirectory>
+            </configuration>
+        </plugin>
 		</plugins>
 		<finalName>BECryptoBank</finalName>
 	</build>

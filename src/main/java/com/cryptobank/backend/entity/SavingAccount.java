@@ -46,4 +46,6 @@ public class SavingAccount extends BaseEntity {
     @Column(name = "heir_name", columnDefinition = "TEXT")
     private String heirName;
 
+    @Column(name = "transaction_hash")
+    private String transactionHash;
 }

@@ -29,6 +29,7 @@ public class WithdrawService {
 		// getSuccesfulTransaction();
 		if(checkValidBalance(account, amount)){
 			account.setBalance(account.getBalance().subtract(amount));
+			System.out.println(account.getBalance());
 			debitWalletDAO.save(account);
 			return true;
 		}
