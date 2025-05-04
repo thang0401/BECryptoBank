@@ -9,9 +9,10 @@ import org.springframework.data.jpa.repository.Query;
 import com.cryptobank.backend.entity.DebitTransaction;
 
 public interface DebitTransactionRepository extends JpaRepository<DebitTransaction, String> {
-	
+
 	@Modifying
 	@Query("SELECT d FROM DebitTransaction d WHERE d.transactionType =:tranType")
 	List<DebitTransaction> getAlltransactionByType(String tranType);
-	
+
+	List<DebitTransaction> findTop5ByCreatedByOrderByCreatedAtDesc(String createdBy);
 }

@@ -1,5 +1,9 @@
 package com.cryptobank.backend.controller;
 
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -8,21 +12,31 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.web3j.protocol.Web3j;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.web3j.protocol.http.HttpService;
+import org.web3j.tx.gas.DefaultGasProvider;
 
+import com.cryptobank.backend.DTO.SavingHeirFormDTO.AddHeirFormDTO;
 import com.cryptobank.backend.DTO.UserSavingAccountDTO.InformationFormPostRequestDTO;
 import com.cryptobank.backend.DTO.UserSavingAccountDTO.InformationFormResponseDTO;
+import com.cryptobank.backend.DTO.UserSavingAccountDTO.UserSavingGetAllResponse;
 import com.cryptobank.backend.entity.DebitWallet;
 import com.cryptobank.backend.entity.SavingAccount;
+import com.cryptobank.backend.entity.Status;
 import com.cryptobank.backend.entity.Term;
 import com.cryptobank.backend.entity.User;
 import com.cryptobank.backend.repository.DebitWalletDAO;
 import com.cryptobank.backend.repository.SavingAccountDAO;
+import com.cryptobank.backend.repository.StatusDAO;
 import com.cryptobank.backend.repository.TermDAO;
 import com.cryptobank.backend.repository.UserDAO;
 import com.cryptobank.backend.services.WithdrawService;
+import com.cryptobank.backend.smartcontract.SavingAccountTest;
 import com.cryptobank.backend.services.AccruedInterestService;
+import com.cryptobank.backend.services.SavingAccountService;
+import com.cryptobank.backend.services.Web3jService;
 
 import lombok.AllArgsConstructor;
 
@@ -30,126 +44,197 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 @RequestMapping("/user/saving")
 public class UserSavingController {
-    TermDAO termDAO;
-    UserDAO userDAO;
-    SavingAccountDAO savingAccountDAO;
-    DebitWalletDAO debitWalletDAO;
-    WithdrawService withdrawService;
-    AccruedInterestService accruedInterestService;
-    
+   TermDAO termDAO;
+   UserDAO userDAO;
+   SavingAccountDAO savingAccountDAO;
+   DebitWalletDAO debitWalletDAO;
+   WithdrawService withdrawService;
+   AccruedInterestService accruedInterestService;
+   Web3jService web3jService;
+    StatusDAO statusDAO;
+    SavingAccountService SVService;
 
-    @GetMapping("/add-saving-asset")
-    public ResponseEntity<InformationFormResponseDTO> getData(@RequestParam String userId) {
-        List<Term> terms=getTerm();
-        User user=getUserAccount(userId);
-        String debitAccounts=getUserWalletAddress(user);
-        if(debitAccounts!=null){
-        InformationFormResponseDTO informationFormResponseDTO=new InformationFormResponseDTO(debitAccounts,terms);
-        return ResponseEntity.ok(informationFormResponseDTO);}
-        return ResponseEntity.notFound().build();
-    }
+   @GetMapping("/add-saving-asset")
+   public ResponseEntity<InformationFormResponseDTO> getData(@RequestParam String userId) {
+       List<Term> terms=getTerm();
+       User user=getUserAccount(userId);
 
-    @GetMapping("/account-status")
-    public ResponseEntity<?> getAccuredInterest(@RequestBody String accountId) {
-        SavingAccount savingAccount=savingAccountDAO.findById(accountId).orElse(null);
-        if(savingAccount!=null){
+       DebitWallet debitAccounts=debitWalletDAO.findByOneUserId(userId);
+       if(debitAccounts!=null){
+       InformationFormResponseDTO informationFormResponseDTO=new InformationFormResponseDTO(debitAccounts,terms);
+       return ResponseEntity.ok(informationFormResponseDTO);}
+       return ResponseEntity.notFound().build();
+   }
+
+   @GetMapping("/account-status")
+   public ResponseEntity<?> getAccuredInterest(@RequestBody String accountId) {
+       SavingAccount savingAccount=savingAccountDAO.findById(accountId).orElse(null);
+       if(savingAccount!=null){
+
+           return ResponseEntity.ok().build();
+       }
+       return ResponseEntity.notFound().build();
+   }
 
 
+   @PostMapping("/add-saving-asset")
+   public ResponseEntity<?> addUserSaving(@RequestParam(required = true) String userId,@RequestBody InformationFormPostRequestDTO entity) {
+       //TODO: process POST request
+       System.out.println(entity.toString());
+       User user=getUserAccount(userId);
+       DebitWallet account=debitWalletDAO.findByOneUserId(user.getId());    
+       //Get selected Term instance
+       Term selectedTerm=termDAO.findById(entity.getTermId()).orElse(null);
+       if(selectedTerm==null){
+            return ResponseEntity.badRequest().body("Term is not available please try again");
+       }
+       //Get provided OTP
+       Integer OTP=provideOTP();
+
+       //Check balance
+       Boolean checkValidBalance=withdrawService.checkValidBalance(account, entity.getAmount());
+       //Check OTP
+       Boolean checkValidOTP=entity.getOTP().equals(OTP);
+       
+       //Check valid balance
+       if(!checkValidBalance){
+           return ResponseEntity.badRequest().body("Not succesful causing by insufficient balance");
+       }
+       //Check valid OTP
+       if(!checkValidOTP){
+           return ResponseEntity.badRequest().body("Invalid OTP");
+       }
+
+       if(checkValidBalance&&checkValidOTP){
+           UUID uuid=UUID.randomUUID();
+           Status status=statusDAO.findById("cvvvf5bme6nnaun2s4dg").orElse(null);
+           if(status==null){
+            System.out.println("Status not found and status will be set to null");
+           }
+           //Save to DB
+           SavingAccount newSavingAccount=new SavingAccount();
+           newSavingAccount.setBalance(entity.getAmount());
+           // newSavingAccount.setHeirStatus(false);
+           newSavingAccount.setInterestRate(selectedTerm.getInterestRate());
+           // newSavingAccount.setCreatedBy(userId);
+           // newSavingAccount.setCreatedDate(ZonedDateTime.now());
+           OffsetDateTime maturityDate = OffsetDateTime.now(ZoneOffset.UTC).plusMonths(selectedTerm.getAmountMonth());
+           newSavingAccount.setMaturityDate(maturityDate);
+           newSavingAccount.setUser(user);
+           newSavingAccount.setId(uuid.toString());
+           newSavingAccount.setStatus(status);
+           // newSavingAccount.setUuid(uuid);
+           newSavingAccount.setTerm(selectedTerm);
+           savingAccountDAO.save(newSavingAccount);
+           //Reduce balance
+           Boolean withdrawSuccessful=withdrawService.TransferIntoSavingAccount(account, entity.getAmount());
+           if(withdrawSuccessful==false){
+            return ResponseEntity.badRequest().body("Not succesful withdrawn issue");
+           }
+           System.out.println(withdrawSuccessful);
+           //Do onchain saving (WEB3)
+           //Response OK
+           return ResponseEntity.ok("Successful");
+       }
+       return ResponseEntity.badRequest().body("Not succesful causing by server");
+   }
+
+   @PostMapping("/withdraw-saving")
+   public ResponseEntity<?> withdrawSaving(@RequestBody String accountId) {
+       //TODO: process POST request
+       SavingAccount savingAccount=savingAccountDAO.findById(accountId).orElse(null);
+       if(savingAccount!=null){
+           Boolean userConfirmation=getUserConfirmation();
+           if(userConfirmation){
+               return ResponseEntity.ok().build();
+
+           }
+       }
 
 
+       return ResponseEntity.badRequest().build();
+   }
+
+   @PostMapping("/add-heir")
+   public ResponseEntity<?> addAHeir(@RequestBody AddHeirFormDTO addHeirFormDTO) {
+        SavingAccount savingAccount=savingAccountDAO.findById(addHeirFormDTO.getSavingAccountId()).orElse(null);
+        if( savingAccount!=null){
+            savingAccount.setHeirName(addHeirFormDTO.getHeirId());
+            savingAccount.setGgDriveUrl(addHeirFormDTO.getGgDriveLink());
+            savingAccount.setHeirStatus(true);
+            //Web 3 implementation
+            String transactionHash="";//Get from WEB3 implementation
+            //
+            savingAccount.setTransactionHash(transactionHash);
             return ResponseEntity.ok().build();
         }
         return ResponseEntity.notFound().build();
-    }
-    
+   }
 
-    @PostMapping("/add-saving-asset")
-    public ResponseEntity<?> postMethodName(@RequestParam(required = true) String userId,@RequestBody InformationFormPostRequestDTO entity) {
-        //TODO: process POST request
-        System.out.println(userId);
-        System.out.println(entity.toString());
-        User user=getUserAccount(userId);
-        DebitWallet account=user.getDebitWallet();
-        
-
-        //Get selected Term instance
-        Term selectedTerm=termDAO.findById(entity.getTermId()).orElse(null);
-
-        //Get provided OTP
-        Integer OTP=provideOTP();
-
-
-        Boolean checkValidBalance=withdrawService.checkValidBalance(account, entity.getAmount());
-        Boolean checkValidOTP=entity.getOTP().equals(OTP);
-
-        //Check valid balance
-        if(!checkValidBalance){
-            return ResponseEntity.badRequest().body("Not succesful causing by insufficient balance");             
+   @PostMapping("/remove-heir")
+   public ResponseEntity<?> removeHeir(@RequestBody String savingAccountId) {
+       //TODO: process POST request
+       SavingAccount savingAccount=savingAccountDAO.findById(savingAccountId).orElse(null);
+        if( savingAccount!=null){
+            savingAccount.setHeirName("");
+            savingAccount.setGgDriveUrl("");
+            savingAccount.setHeirStatus(false);
+            //Web 3 implementation
+            String transactionHash="";//Get from WEB3 implementation
+            //
+            savingAccount.setTransactionHash(transactionHash);
+            return ResponseEntity.ok().build();
         }
+        return ResponseEntity.notFound().build();
+   }
 
-        //Check valid OTP
-        if(!checkValidOTP){
-            return ResponseEntity.badRequest().body("Invalid OTP");     
-        }
-
-        if(checkValidBalance&&checkValidOTP){
-            UUID uuid=UUID.randomUUID();
-            //Save to DB
-            SavingAccount newSavingAccount=new SavingAccount();
-            newSavingAccount.setBalance(entity.getAmount());
-            // newSavingAccount.setHeirStatus(false);
-            newSavingAccount.setInterestRate(selectedTerm.getInterestRate());
-            // newSavingAccount.setCreatedBy(userId);
-            // newSavingAccount.setCreatedDate(ZonedDateTime.now());
-            newSavingAccount.setMaturityDate(null);
-            newSavingAccount.setUser(user);
-            newSavingAccount.setId(uuid.toString());
-            // newSavingAccount.setUuid(uuid);
-            newSavingAccount.setTerm(selectedTerm);
-            savingAccountDAO.save(newSavingAccount);
-            //Reduce balance
-            withdrawService.TransferIntoSavingAccount(account, entity.getAmount());
-            //Response OK
-            return ResponseEntity.ok("Successful"); 
-        }
-        return ResponseEntity.badRequest().body("Not succesful causing by server"); 
-    }
-
-    @PostMapping("/withdraw-saving")
-    public ResponseEntity<?> postMethodName(@RequestBody String accountId) {
-        //TODO: process POST request
-        SavingAccount savingAccount=savingAccountDAO.findById(accountId).orElse(null);
-        if(savingAccount!=null){
-            Boolean userConfirmation=getUserConfirmation();
-            if(userConfirmation){
-                return ResponseEntity.ok().build();
-
+   @GetMapping("/get-savings")
+   public ResponseEntity<?> getUserSaving(@RequestParam String userId) {
+    List<SavingAccount> userPortfolios = SVService.getUserPortfoliosByCustomerId(userId);
+        if(userPortfolios!=null){
+            List<UserSavingGetAllResponse> responses=new ArrayList<>();
+            for(SavingAccount sv:userPortfolios){
+                UserSavingGetAllResponse res=new UserSavingGetAllResponse();
+                res.setAccountId(sv.getId());
+                res.setBalance(sv.getBalance());
+                res.setEndDate(sv.getMaturityDate().toString());
+                res.setStartDate(sv.getCreatedAt().toString());
+                res.setIsHeir(sv.getHeirStatus());
+                res.setTerm(sv.getTerm().getAmountMonth());
+                res.setUserEmail(sv.getUser().getEmail());
+                res.setUserId(sv.getUser().getId());
+                res.setUserPhone(sv.getUser().getPhoneNumber());
+                res.setUserName(sv.getUser().getFullName());
+                res.setStatus(sv.getStatus().getName());
+                responses.add(res);
             }
+            return ResponseEntity.ok(responses);
         }
+       return ResponseEntity.notFound().build();
+   }
+   
+
+   private Boolean getUserConfirmation(){
+       return null;
+   }
 
 
-        return ResponseEntity.badRequest().build();
-    }
-    
-    private Boolean getUserConfirmation(){
-        return null;
-    }
+   private Integer provideOTP(){
+       return 123456;
+   }
 
-    
-    private Integer provideOTP(){
-        return 123456;
-    }
+   private User getUserAccount(String userId){
+       User user=userDAO.findById(userId).orElse(null);
+       return user;
+   }
 
-    private User getUserAccount(String userId){  
-        User user=userDAO.findById(userId).orElse(null);
-        return user;
-    }
+   private String getUserWalletAddress(User user){
+       return user.getWalletAddress();
+   }
 
-    private String getUserWalletAddress(User user){
-        return user.getWalletAddress();
-    }
+   private List<Term> getTerm(){
+       return termDAO.findByDeleted(false);
+   }
 
-    private List<Term> getTerm(){
-        return termDAO.findAll();
-    }
 }
+

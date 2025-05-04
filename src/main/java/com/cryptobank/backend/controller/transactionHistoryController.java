@@ -66,21 +66,26 @@ public class transactionHistoryController {
 	public ResponseEntity<?> getUsdcVndTransactionByType(@PathVariable String type)
 	{
 		try {
-			List<?> ListUsdcVndtran=repositoryUsdcVndTransactionRepository.getAllUsdcVndtransactionByType(type)
-									.stream()
-									.map(transaction ->new UsdcVndTransactionDTO(transaction.getId(),
-																				 transaction.getDebitWallet().getUser().getId(),
-																				 transaction.getDebitWallet().getId(),
-																				 transaction.getVndAmount(),
-																				 transaction.getUsdcAmount(),
-																				 transaction.getExchangeRate(),
-																				 transaction.getType(),
-																				 transaction.getStatus().getName(),
-																				 transaction.getCreatedAt().toLocalDateTime()
-											)).collect(Collectors.toList());
+			
+			List<?> ListUsdcVndtran = repositoryUsdcVndTransactionRepository.getAllUsdcVndtransactionByType(type)
+				    .stream()
+				    .map(transaction -> new UsdcVndTransactionDTO(
+				        transaction.getId(),
+				        transaction.getDebitWallet().getUser().getId(),
+				        transaction.getDebitWallet().getId(),
+				        transaction.getVndAmount(),
+				        transaction.getUsdcAmount(),
+				        transaction.getExchangeRate(),
+				        transaction.getType(),
+				        transaction.getStatus().getName(),
+				        transaction.getCreatedAt().toLocalDateTime(),
+				        transaction.getModifiedAt() != null ? transaction.getModifiedAt().toLocalDateTime() : null 
+				    ))
+				    .collect(Collectors.toList());
 			
 			return ResponseEntity.ok(ListUsdcVndtran);
 		} catch (Exception e) {
+			System.out.println(e.toString());
 			return ResponseEntity.badRequest().body("Lỗi khi lấy lịch sử giao dịch Usdc-Vnd-Transaction");
 		}
 	}

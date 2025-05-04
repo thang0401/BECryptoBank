@@ -11,7 +11,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class InformationFormPostRequestDTO {
-    private String debitAccountId;
     private BigDecimal amount;
     private String termId;
     @JsonProperty("OTP")
