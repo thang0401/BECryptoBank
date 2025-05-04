@@ -385,7 +385,8 @@ public class PaymentController {
                         tx.getExchangeRate(),
                         tx.getType(),
                         tx.getStatus().getName(),
-                        tx.getCreatedAt().toLocalDateTime()
+                        tx.getCreatedAt().toLocalDateTime(),
+                        tx.getModifiedAt()!= null ? tx.getModifiedAt().toLocalDateTime() : null
                 ))
                 .collect(Collectors.toList());
 
@@ -410,7 +411,8 @@ public class PaymentController {
                         tx.getExchangeRate(),
                         tx.getType(),
                         tx.getStatus().getName(),
-                        tx.getCreatedAt().toLocalDateTime()
+                        tx.getCreatedAt().toLocalDateTime(),
+                        tx.getModifiedAt()!= null ? tx.getModifiedAt().toLocalDateTime() : null
                 ))
                 .collect(Collectors.toList());
 
@@ -425,7 +427,6 @@ public class PaymentController {
     @GetMapping("/transactions/pending")
     public ResponseEntity<List<UsdcVndTransactionDTO>> getPendingTransactions() {
         Status pendingStatus = statusService.getById("cvvveejme6nnaun2s4a0"); //success
-
         List<UsdcVndTransaction> pendingTransactions = transactionRepository.findByStatus(pendingStatus);
         List<UsdcVndTransactionDTO> transactionDTOs = pendingTransactions.stream()
                 .map(tx -> new UsdcVndTransactionDTO(
@@ -437,7 +438,35 @@ public class PaymentController {
                         tx.getExchangeRate(),
                         tx.getType(),
                         tx.getStatus().getName(),
-                        tx.getCreatedAt().toLocalDateTime()
+                        tx.getCreatedAt().toLocalDateTime(),
+                        tx.getModifiedAt()!= null ? tx.getModifiedAt().toLocalDateTime() : null
+                ))
+                .collect(Collectors.toList());
+
+        if (transactionDTOs.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(transactionDTOs);
+        }
+
+        return ResponseEntity.ok(transactionDTOs);
+    }
+    
+ // API lấy tất cả giao dịch có trạng thái Sucess
+    @GetMapping("/transactions/success")
+    public ResponseEntity<List<UsdcVndTransactionDTO>> getSuccessTransactions() {
+        Status pendingStatus = statusService.getById("cvvvehbme6nnaun2s4ag"); //success
+        List<UsdcVndTransaction> pendingTransactions = transactionRepository.findByStatus(pendingStatus);
+        List<UsdcVndTransactionDTO> transactionDTOs = pendingTransactions.stream()
+                .map(tx -> new UsdcVndTransactionDTO(
+                        tx.getId(),
+                        tx.getDebitWallet().getUser().getId(),
+                        tx.getDebitWallet().getId(),
+                        tx.getVndAmount(),
+                        tx.getUsdcAmount(),
+                        tx.getExchangeRate(),
+                        tx.getType(),
+                        tx.getStatus().getName(),
+                        tx.getCreatedAt().toLocalDateTime(),
+                        tx.getModifiedAt()!= null ? tx.getModifiedAt().toLocalDateTime() : null
                 ))
                 .collect(Collectors.toList());
 
@@ -448,12 +477,6 @@ public class PaymentController {
         return ResponseEntity.ok(transactionDTOs);
     }
 
-//    @GetMapping("/BankAccount/{userId}")
-//    public ResponseEntity<List<UserBankAccount>> getAllBankAccountByUser(@PathVariable String userId)
-//    {
-//    	List<UserBankAccount> listBankAccount=userBankAccountRepository.findByUser_Id(userId);
-//    	return ResponseEntity.ok(listBankAccount);
-//    }
     
     public ResponseEntity<?> confirmTransactionFunction(String transactionId,String userId,String statusId)
     {
