@@ -2,6 +2,7 @@ package com.cryptobank.backend.entity;
 
 
 import java.time.OffsetTime;
+import java.util.List;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -40,20 +41,19 @@ public class CustomerReport extends BaseEntity{
      private Employee issueTo;
 
      @Column(name="document_link")
-     private String documentLink=null;
+     private List<String> documentLink=null;
      @Column(name="transaction_id")
      private String transactionID=null;
      @Column(name="priority")
      private int priority;
      @Column(name="reported_by")
      private String reportedBy;
-     @Column(name="cusomter_email")
+     @Column(name="customer_email")
      private String customerEmail;
      @Column(name="customer_phone")
      private String customerPhone;
      @Column(name="contact_type")
      private String contactType;
      @Column(name="contact_time")
-     private OffsetTime contactTime;
-
+     private String contactTime;
 }

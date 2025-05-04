@@ -70,3 +70,9 @@ payos:
 
 jwt:
   secret-key: this-is-a-very-long-secret-key-for-jwt-hmac-sha256-algorithm-1234567890
+
+web3:
+  provider:
+    url: ${WEB3_PROVIDER_URL}
+  private:
+    key: ${WEB3_PRIVATE_KEY}
