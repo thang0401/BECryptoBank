@@ -70,17 +70,23 @@ public class ReferralBonusService {
         if (found) {
             throw new AlreadyExistException("User with id " + request.getUserId() + " has already entered a referral code of " + request.getUserReferralEmail() + " before");
         }
-        ReferralBonus created = mapper.fromCreateRequest(request);
-        if (request.getStatusId() != null && !request.getStatusId().isBlank()) {
-            created.setStatus(statusService.getById(request.getStatusId()));
-        } else {
-            created.setStatus(statusService.getById("d04sbnufbfnjccci4svg"));
-        }
-        created.setUser(userService.getUserEntity(request.getUserId()));
-        created.setReferralUser(userService.getUserByEmail(request.getUserReferralEmail()));
-        ReferralBonus save = dao.save(created);
         User user = userService.getUserEntity(request.getUserId());
+        if (user.getEmail().equals(request.getUserReferralEmail())) {
+            throw new AlreadyExistException("User with id " + request.getUserId() + " cannot enter a referral code of himself/herself");
+        }
+
+        User referralUser = userService.getUserByEmail(request.getUserReferralEmail());
+
+        ReferralBonus created = mapper.fromCreateRequest(request);
+        created.setStatus(request.getStatusId() != null && !request.getStatusId().isBlank()
+            ? statusService.getById(request.getStatusId())
+            : statusService.getById("d04sbnufbfnjccci4svg"));
+        created.setUser(user);
+        created.setReferralUser(referralUser);
+        ReferralBonus save = dao.save(created);
+
         user.setBonusAmount(user.getBonusAmount().add(save.getBonusAmount()));
+        user.setIsReferralCode(true);
         userDAO.save(user);
         return mapper.toDTO(save);
     }
