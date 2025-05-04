@@ -20,7 +20,7 @@ public class Web3jService {
     public Web3jService(
             @Value("${WEB3_PROVIDER_URL}") String providerUrl,
             @Value("${WEB3_PRIVATE_KEY}") String privateKey,
-            @Value("${CONTRACT_ADDRESS}") String contractAddress) {
+            @Value("${CONTRACT_ADDRESS1}") String contractAddress) {
         this.web3j = Web3j.build(new HttpService(providerUrl));
         this.credentials = Credentials.create(privateKey);
 
@@ -61,5 +61,10 @@ public class Web3jService {
             e.printStackTrace();
             throw e;
         }
+    }
+
+    public TransactionReceipt createSaving(){
+        
+        return null;
     }
 }

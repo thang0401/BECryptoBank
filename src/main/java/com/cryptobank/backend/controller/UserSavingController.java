@@ -1,5 +1,8 @@
 package com.cryptobank.backend.controller;
 
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
 
@@ -14,19 +17,23 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.web3j.protocol.http.HttpService;
 import org.web3j.tx.gas.DefaultGasProvider;
 
+import com.cryptobank.backend.DTO.SavingHeirFormDTO.AddHeirFormDTO;
 import com.cryptobank.backend.DTO.UserSavingAccountDTO.InformationFormPostRequestDTO;
 import com.cryptobank.backend.DTO.UserSavingAccountDTO.InformationFormResponseDTO;
 import com.cryptobank.backend.entity.DebitWallet;
 import com.cryptobank.backend.entity.SavingAccount;
+import com.cryptobank.backend.entity.Status;
 import com.cryptobank.backend.entity.Term;
 import com.cryptobank.backend.entity.User;
 import com.cryptobank.backend.repository.DebitWalletDAO;
 import com.cryptobank.backend.repository.SavingAccountDAO;
+import com.cryptobank.backend.repository.StatusDAO;
 import com.cryptobank.backend.repository.TermDAO;
 import com.cryptobank.backend.repository.UserDAO;
 import com.cryptobank.backend.services.WithdrawService;
 import com.cryptobank.backend.smartcontract.SavingAccountTest;
 import com.cryptobank.backend.services.AccruedInterestService;
+import com.cryptobank.backend.services.Web3jService;
 
 import lombok.AllArgsConstructor;
 
@@ -40,13 +47,15 @@ public class UserSavingController {
    DebitWalletDAO debitWalletDAO;
    WithdrawService withdrawService;
    AccruedInterestService accruedInterestService;
-
+   Web3jService web3jService;
+    StatusDAO statusDAO;
 
    @GetMapping("/add-saving-asset")
    public ResponseEntity<InformationFormResponseDTO> getData(@RequestParam String userId) {
        List<Term> terms=getTerm();
        User user=getUserAccount(userId);
-       String debitAccounts=getUserWalletAddress(user);
+
+       DebitWallet debitAccounts=debitWalletDAO.findByOneUserId(userId);
        if(debitAccounts!=null){
        InformationFormResponseDTO informationFormResponseDTO=new InformationFormResponseDTO(debitAccounts,terms);
        return ResponseEntity.ok(informationFormResponseDTO);}
@@ -57,9 +66,6 @@ public class UserSavingController {
    public ResponseEntity<?> getAccuredInterest(@RequestBody String accountId) {
        SavingAccount savingAccount=savingAccountDAO.findById(accountId).orElse(null);
        if(savingAccount!=null){
-
-
-
 
            return ResponseEntity.ok().build();
        }
@@ -87,6 +93,7 @@ public class UserSavingController {
        Boolean checkValidBalance=withdrawService.checkValidBalance(account, entity.getAmount());
        //Check OTP
        Boolean checkValidOTP=entity.getOTP().equals(OTP);
+       
        //Check valid balance
        if(!checkValidBalance){
            return ResponseEntity.badRequest().body("Not succesful causing by insufficient balance");
@@ -98,6 +105,10 @@ public class UserSavingController {
 
        if(checkValidBalance&&checkValidOTP){
            UUID uuid=UUID.randomUUID();
+           Status status=statusDAO.findById("cvvvf5bme6nnaun2s4dg").orElse(null);
+           if(status==null){
+            System.out.println("Status not found and status will be set to null");
+           }
            //Save to DB
            SavingAccount newSavingAccount=new SavingAccount();
            newSavingAccount.setBalance(entity.getAmount());
@@ -105,16 +116,17 @@ public class UserSavingController {
            newSavingAccount.setInterestRate(selectedTerm.getInterestRate());
            // newSavingAccount.setCreatedBy(userId);
            // newSavingAccount.setCreatedDate(ZonedDateTime.now());
-           newSavingAccount.setMaturityDate(null);
+           OffsetDateTime maturityDate = OffsetDateTime.now(ZoneOffset.UTC).plusMonths(selectedTerm.getAmountMonth());
+           newSavingAccount.setMaturityDate(maturityDate);
            newSavingAccount.setUser(user);
            newSavingAccount.setId(uuid.toString());
+           newSavingAccount.setStatus(status);
            // newSavingAccount.setUuid(uuid);
            newSavingAccount.setTerm(selectedTerm);
            savingAccountDAO.save(newSavingAccount);
            //Reduce balance
            withdrawService.TransferIntoSavingAccount(account, entity.getAmount());
            //Do onchain saving (WEB3)
-            Boolean result=saveOnChain();
            //Response OK
            return ResponseEntity.ok("Successful");
        }
@@ -137,6 +149,39 @@ public class UserSavingController {
        return ResponseEntity.badRequest().build();
    }
 
+   @PostMapping("/add-heir")
+   public ResponseEntity<?> addAHeir(@RequestBody AddHeirFormDTO addHeirFormDTO) {
+        SavingAccount savingAccount=savingAccountDAO.findById(addHeirFormDTO.getSavingAccountId()).orElse(null);
+        if( savingAccount!=null){
+            savingAccount.setHeirName(addHeirFormDTO.getHeirId());
+            savingAccount.setGgDriveUrl(addHeirFormDTO.getGgDriveLink());
+            savingAccount.setHeirStatus(true);
+            //Web 3 implementation
+            String transactionHash="";//Get from WEB3 implementation
+            //
+            savingAccount.setTransactionHash(transactionHash);
+            return ResponseEntity.ok().build();
+        }
+        return ResponseEntity.notFound().build();
+   }
+
+   @PostMapping("/remove-heir")
+   public ResponseEntity<?> removeHeir(@RequestBody String savingAccountId) {
+       //TODO: process POST request
+       SavingAccount savingAccount=savingAccountDAO.findById(savingAccountId).orElse(null);
+        if( savingAccount!=null){
+            savingAccount.setHeirName("");
+            savingAccount.setGgDriveUrl("");
+            savingAccount.setHeirStatus(false);
+            //Web 3 implementation
+            String transactionHash="";//Get from WEB3 implementation
+            //
+            savingAccount.setTransactionHash(transactionHash);
+            return ResponseEntity.ok().build();
+        }
+        return ResponseEntity.notFound().build();
+   }
+
    private Boolean getUserConfirmation(){
        return null;
    }
@@ -151,9 +196,6 @@ public class UserSavingController {
        return user;
    }
 
-   private DebitWallet getUserDebitWalletAddress(User user){
-       return debitWalletDAO.findByOneUserId(user.getId());
-   }
    private String getUserWalletAddress(User user){
        return user.getWalletAddress();
    }
@@ -162,16 +204,5 @@ public class UserSavingController {
        return termDAO.findByDeleted(false);
    }
 
-   private Boolean saveOnChain(){
-        Web3j web3j = Web3j.build(new HttpService("https://sepolia-rollup.arbitrum.io/rpc"));
-        SavingAccountTest contract = SavingAccountTest.load(
-            contractAddress,
-            web3j,
-            credentials,
-            new DefaultGasProvider()
-            );
-        return false;
-
-   }
 }
 
