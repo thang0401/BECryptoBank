@@ -76,3 +76,11 @@ web3:
     url: ${WEB3_PROVIDER_URL}
   private:
     key: ${WEB3_PRIVATE_KEY}
+  contract:
+    address: ${CONTRACT_ADDRESS}
+  crypto:
+    bank:
+      wallet: ${CRYPTO_BANK_WALLET}
+  usdc:
+    token:
+      address: ${USDC_TOKEN_ADDRESS}

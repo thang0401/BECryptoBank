@@ -81,4 +81,14 @@ public class DepositingDebitController {
         BigDecimal balance = debitAccountService.getBalanceByUserId(userId);
         return ResponseEntity.ok(balance);
     }
+
+    @PostMapping("/withdraw")
+    public ResponseEntity<DebitDTO> withdraw(@RequestBody DepositRequest request) {
+        String userId = "d0250rm199kgpknaiko0";
+
+        DebitTransaction transaction = debitAccountService.withdraw(userId, request);
+        DebitDTO dto = new DebitDTO(transaction);
+        return ResponseEntity.ok(dto);
+    }
+
 }
