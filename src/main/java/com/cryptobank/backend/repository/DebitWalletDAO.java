@@ -18,7 +18,7 @@ import java.util.Optional;
 public interface DebitWalletDAO extends JpaRepository<DebitWallet,String>{
 
 
-	List<DebitWallet> findByUserId(String userId);
+//	List<DebitWallet> findByUserId(String userId);
 
 	DebitWallet findByUserId(String userId);
 
