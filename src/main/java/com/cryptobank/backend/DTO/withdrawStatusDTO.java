@@ -11,4 +11,6 @@ public class withdrawStatusDTO {
 	private String transactionId;
 	private String newStatus;
 	private Long bankAccountId;
+	private String modifiedBy;
+	private String maGiaoDichBanking;
 }

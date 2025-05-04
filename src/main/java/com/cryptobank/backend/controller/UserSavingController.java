@@ -1,6 +1,5 @@
 package com.cryptobank.backend.controller;
 
-import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -65,28 +64,29 @@ public class UserSavingController {
 
 
    @PostMapping("/add-saving-asset")
-   public ResponseEntity<?> addSavingAddress(@RequestParam(required = true) String userId,@RequestBody InformationFormPostRequestDTO entity) {
+   public ResponseEntity<?> addUserSaving(@RequestParam(required = true) String userId,@RequestBody InformationFormPostRequestDTO entity) {
        //TODO: process POST request
        System.out.println(userId);
+       userId="d00u86s5ig8jm25nu6q0";
        System.out.println(entity.toString());
        User user=getUserAccount(userId);
-       DebitWallet account=getUserDebitWalletAddress(user);
-
+       DebitWallet account=debitWalletDAO.findByOneUserId(user.getId());    
        //Get selected Term instance
        Term selectedTerm=termDAO.findById(entity.getTermId()).orElse(null);
-
+       if(selectedTerm==null){
+            return ResponseEntity.badRequest().body("Term is not available please try again");
+       }
        //Get provided OTP
        Integer OTP=provideOTP();
 
-
+       //Check balance
        Boolean checkValidBalance=withdrawService.checkValidBalance(account, entity.getAmount());
+       //Check OTP
        Boolean checkValidOTP=entity.getOTP().equals(OTP);
-
        //Check valid balance
        if(!checkValidBalance){
            return ResponseEntity.badRequest().body("Not succesful causing by insufficient balance");
        }
-
        //Check valid OTP
        if(!checkValidOTP){
            return ResponseEntity.badRequest().body("Invalid OTP");
@@ -99,8 +99,8 @@ public class UserSavingController {
            newSavingAccount.setBalance(entity.getAmount());
            // newSavingAccount.setHeirStatus(false);
            newSavingAccount.setInterestRate(selectedTerm.getInterestRate());
-           newSavingAccount.setCreatedBy(userId);
-           newSavingAccount.setCreatedAt(OffsetDateTime.now());
+           // newSavingAccount.setCreatedBy(userId);
+           // newSavingAccount.setCreatedDate(ZonedDateTime.now());
            newSavingAccount.setMaturityDate(null);
            newSavingAccount.setUser(user);
            newSavingAccount.setId(uuid.toString());
@@ -109,6 +109,8 @@ public class UserSavingController {
            savingAccountDAO.save(newSavingAccount);
            //Reduce balance
            withdrawService.TransferIntoSavingAccount(account, entity.getAmount());
+           //Do onchain saving (WEB3)
+            Boolean result=saveOnChain();
            //Response OK
            return ResponseEntity.ok("Successful");
        }
@@ -116,14 +118,14 @@ public class UserSavingController {
    }
 
    @PostMapping("/withdraw-saving")
-   public ResponseEntity<?> postWithdrawn(@RequestBody String accountId) {
+   public ResponseEntity<?> withdrawSaving(@RequestBody String accountId) {
        //TODO: process POST request
        SavingAccount savingAccount=savingAccountDAO.findById(accountId).orElse(null);
        if(savingAccount!=null){
            Boolean userConfirmation=getUserConfirmation();
            if(userConfirmation){
-                
                return ResponseEntity.ok().build();
+
            }
        }
 
@@ -153,7 +155,13 @@ public class UserSavingController {
    }
 
    private List<Term> getTerm(){
-       return termDAO.findAll();
+       return termDAO.findByDeleted(false);
+   }
+
+   private Boolean saveOnChain(){
+        
+        return false;
+
    }
 }
 
