@@ -440,6 +440,10 @@ public class AuthService {
     public List<Optional<DeviceInfo>> getAllDeviceFromUser(String userId) {
         return deviceInfoRepository.getAllDeviceWasLoginByUser(userId);
     }
+    
+    public List<DeviceInfo> getAllDeviceFromUser2(String userId) {
+        return deviceInfoRepository.getAllDeviceWasLoginByUser2(userId);
+    }
 
     public User getUserById(String userId) {
         return userRepository.findById(userId).orElse(null);

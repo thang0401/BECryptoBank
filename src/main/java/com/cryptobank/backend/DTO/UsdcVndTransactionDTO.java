@@ -20,4 +20,5 @@ public class UsdcVndTransactionDTO {
 	    private String transactionType;
 	    private String status;
 	    private LocalDateTime createAt;
+	    private LocalDateTime modifiedAt;
 }

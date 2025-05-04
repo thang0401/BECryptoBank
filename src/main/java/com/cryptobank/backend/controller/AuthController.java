@@ -1,13 +1,17 @@
 package com.cryptobank.backend.controller;
 
 import java.math.BigDecimal;
+
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import com.cryptobank.backend.DTO.*;
 import com.cryptobank.backend.utils.JwtUtil;
@@ -23,6 +27,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.cryptobank.backend.entity.DebitWallet;
 import com.cryptobank.backend.entity.DeviceInfo;
@@ -66,6 +71,9 @@ public class AuthController {
 
     @Autowired
     private JwtUtil jwtUtil;
+    
+    @Autowired
+    private UserOtpRepository otpRepository;
     
     @Autowired
     private DebitWalletDAO debitWalletRepository;
@@ -425,9 +433,53 @@ public class AuthController {
     }
 
     @GetMapping("/getAllDevice/{userId}")
-    public ResponseEntity<List<Optional<DeviceInfo>>> getAllDeviceFromUser(@PathVariable String userId) {
-        List<Optional<DeviceInfo>> listDevice = authService.getAllDeviceFromUser(userId);
+    public ResponseEntity<List<DeviceInforDTO>> getAllDeviceFromUser(@PathVariable String userId) {
+        List<DeviceInforDTO> listDevice = authService.getAllDeviceFromUser2(userId).stream()
+        												   .map(dev -> new DeviceInforDTO(
+        														dev.getDeviceId(),
+        														dev.getDeviceName(),
+        														dev.getBrowser(),
+        														dev.getIpAddress(),
+        														dev.getOs(),
+        														dev.getLastLoginAt(),
+        														dev.getInUse(),
+        														dev.getUser().getId(),
+        														dev.getUser().getFullName()
+        													))
+        												   .collect(Collectors.toList());
         return ResponseEntity.ok(listDevice);
+    }
+    
+    @GetMapping("/getUserOtp/all")
+    @Transactional(readOnly = true)
+    public ResponseEntity<?> getAllUserOtp() {
+        List<UserOtpDTO> listUserOtp = otpRepository.findAllWithUser().stream()
+            .map(userOtp -> new UserOtpDTO(
+                userOtp.getId(),
+                userOtp.getUser().getId(),
+                userOtp.getUser().getFullName(),
+                userOtp.getTimeStart(),
+                userOtp.getOtpCode(),
+                userOtp.getTimeEnd()
+            ))
+            .collect(Collectors.toList());
+        return ResponseEntity.ok(listUserOtp);
+    }
+    
+    @GetMapping("/getUserOtp/{userId}")
+    public ResponseEntity<?> getUserOtpById(@PathVariable String userId)
+    {
+    	 UserOtp userOtp = otpRepository.findByUserId(userId);
+    	 UserOtpDTO userDTO=new UserOtpDTO(
+    		        userOtp.getId(),
+    		        userOtp.getUser().getId(),
+    		        userOtp.getUser().getFullName(),
+    		        userOtp.getTimeStart(),
+    		        userOtp.getOtpCode(),
+    		        userOtp.getTimeEnd()
+    		    );
+    	 
+    	return ResponseEntity.ok(userDTO);
     }
 
     @PostMapping("/accesstoken")

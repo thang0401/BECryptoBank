@@ -54,6 +54,9 @@ public class UsdcVndTransaction {
 
     @Column(name = "modified_by", columnDefinition = "TEXT")
     private String modifiedBy;
+    
+    @Column(name = "ma_giao_dich_banking", columnDefinition = "TEXT")
+    private String maGiaoDichBanking;
 
     @PrePersist
     protected void onCreate() {

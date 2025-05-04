@@ -38,24 +38,24 @@ public class Web3jService {
         System.out.println("Owner address: " + credentials.getAddress());
     }
 
-    public TransactionReceipt signDepositTransaction(String fromPubKey, String toPubKey, String amount, String debitAccountId) throws Exception {
+    public TransactionReceipt signDepositTransaction(String fromPubKey, String toPubKey, String amount, String debitAccountId, String transactionHash) throws Exception {
         try {
             BigInteger amountInWei = new BigInteger(amount).multiply(BigInteger.valueOf(10).pow(6));
             System.out.println("Signing deposit transaction:");
             System.out.println("UserId: d0250rm199kgpknaiko0");
             System.out.println("DebitAccountId: " + debitAccountId);
             System.out.println("Amount (wei): " + amountInWei);
-            System.out.println("Initial TransactionHash: 0xInitialTransactionHash");
+            System.out.println("TransactionHash: " + transactionHash);
 
             TransactionReceipt receipt = contract.deposit(
                     "d0250rm199kgpknaiko0",
                     debitAccountId,
                     amountInWei,
-                    "0xInitialTransactionHash"
+                    transactionHash // Sử dụng transactionHash từ payload
             ).send();
 
             System.out.println("Transaction successful. Hash: " + receipt.getTransactionHash());
-            return receipt; // Trả về TransactionReceipt
+            return receipt;
         } catch (Exception e) {
             System.err.println("Error signing transaction: " + e.getMessage());
             e.printStackTrace();
