@@ -10,7 +10,7 @@ import lombok.Data;
 public class ReferralBonusCreateRequest {
 
     @NotBlank
-    private String userReferralId;
+    private String userReferralEmail;
     @NotBlank
     private String userId;
     @Digits(integer = 38, fraction = 2)
