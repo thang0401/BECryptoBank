@@ -253,10 +253,17 @@ public class PaymentController {
 	        {
 	        	return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Đơn yêu cầu trên vốn đã được duyệt");
 	        }
+	        else if(withdrawStatus.getMaGiaoDichBanking()==null)
+	        {
+	        	System.out.println(withdrawStatus);
+	        	return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Bạn chưa nhập mã giao dịch ngân hàng");
+	        }
 	        else if(debitWallet.getBalance().compareTo(usdcAmount) < 0)
 	        {
 	        	Status statusFailed=statusService.getById("cvvvevrme6nnaun2s4cg");
 	        	transaction.setStatus(statusFailed);
+	        	transaction.setMaGiaoDichBanking(withdrawStatus.getMaGiaoDichBanking());
+	        	transaction.setModifiedBy(withdrawStatus.getModifiedBy());
     	        transactionRepository.save(transaction);
 	        	return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Số dư không đủ!");
 	        }
