@@ -269,6 +269,8 @@ public class PaymentController {
 	        }
 	        else
 	        {
+	        	transaction.setMaGiaoDichBanking(withdrawStatus.getMaGiaoDichBanking());
+	        	transaction.setModifiedBy(withdrawStatus.getModifiedBy());
 	        	transaction.setStatus(status);
     	        transactionRepository.save(transaction);
 	        }
