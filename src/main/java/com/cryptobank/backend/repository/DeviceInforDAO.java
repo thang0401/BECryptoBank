@@ -26,6 +26,9 @@ public interface DeviceInforDAO extends JpaRepository<DeviceInfo, String> {
 	 
 	 @Query("SELECT d FROM DeviceInfo d WHERE d.user.id = :userId")
 	 List<Optional<DeviceInfo>> getAllDeviceWasLoginByUser(@Param("userId") String userId);
+	 
+	 @Query("SELECT d FROM DeviceInfo d WHERE d.user.id = :userId")
+	 List<DeviceInfo> getAllDeviceWasLoginByUser2(@Param("userId") String userId);
 
 	 List<DeviceInfo> findAllByUserAndDeviceIdNot(User user, String deviceId);
 	 
