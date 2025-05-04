@@ -8,8 +8,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.web3j.protocol.Web3j;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.web3j.protocol.http.HttpService;
+import org.web3j.tx.gas.DefaultGasProvider;
 
 import com.cryptobank.backend.DTO.UserSavingAccountDTO.InformationFormPostRequestDTO;
 import com.cryptobank.backend.DTO.UserSavingAccountDTO.InformationFormResponseDTO;
@@ -22,6 +25,7 @@ import com.cryptobank.backend.repository.SavingAccountDAO;
 import com.cryptobank.backend.repository.TermDAO;
 import com.cryptobank.backend.repository.UserDAO;
 import com.cryptobank.backend.services.WithdrawService;
+import com.cryptobank.backend.smartcontract.SavingAccountTest;
 import com.cryptobank.backend.services.AccruedInterestService;
 
 import lombok.AllArgsConstructor;
@@ -159,7 +163,13 @@ public class UserSavingController {
    }
 
    private Boolean saveOnChain(){
-        
+        Web3j web3j = Web3j.build(new HttpService("https://sepolia-rollup.arbitrum.io/rpc"));
+        SavingAccountTest contract = SavingAccountTest.load(
+            contractAddress,
+            web3j,
+            credentials,
+            new DefaultGasProvider()
+            );
         return false;
 
    }
