@@ -35,6 +35,7 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-security</artifactId>
 		</dependency>
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
@@ -129,12 +130,6 @@
 			<groupId>vn.payos</groupId>
 			<artifactId>payos-java</artifactId>
 			<version>1.0.3</version>
-		</dependency>
-		<!-- For .env in Java -->
-		<dependency>
-			<groupId>io.github.cdimascio</groupId>
-			<artifactId>java-dotenv</artifactId>
-			<version>5.2.2</version>
 		</dependency>
 		<!-- Apache Commons Lang for RandomStringUtils -->
 		<dependency>
