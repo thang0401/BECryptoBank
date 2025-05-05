@@ -58,10 +58,9 @@ public class UserSavingController {
    public ResponseEntity<InformationFormResponseDTO> getData(@RequestParam String userId) {
        List<Term> terms=getTerm();
        User user=getUserAccount(userId);
-
        DebitWallet debitAccounts=debitWalletDAO.findByOneUserId(userId);
        if(debitAccounts!=null){
-       InformationFormResponseDTO informationFormResponseDTO=new InformationFormResponseDTO(debitAccounts,terms);
+       InformationFormResponseDTO informationFormResponseDTO=new InformationFormResponseDTO(debitAccounts,terms,user.getEmail());
        return ResponseEntity.ok(informationFormResponseDTO);}
        return ResponseEntity.notFound().build();
    }
@@ -77,6 +76,8 @@ public class UserSavingController {
    }
 
 
+
+
    @PostMapping("/add-saving-asset")
    public ResponseEntity<?> addUserSaving(@RequestParam(required = true) String userId,@RequestBody InformationFormPostRequestDTO entity) {
        //TODO: process POST request
@@ -88,24 +89,14 @@ public class UserSavingController {
        if(selectedTerm==null){
             return ResponseEntity.badRequest().body("Term is not available please try again");
        }
-       //Get provided OTP
-       Integer OTP=provideOTP();
-
        //Check balance
        Boolean checkValidBalance=withdrawService.checkValidBalance(account, entity.getAmount());
-       //Check OTP
-       Boolean checkValidOTP=entity.getOTP().equals(OTP);
-       
        //Check valid balance
        if(!checkValidBalance){
            return ResponseEntity.badRequest().body("Not succesful causing by insufficient balance");
        }
-       //Check valid OTP
-       if(!checkValidOTP){
-           return ResponseEntity.badRequest().body("Invalid OTP");
-       }
 
-       if(checkValidBalance&&checkValidOTP){
+       if(checkValidBalance){
            UUID uuid=UUID.randomUUID();
            Status status=statusDAO.findById("cvvvf5bme6nnaun2s4dg").orElse(null);
            if(status==null){
@@ -150,8 +141,6 @@ public class UserSavingController {
 
            }
        }
-
-
        return ResponseEntity.badRequest().build();
    }
 
@@ -189,7 +178,7 @@ public class UserSavingController {
    }
 
    @GetMapping("/get-savings")
-   public ResponseEntity<?> getUserSaving(@RequestParam String userId) {
+   public ResponseEntity<?> getUserSavings(@RequestParam String userId) {
     List<SavingAccount> userPortfolios = SVService.getUserPortfoliosByCustomerId(userId);
         if(userPortfolios!=null){
             List<UserSavingGetAllResponse> responses=new ArrayList<>();
@@ -209,6 +198,27 @@ public class UserSavingController {
                 responses.add(res);
             }
             return ResponseEntity.ok(responses);
+        }
+       return ResponseEntity.notFound().build();
+   }
+   
+   @GetMapping("/get-saving")
+   public ResponseEntity<?> getMethodName(@RequestParam String id) {
+        SavingAccount sv=savingAccountDAO.findById(id).orElse(null);
+        if(sv!=null){
+            UserSavingGetAllResponse res=new UserSavingGetAllResponse();
+                res.setAccountId(sv.getId());
+                res.setBalance(sv.getBalance());
+                res.setEndDate(sv.getMaturityDate().toString());
+                res.setStartDate(sv.getCreatedAt().toString());
+                res.setIsHeir(sv.getHeirStatus());
+                res.setTerm(sv.getTerm().getAmountMonth());
+                res.setUserEmail(sv.getUser().getEmail());
+                res.setUserId(sv.getUser().getId());
+                res.setUserPhone(sv.getUser().getPhoneNumber());
+                res.setUserName(sv.getUser().getFullName());
+                res.setStatus(sv.getStatus().getName());
+            return ResponseEntity.ok().body(res);
         }
        return ResponseEntity.notFound().build();
    }
