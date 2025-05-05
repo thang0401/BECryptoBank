@@ -114,6 +114,7 @@ public class UserSavingController {
            newSavingAccount.setUser(user);
            newSavingAccount.setId(uuid.toString());
            newSavingAccount.setStatus(status);
+           newSavingAccount.setDeleted(false);
            // newSavingAccount.setUuid(uuid);
            newSavingAccount.setTerm(selectedTerm);
            savingAccountDAO.save(newSavingAccount);
@@ -135,6 +136,7 @@ public class UserSavingController {
        //TODO: process POST request
        SavingAccount savingAccount=savingAccountDAO.findById(accountId).orElse(null);
        if(savingAccount!=null){
+
                 savingAccount.setDeleted(true);
                DebitWallet userWallet=savingAccount.getUser().getDebitWalletList();
                userWallet.setBalance(userWallet.getBalance().add(savingAccount.getBalance()));
@@ -143,7 +145,7 @@ public class UserSavingController {
             //   Get accrued balance if not null will be transfer to bank
                return ResponseEntity.ok().build();  
        }
-       return ResponseEntity.badRequest().build();
+       return ResponseEntity.notFound().build();
    }
 
    @PostMapping("/add-heir")
