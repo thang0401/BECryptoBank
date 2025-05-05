@@ -1,0 +1,11 @@
+services:
+
+  becryptobank:
+    container_name: becryptobank
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - ${PORT}:${PORT}
+    env_file:
+      - .env
