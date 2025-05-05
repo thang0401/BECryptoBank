@@ -222,7 +222,6 @@ public class AuthService {
         }
 
         user = userRepository.save(user);
-        createDebitAccount(user);
         entityManager.flush();
         entityManager.refresh(user);
         System.out.println("User saved in getOrCreateGoogleUser, userId: " + user.getId());
