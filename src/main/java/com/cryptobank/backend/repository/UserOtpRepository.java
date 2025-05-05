@@ -1,5 +1,6 @@
 package com.cryptobank.backend.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -19,6 +20,9 @@ public interface UserOtpRepository extends JpaRepository<UserOtp,String> {
 
 	@Query("SELECT u FROM UserOtp u WHERE u.user.id = :userId")
 	UserOtp findByUserId(String userId);
+	
+	@Query("SELECT uo FROM UserOtp uo JOIN FETCH uo.user WHERE uo.user IS NOT NULL")
+    List<UserOtp> findAllWithUser();
 
 
 

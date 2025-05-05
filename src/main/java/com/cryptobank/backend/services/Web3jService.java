@@ -43,6 +43,7 @@ public class Web3jService {
     private final String usdcTokenAddress;
 
     public Web3jService(
+
             @Value("${web3.provider.url}") String providerUrl,
             @Value("${web3.private.key}") String privateKey,
             @Value("${contract.address}") String contractAddress,
@@ -209,6 +210,7 @@ public class Web3jService {
         }
     }
 
+
     private TransactionReceipt waitForTransactionReceipt(String transactionHash) throws Exception {
         int maxAttempts = 30; // Số lần thử tối đa
         int attempt = 0;
@@ -228,5 +230,6 @@ public class Web3jService {
         }
 
         throw new Exception("Transaction receipt not found after " + maxAttempts + " attempts for transaction hash: " + transactionHash);
+
     }
 }

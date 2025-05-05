@@ -68,23 +68,25 @@ public class ReferralBonusService {
         boolean found = dao.exists(ignoreDeleted()
             .and((root, query, cb) -> cb.equal(root.get("user").get("id"), request.getUserId())));
         if (found) {
-            throw new AlreadyExistException("User with id " + request.getUserId() + " has already entered a referral code of " + request.getUserReferralId() + " before");
+            throw new AlreadyExistException("User with id " + request.getUserId() + " has already entered a referral code of " + request.getUserReferralEmail() + " before");
         }
-        ReferralBonus created = mapper.fromCreateRequest(request);
-        if (request.getStatusId() != null && !request.getStatusId().isBlank()) {
-            created.setStatus(statusService.getById(request.getStatusId()));
-        } else {
-            created.setStatus(statusService.getById("d04sbnufbfnjccci4svg"));
-        }
-        if (request.getUserId() != null && !request.getUserId().isBlank()) {
-            created.setUser(userService.getUserEntity(request.getUserId()));
-        }
-        if (request.getUserReferralId() != null && !request.getUserReferralId().isBlank()) {
-            created.setReferralUser(userService.getUserEntity(request.getUserReferralId()));
-        }
-        ReferralBonus save = dao.save(created);
         User user = userService.getUserEntity(request.getUserId());
+        if (user.getEmail().equals(request.getUserReferralEmail())) {
+            throw new AlreadyExistException("User with id " + request.getUserId() + " cannot enter a referral code of himself/herself");
+        }
+
+        User referralUser = userService.getUserByEmail(request.getUserReferralEmail());
+
+        ReferralBonus created = mapper.fromCreateRequest(request);
+        created.setStatus(request.getStatusId() != null && !request.getStatusId().isBlank()
+            ? statusService.getById(request.getStatusId())
+            : statusService.getById("d04sbnufbfnjccci4svg"));
+        created.setUser(user);
+        created.setReferralUser(referralUser);
+        ReferralBonus save = dao.save(created);
+
         user.setBonusAmount(user.getBonusAmount().add(save.getBonusAmount()));
+        user.setIsReferralCode(true);
         userDAO.save(user);
         return mapper.toDTO(save);
     }
