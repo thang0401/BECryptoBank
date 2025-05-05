@@ -94,6 +94,7 @@ public class AuthController {
         		userNew.setPassword(passwordEncoder.encode(userInfor.getPassword()));
         		userNew.setCreatedAt(OffsetDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
         		userNew.setKycStatus(false);
+        		userNew.setIsBankAccount(false);
         		userCheck=null;
         		userCheck=userRepository.save(userNew);
         		if(userCheck==null)
@@ -103,13 +104,8 @@ public class AuthController {
         		else
         		{
         			System.out.println("Tạo user Thành Công"+userCheck);
-        			DebitWallet debitWalletNew=new DebitWallet();
-        			debitWalletNew.setBalance(BigDecimal.valueOf(0));
-        			debitWalletNew.setUser(userCheck);
-        			debitWalletNew.setCreatedAt(OffsetDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
-        			debitWalletNew.setDeleted(false);
-        			debitWalletRepository.save(debitWalletNew);
-        			System.out.println("Tạo Debit Wallet Thành Công: "+debitWalletNew);
+        			authService.createDebitAccount(userCheck);
+        			System.out.println("Tạo Debit Wallet Thành Công: ");
         			return ResponseEntity.ok("Đăng ký tài khoản thành công");
         		}
         	}

@@ -218,6 +218,7 @@ public class AuthService {
             user.setUsername(email.split("@")[0]);
             user.setAvatar((String) payload.get("picture"));
             user.setPassword(passwordEncoder.encode("123456789"));
+            user.setIsBankAccount(false);
             user.setCreatedAt(OffsetDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
         }
 
@@ -230,8 +231,6 @@ public class AuthService {
         newAuth.setGoogleId(googleId);
         newAuth.setUser(user);
         googleAuthRepository.save(newAuth);
-
-        createDebitAccount(user);
 
         return user;
     }
