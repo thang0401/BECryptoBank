@@ -51,6 +51,8 @@ public class CryptoBankDeposit extends Contract {
 
     public static final String FUNC_DEPOSITS = "deposits";
 
+    public static final String FUNC_GETACTUALUSDCBALANCE = "getActualUsdcBalance";
+
     public static final String FUNC_GETDEBITBALANCE = "getDebitBalance";
 
     public static final String FUNC_GETDEPOSIT = "getDeposit";
@@ -77,6 +79,10 @@ public class CryptoBankDeposit extends Contract {
 
     public static final Event OWNERSHIPTRANSFERRED_EVENT = new Event("OwnershipTransferred", 
             Arrays.<TypeReference<?>>asList(new TypeReference<Address>(true) {}, new TypeReference<Address>(true) {}));
+    ;
+
+    public static final Event WITHDRAW_EVENT = new Event("Withdraw", 
+            Arrays.<TypeReference<?>>asList(new TypeReference<Address>(true) {}, new TypeReference<Utf8String>(true) {}, new TypeReference<Uint256>() {}, new TypeReference<Utf8String>() {}, new TypeReference<Uint256>() {}));
     ;
 
     @Deprecated
@@ -178,6 +184,46 @@ public class CryptoBankDeposit extends Contract {
         return ownershipTransferredEventFlowable(filter);
     }
 
+    public static List<WithdrawEventResponse> getWithdrawEvents(
+            TransactionReceipt transactionReceipt) {
+        List<Contract.EventValuesWithLog> valueList = staticExtractEventParametersWithLog(WITHDRAW_EVENT, transactionReceipt);
+        ArrayList<WithdrawEventResponse> responses = new ArrayList<WithdrawEventResponse>(valueList.size());
+        for (Contract.EventValuesWithLog eventValues : valueList) {
+            WithdrawEventResponse typedResponse = new WithdrawEventResponse();
+            typedResponse.log = eventValues.getLog();
+            typedResponse.user = (String) eventValues.getIndexedValues().get(0).getValue();
+            typedResponse.userId = (byte[]) eventValues.getIndexedValues().get(1).getValue();
+            typedResponse.amount = (BigInteger) eventValues.getNonIndexedValues().get(0).getValue();
+            typedResponse.transactionHash = (String) eventValues.getNonIndexedValues().get(1).getValue();
+            typedResponse.timestamp = (BigInteger) eventValues.getNonIndexedValues().get(2).getValue();
+            responses.add(typedResponse);
+        }
+        return responses;
+    }
+
+    public static WithdrawEventResponse getWithdrawEventFromLog(Log log) {
+        Contract.EventValuesWithLog eventValues = staticExtractEventParametersWithLog(WITHDRAW_EVENT, log);
+        WithdrawEventResponse typedResponse = new WithdrawEventResponse();
+        typedResponse.log = log;
+        typedResponse.user = (String) eventValues.getIndexedValues().get(0).getValue();
+        typedResponse.userId = (byte[]) eventValues.getIndexedValues().get(1).getValue();
+        typedResponse.amount = (BigInteger) eventValues.getNonIndexedValues().get(0).getValue();
+        typedResponse.transactionHash = (String) eventValues.getNonIndexedValues().get(1).getValue();
+        typedResponse.timestamp = (BigInteger) eventValues.getNonIndexedValues().get(2).getValue();
+        return typedResponse;
+    }
+
+    public Flowable<WithdrawEventResponse> withdrawEventFlowable(EthFilter filter) {
+        return web3j.ethLogFlowable(filter).map(log -> getWithdrawEventFromLog(log));
+    }
+
+    public Flowable<WithdrawEventResponse> withdrawEventFlowable(DefaultBlockParameter startBlock,
+            DefaultBlockParameter endBlock) {
+        EthFilter filter = new EthFilter(startBlock, endBlock, getContractAddress());
+        filter.addSingleTopic(EventEncoder.encode(WITHDRAW_EVENT));
+        return withdrawEventFlowable(filter);
+    }
+
     public RemoteFunctionCall<String> cryptoBankWallet() {
         final Function function = new Function(FUNC_CRYPTOBANKWALLET, 
                 Arrays.<Type>asList(), 
@@ -225,6 +271,13 @@ public class CryptoBankDeposit extends Contract {
                                 (Boolean) results.get(6).getValue());
                     }
                 });
+    }
+
+    public RemoteFunctionCall<BigInteger> getActualUsdcBalance() {
+        final Function function = new Function(FUNC_GETACTUALUSDCBALANCE, 
+                Arrays.<Type>asList(), 
+                Arrays.<TypeReference<?>>asList(new TypeReference<Uint256>() {}));
+        return executeRemoteCallSingleValueReturn(function, BigInteger.class);
     }
 
     public RemoteFunctionCall<BigInteger> getDebitBalance(String userId) {
@@ -359,5 +412,17 @@ public class CryptoBankDeposit extends Contract {
         public String previousOwner;
 
         public String newOwner;
+    }
+
+    public static class WithdrawEventResponse extends BaseEventResponse {
+        public String user;
+
+        public byte[] userId;
+
+        public BigInteger amount;
+
+        public String transactionHash;
+
+        public BigInteger timestamp;
     }
 }
