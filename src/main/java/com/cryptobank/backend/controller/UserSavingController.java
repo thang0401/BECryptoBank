@@ -133,7 +133,7 @@ public class UserSavingController {
 
    @PostMapping("/withdraw-saving")
    public ResponseEntity<?> withdrawSaving(@RequestBody String accountId) {
-       SavingAccount savingAccount=savingAccountDAO.findByIdQuery(accountId);
+       SavingAccount savingAccount=savingAccountDAO.findById(accountId).orElse(null);
        if(savingAccount!=null){
                 savingAccount.setDeleted(true);
                DebitWallet userWallet=savingAccount.getUser().getDebitWalletList();
