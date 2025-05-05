@@ -15,4 +15,5 @@ import lombok.NoArgsConstructor;
 public class InformationFormResponseDTO {
     private DebitWallet walletAdress;
     private List<Term> terms;
+    private String      email;
 }
