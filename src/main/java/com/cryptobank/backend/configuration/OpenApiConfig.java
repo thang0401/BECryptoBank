@@ -37,7 +37,9 @@ public class OpenApiConfig {
         }
         return new OpenAPI()
             .info(info)
-            .servers(List.of(new Server().url("https://be-crypto-depot.name.vn")))
+            .servers(List.of(
+                new Server().url("https://be-crypto-depot.name.vn"),
+                new Server().url("http://localhost:8000")))
             .components(new Components().addSecuritySchemes("Bearer Authorization", new SecurityScheme()
                 .name("Bearer Authorization")
                 .type(SecurityScheme.Type.HTTP)
