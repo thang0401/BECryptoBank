@@ -28,6 +28,9 @@ public class UserUpdateRequest {
     @Size(max = 50, message = "First name cannot exceed 50 characters")
     private String firstName;
 
+    @Size(max = 50, message = "Middle name cannot exceed 50 characters")
+    private String middleName;
+
     @Size(max = 50, message = "Last name cannot exceed 50 characters")
     private String lastName;
 

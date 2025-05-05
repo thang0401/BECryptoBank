@@ -85,8 +85,10 @@ public class ReferralBonusService {
         created.setReferralUser(referralUser);
         ReferralBonus save = dao.save(created);
 
-        user.setBonusAmount(user.getBonusAmount().add(save.getBonusAmount()));
+        referralUser.setBonusAmount(user.getBonusAmount().add(save.getBonusAmount()));
         user.setIsReferralCode(true);
+
+        userDAO.save(referralUser);
         userDAO.save(user);
         return mapper.toDTO(save);
     }

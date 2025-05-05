@@ -33,6 +33,10 @@ public class UserCreateRequest {
     @Size(max = 50, message = "First name cannot exceed 50 characters")
     private String firstName;
 
+    @NotBlank(message = "Middle name is required")
+    @Size(max = 50, message = "Middle name cannot exceed 50 characters")
+    private String middleName;
+
     @NotBlank(message = "Last name is required")
     @Size(max = 50, message = "Last name cannot exceed 50 characters")
     private String lastName;

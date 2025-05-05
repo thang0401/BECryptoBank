@@ -78,6 +78,7 @@ public class UserService {
         if (request.getPassword() != null) user.setPassword(passwordEncoder.encode(request.getPassword()));
         if (request.getEmail() != null) user.setEmail(request.getEmail());
         if (request.getFirstName() != null) user.setFirstName(request.getFirstName());
+        if (request.getMiddleName() != null) user.setMiddleName(request.getMiddleName());
         if (request.getLastName() != null) user.setLastName(request.getLastName());
         if (request.getPhoneNumber() != null) user.setPhoneNumber(request.getPhoneNumber());
         if (request.getGender() != null) user.setGender(request.getGender());
@@ -104,6 +105,7 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setEmail(request.getEmail());
         user.setFirstName(request.getFirstName());
+        user.setMiddleName(request.getMiddleName());
         user.setLastName(request.getLastName());
         user.setPhoneNumber(request.getPhoneNumber());
         user.setGender(request.getGender());
