@@ -5,6 +5,8 @@ import com.cryptobank.backend.entity.SavingAccount;
 import com.cryptobank.backend.repository.SavingAccountDAO;
 import java.util.List;
 import lombok.AllArgsConstructor;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 @AllArgsConstructor
 public class AdminSavingController {
 
+    @Autowired
     SavingAccountDAO savingAccountDAO;
 
     @GetMapping("/get-saving-list")

@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -44,6 +45,7 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 @RequestMapping("/user/saving")
 public class UserSavingController {
+   @Autowired
    TermDAO termDAO;
    UserDAO userDAO;
    SavingAccountDAO savingAccountDAO;
@@ -133,7 +135,7 @@ public class UserSavingController {
 
    @PostMapping("/withdraw-saving")
    public ResponseEntity<?> withdrawSaving(@RequestBody String accountId) {
-       SavingAccount savingAccount=savingAccountDAO.findById(accountId).orElse(null);
+       SavingAccount savingAccount=savingAccountDAO.findByIdQuery(accountId);
        if(savingAccount!=null){
                 savingAccount.setDeleted(true);
                DebitWallet userWallet=savingAccount.getUser().getDebitWalletList();
