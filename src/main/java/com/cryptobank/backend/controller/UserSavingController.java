@@ -135,11 +135,11 @@ public class UserSavingController {
        //TODO: process POST request
        SavingAccount savingAccount=savingAccountDAO.findById(accountId).orElse(null);
        if(savingAccount!=null){
-           Boolean userConfirmation=getUserConfirmation();
-           if(userConfirmation){
-               return ResponseEntity.ok().build();
-
-           }
+               DebitWallet userWallet=savingAccount.getUser().getDebitWalletList();
+               userWallet.setBalance(userWallet.getBalance().add(savingAccount.getBalance()));
+               debitWalletDAO.save(userWallet);
+            //   Get accrued balance if not null will be transfer to bank
+               return ResponseEntity.ok().build();  
        }
        return ResponseEntity.badRequest().build();
    }
@@ -229,18 +229,14 @@ public class UserSavingController {
    }
 
 
-   private Integer provideOTP(){
-       return 123456;
-   }
+ 
 
    private User getUserAccount(String userId){
        User user=userDAO.findById(userId).orElse(null);
        return user;
    }
 
-   private String getUserWalletAddress(User user){
-       return user.getWalletAddress();
-   }
+  
 
    private List<Term> getTerm(){
        return termDAO.findByDeleted(false);
