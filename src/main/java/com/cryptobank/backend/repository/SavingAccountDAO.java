@@ -16,6 +16,8 @@ public interface SavingAccountDAO extends JpaRepository<SavingAccount, String> {
 	@Query("SELECT up FROM SavingAccount up WHERE up.user.id = :customerId")
 	List<SavingAccount> findByCustomerId(@Param("customerId") String customerId);
 
+	@Query("SELECT up FROM SavingAccount up WHERE upid = :customerId")
+	SavingAccount findByIdQuery(@Param("customerId") String customerId);
 	// Truy vấn User_portfolio theo vai trò của User
 //	@Query("SELECT up FROM SavingAccount up WHERE up.user.role.name = :roleName")
 //	List<SavingAccount> findByRoleName(@Param("roleName") String roleName);
