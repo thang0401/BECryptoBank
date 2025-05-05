@@ -135,9 +135,11 @@ public class UserSavingController {
        //TODO: process POST request
        SavingAccount savingAccount=savingAccountDAO.findById(accountId).orElse(null);
        if(savingAccount!=null){
+                savingAccount.setDeleted(true);
                DebitWallet userWallet=savingAccount.getUser().getDebitWalletList();
                userWallet.setBalance(userWallet.getBalance().add(savingAccount.getBalance()));
                debitWalletDAO.save(userWallet);
+               savingAccountDAO.save(savingAccount);
             //   Get accrued balance if not null will be transfer to bank
                return ResponseEntity.ok().build();  
        }
@@ -183,6 +185,7 @@ public class UserSavingController {
         if(userPortfolios!=null){
             List<UserSavingGetAllResponse> responses=new ArrayList<>();
             for(SavingAccount sv:userPortfolios){
+                if(!sv.getDeleted()){
                 UserSavingGetAllResponse res=new UserSavingGetAllResponse();
                 res.setAccountId(sv.getId());
                 res.setBalance(sv.getBalance());
@@ -196,6 +199,7 @@ public class UserSavingController {
                 res.setUserName(sv.getUser().getFullName());
                 res.setStatus(sv.getStatus().getName());
                 responses.add(res);
+            }
             }
             return ResponseEntity.ok(responses);
         }
