@@ -11,8 +11,8 @@ import lombok.Setter;
 public class TransactionFee extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "debit_transaction_id")
-    private DebitTransaction debitTransaction;
+    @JoinColumn(name = "internal_transaction_id")
+    private InternalTransaction internalTransaction;
 
     @Column(name = "discount_rate")
     private Double discountRate;

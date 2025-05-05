@@ -36,7 +36,6 @@ public class debitAccountService {
     @Autowired
     private Web3jService web3jService;
 
-    // Bước 1, 2, 3: Tìm kiếm người dùng
     public List<User> searchUser(String phoneNumber, String email) {
         if (phoneNumber != null) {
             return userDAO.findByPhoneNumberContaining(phoneNumber);
@@ -47,12 +46,10 @@ public class debitAccountService {
         }
     }
 
-    // Bước 0: Lấy 5 giao dịch gần đây
     public List<DebitTransaction> getRecentTransactions(String userId) {
         return debitTransactionRepository.findTop5ByCreatedByOrderByCreatedAtDesc(userId);
     }
 
-    // Lấy số dư của debitAccount thông qua userId
     public BigDecimal getBalanceByUserId(String userId) {
         DebitWallet debitAccount = debitAccountDAO.findByOneUserId(userId);
         if (debitAccount == null) {
@@ -61,14 +58,12 @@ public class debitAccountService {
         return debitAccount.getBalance();
     }
 
-    // Bước 12: Xử lý giao dịch nạp USDC
     @Transactional
     public DebitTransaction deposit(String userId, DepositRequest request) {
         if (request.getDebitAccountId() == null) {
             throw new IllegalArgumentException("Debit account ID must not be null");
         }
 
-        // Kiểm tra transactionHash đã tồn tại chưa
         Optional<DebitTransaction> existingTx = debitTransactionRepository.findById(request.getTransactionHash());
         if (existingTx.isPresent()) {
             throw new IllegalArgumentException("Transaction already processed: " + request.getTransactionHash());
@@ -106,12 +101,13 @@ public class debitAccountService {
             Status successStatus = statusDAO.findById("cvvvehbme6nnaun2s4ag")
                     .orElseThrow(() -> new RuntimeException("Status 'Success' not found"));
             transaction.setStatus(successStatus);
-            transaction.setBlockchainTxHash(receipt.getTransactionHash());
+            // Giữ nguyên lưu blockchainTxHash cho deposit
+            // transaction.setBlockchainTxHash(receipt.getTransactionHash());
         } catch (Exception e) {
             Status failedStatus = statusDAO.findById("cvvveejme6nnaun2s4a0")
                     .orElseThrow(() -> new RuntimeException("Status 'Failed' not found"));
             transaction.setStatus(failedStatus);
-            throw new RuntimeException("Failed to sign transaction on blockchain", e);
+            throw new RuntimeException("Failed to sign transaction: " + e.getMessage(), e);
         }
 
         debitTransactionRepository.save(transaction);
@@ -121,7 +117,70 @@ public class debitAccountService {
         return transaction;
     }
 
-    // Lấy thông tin giao dịch để in hóa đơn
+    @Transactional
+    public DebitTransaction withdraw(String userId, DepositRequest request) {
+        if (request.getDebitAccountId() == null) {
+            throw new IllegalArgumentException("Debit account ID must not be null");
+        }
+
+        Optional<DebitTransaction> existingTx = debitTransactionRepository.findById(request.getTransactionHash());
+        if (existingTx.isPresent()) {
+            throw new IllegalArgumentException("Transaction already processed: " + request.getTransactionHash());
+        }
+
+        DebitWallet debitAccount = debitAccountDAO.findById(request.getDebitAccountId())
+                .orElseThrow(() -> new RuntimeException("Debit account not found for debitAccountId: " + request.getDebitAccountId()));
+
+        if (!debitAccount.getUser().getId().equals(userId)) {
+            throw new RuntimeException("Debit account does not belong to userId: " + userId);
+        }
+
+        BigDecimal amount = new BigDecimal(request.getAmount());
+        if (debitAccount.getBalance().compareTo(amount) < 0) {
+            throw new IllegalArgumentException("Insufficient balance in debit account");
+        }
+
+        Status status = statusDAO.findById("cvvveejme6nnaun2s4a0")
+                .orElseThrow(() -> new RuntimeException("Status 'Pending' not found"));
+
+        DebitTransaction transaction = new DebitTransaction();
+        transaction.setAmount(amount);
+        transaction.setDebitWallet(debitAccount);
+        transaction.setStatus(status);
+        transaction.setTransactionType("WITHDRAW");
+        transaction.setFromPubKey(request.getFromPubKey());
+        transaction.setToPubKey(request.getToPubKey());
+        transaction.setTransactionHash(request.getTransactionHash());
+        transaction.setCreatedBy(userId);
+        debitTransactionRepository.save(transaction);
+
+        try {
+            TransactionReceipt receipt = web3jService.signWithdrawTransaction(
+                    request.getFromPubKey(),
+                    request.getToPubKey(),
+                    request.getAmount(),
+                    userId,
+                    request.getTransactionHash()
+            );
+            Status successStatus = statusDAO.findById("cvvvehbme6nnaun2s4ag")
+                    .orElseThrow(() -> new RuntimeException("Status 'Success' not found"));
+            transaction.setStatus(successStatus);
+            // Bỏ lưu blockchainTxHash cho withdraw
+            // transaction.setBlockchainTxHash(receipt.getTransactionHash());
+        } catch (Exception e) {
+            Status failedStatus = statusDAO.findById("cvvveejme6nnaun2s4a0")
+                    .orElseThrow(() -> new RuntimeException("Status 'Failed' not found"));
+            transaction.setStatus(failedStatus);
+            throw new RuntimeException("Failed to sign withdraw transaction: " + e.getMessage(), e);
+        }
+
+        debitTransactionRepository.save(transaction);
+
+        debitAccountDAO.decreaseBalanceByUserId(userId, amount);
+
+        return transaction;
+    }
+
     public DebitTransaction getDeposit(String id) {
         return debitTransactionRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Transaction not found"));
