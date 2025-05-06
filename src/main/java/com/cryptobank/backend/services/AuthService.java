@@ -232,6 +232,8 @@ public class AuthService {
         newAuth.setUser(user);
         googleAuthRepository.save(newAuth);
 
+        createDebitAccount(user);
+
         return user;
     }
 
