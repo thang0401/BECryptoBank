@@ -21,7 +21,7 @@ public class JwtUtil {
 
 	@Value("${jwt.secret-key}")
     private String SECRET_KEY;
-    private static final long ACCESS_TOKEN_EXPIRATION = 1000 * 60 * 30; // 30 minutes
+    private static final long ACCESS_TOKEN_EXPIRATION = 1000 * 60 * 120; // 30 minutes
     private static final long REFRESH_TOKEN_EXPIRATION = 1000 * 60 * 60 * 24; // 1 day
 
     private SecretKey getSigningKey() {
@@ -47,6 +47,7 @@ public class JwtUtil {
             .type("JWT")
             .and()
             .subject(userInformation.getId())
+            .claim("id", userInformation.getId())
             .claim("email", userInformation.getEmail())
             .claim("fullName", userInformation.getFullName())
             .claim("username", userInformation.getUsername())
