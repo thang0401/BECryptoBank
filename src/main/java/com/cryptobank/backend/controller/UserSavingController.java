@@ -140,7 +140,9 @@ public class UserSavingController {
    @Transactional
    @PostMapping("/withdraw-saving")
    public ResponseEntity<?> withdrawSaving(@RequestBody String accountId) {
-        System.out.println(accountId);
+        if(accountId.contains("\"")){
+           accountId = accountId.replaceAll("^\"|\"$", "");
+        }
        SavingAccount savingAccount=savingAccountDAO.findById(accountId).orElse(null);
        System.out.println(savingAccount);
        if(savingAccount!=null){
