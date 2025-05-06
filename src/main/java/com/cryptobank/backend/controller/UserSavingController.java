@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -35,6 +36,9 @@ import com.cryptobank.backend.repository.TermDAO;
 import com.cryptobank.backend.repository.UserDAO;
 import com.cryptobank.backend.services.WithdrawService;
 import com.cryptobank.backend.smartcontract.SavingAccountTest;
+
+import jakarta.transaction.Transactional;
+
 import com.cryptobank.backend.services.AccruedInterestService;
 import com.cryptobank.backend.services.SavingAccountService;
 import com.cryptobank.backend.services.Web3jService;
@@ -133,17 +137,18 @@ public class UserSavingController {
        return ResponseEntity.badRequest().body("Not succesful causing by server");
    }
 
+   @Transactional
    @PostMapping("/withdraw-saving")
-   public ResponseEntity<?> withdrawSaving(@RequestBody String accountId) {
-       SavingAccount savingAccount=savingAccountDAO.findByIdQuery(accountId);
+   public ResponseEntity<?> withdrawSaving(@RequestParam String accountId) {
+       SavingAccount savingAccount=savingAccountDAO.findById(accountId).orElse(null);
        if(savingAccount!=null){
-                savingAccount.setDeleted(true);
-               DebitWallet userWallet=savingAccount.getUser().getDebitWalletList();
-               userWallet.setBalance(userWallet.getBalance().add(savingAccount.getBalance()));
-               debitWalletDAO.save(userWallet);
-               savingAccountDAO.save(savingAccount);
+            savingAccount.setDeleted(true);
+            DebitWallet userWallet=savingAccount.getUser().getDebitWalletList();
+            userWallet.setBalance(userWallet.getBalance().add(savingAccount.getBalance()));
+            debitWalletDAO.save(userWallet);
+            savingAccountDAO.save(savingAccount);
             //   Get accrued balance if not null will be transfer to bank
-               return ResponseEntity.ok().build();  
+            return ResponseEntity.ok().build();
        }
        return ResponseEntity.notFound().build();
    }
